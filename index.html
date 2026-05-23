@@ -43,6 +43,7 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-messaging.js"></script>
 <script>
 const firebaseConfig = {
   apiKey: "AIzaSyAaTyHTxmuktChm8AtJC15dfVejD66Gxvg",
@@ -58,6 +59,90 @@ if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
 const fbAuth = firebase.auth();
 const fbDB = firebase.database();
 const LB_REF = fbDB.ref('leaderboard');
+
+/* ── FCM PUSH NOTIFICATIONS ── */
+const FCM_VAPID_KEY = 'BInTNP40BIIGV-cLzYabqVLC2vUK-5xHzJNp7jVHcmGxvsQsLjcp9muqYlPQo3L2XlqX7jG0077FGWf7YVJ_9_E';
+var fbMessaging = null;
+try { fbMessaging = firebase.messaging(); } catch(e) { console.log('FCM not supported:', e); }
+
+function initFCM() {
+  if (!fbMessaging) return;
+  if (!('serviceWorker' in navigator)) return;
+  // Register service worker
+  navigator.serviceWorker.register('/ShikshitMitra/firebase-messaging-sw.js')
+    .then(function(reg) {
+      console.log('SW registered:', reg.scope);
+      fbMessaging.useServiceWorker(reg);
+      // Request permission & get token
+      return Notification.requestPermission();
+    })
+    .then(function(permission) {
+      if (permission === 'granted') {
+        return fbMessaging.getToken({ vapidKey: FCM_VAPID_KEY });
+      }
+    })
+    .then(function(token) {
+      if (token) {
+        console.log('FCM Token:', token);
+        // Save token to Firebase DB so you can target users
+        var safeToken = token.replace(/[.#$\[\]]/g, '_');
+        fbDB.ref('fcm_tokens/' + safeToken).set({
+          token: token,
+          ts: Date.now(),
+          ua: navigator.userAgent.slice(0, 80)
+        });
+      }
+    })
+    .catch(function(err) { console.log('FCM init error:', err); });
+
+  // Handle foreground messages (app is open)
+  fbMessaging.onMessage(function(payload) {
+    console.log('Foreground message:', payload);
+    var n = payload.notification || {};
+    var title = n.title || 'Shikshit Mitra';
+    var body  = n.body  || '';
+    // Show in-app toast + native notification
+    showToast('🔔 ' + title + (body ? ': ' + body : ''));
+    if (Notification.permission === 'granted') {
+      new Notification(title, {
+        body: body,
+        icon: 'https://sarfarajaalam90-dev.github.io/ShikshitMitra/icons/icon-192.png',
+        badge: 'https://sarfarajaalam90-dev.github.io/ShikshitMitra/icons/icon-96.png'
+      });
+    }
+  });
+}
+
+// Ask for notification permission after user interacts (not on load)
+function askNotificationPermission() {
+  if (!fbMessaging) return;
+  if (Notification.permission === 'granted') { initFCM(); return; }
+  if (Notification.permission === 'denied') return;
+  // Show soft prompt first
+  var banner = document.getElementById('notif-prompt-banner');
+  if (banner) banner.style.display = 'flex';
+}
+
+window.enableNotifications = function() {
+  var banner = document.getElementById('notif-prompt-banner');
+  if (banner) banner.style.display = 'none';
+  initFCM();
+};
+window.dismissNotifPrompt = function() {
+  var banner = document.getElementById('notif-prompt-banner');
+  if (banner) banner.style.display = 'none';
+  localStorage.setItem('sm-notif-dismissed', '1');
+};
+
+// Auto-init if already granted, else show soft prompt after 4s
+window.addEventListener('load', function() {
+  if (!fbMessaging) return;
+  if (Notification.permission === 'granted') {
+    initFCM();
+  } else if (Notification.permission !== 'denied' && !localStorage.getItem('sm-notif-dismissed')) {
+    setTimeout(askNotificationPermission, 4000);
+  }
+});
 // Auto-login: if Firebase already has session, restore profile
 fbAuth.onAuthStateChanged(function(fbUser) {
   if (fbUser) {
@@ -878,6 +963,21 @@ nav{
   <div class="install-btns">
     <button class="install-yes" onclick="installApp()">Install</button>
     <button class="install-no" onclick="dismissInstall()">X</button>
+  </div>
+</div>
+
+<!-- NOTIFICATION PERMISSION BANNER -->
+<div id="notif-prompt-banner" style="display:none;position:fixed;bottom:calc(var(--nav-h) + 80px);left:50%;transform:translateX(-50%);width:calc(100% - 28px);max-width:448px;background:var(--white);border:1.5px solid var(--primary);border-radius:var(--radius);padding:12px 14px;z-index:151;box-shadow:var(--shadow-md);align-items:center;gap:10px;animation:slideDown .3s ease">
+  <div style="width:36px;height:36px;background:var(--primary-light);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+  </div>
+  <div style="flex:1;min-width:0">
+    <div style="font-size:12px;font-weight:800;color:var(--text)">Stay Updated!</div>
+    <div style="font-size:10px;color:var(--text2)">Get alerts for new classes & notices</div>
+  </div>
+  <div style="display:flex;gap:6px;flex-shrink:0">
+    <button onclick="enableNotifications()" style="background:var(--primary);color:#fff;border:none;padding:6px 12px;border-radius:99px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">Allow</button>
+    <button onclick="dismissNotifPrompt()" style="background:var(--bg);color:var(--text2);border:1.5px solid var(--border);padding:6px 9px;border-radius:99px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">✕</button>
   </div>
 </div>
 
