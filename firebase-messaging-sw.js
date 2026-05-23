@@ -34,8 +34,8 @@ messaging.onBackgroundMessage(function(payload) {
 
   return self.registration.showNotification(title, {
     body: body,
-    icon: 'https://sarfarajaalam90-dev.github.io/ShikshitMitra/icons/icon-192.png',
-    badge: 'https://sarfarajaalam90-dev.github.io/ShikshitMitra/icons/icon-96.png',
+    icon: 'https://sarfarajaalam90-dev.github.io/ShikshitMitra/icon-192.png',
+    badge: 'https://sarfarajaalam90-dev.github.io/ShikshitMitra/icon-96.png',
     vibrate: [200, 100, 200],
     tag: 'shikshit-mitra-notif',
     renotify: true,
