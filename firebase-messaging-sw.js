@@ -21,26 +21,27 @@ const messaging = firebase.messaging();
 messaging.onBackgroundMessage(function(payload) {
   console.log('[SW] Background message received:', payload);
 
-  var notification = payload.notification || {};
-  var data = payload.data || {};
+  var title = (payload.notification && payload.notification.title)
+    || (payload.data && payload.data.title)
+    || 'Shikshit Mitra';
 
-  var title = notification.title || data.title || 'Shikshit Mitra';
-  var body  = notification.body  || data.body  || 'नयाँ अपडेट आयो!';
-  var icon  = notification.icon  || 'https://sarfarajaalam90-dev.github.io/ShikshitMitra/icons/icon-192.png';
-  var badge = 'https://sarfarajaalam90-dev.github.io/ShikshitMitra/icons/icon-96.png';
-  var url   = data.url || 'https://sarfarajaalam90-dev.github.io/ShikshitMitra/';
+  var body = (payload.notification && payload.notification.body)
+    || (payload.data && payload.data.body)
+    || 'नयाँ अपडेट आयो!';
 
-  var options = {
+  var url = (payload.data && payload.data.url)
+    || 'https://sarfarajaalam90-dev.github.io/ShikshitMitra/';
+
+  return self.registration.showNotification(title, {
     body: body,
-    icon: icon,
-    badge: badge,
-    data: { url: url },
+    icon: 'https://sarfarajaalam90-dev.github.io/ShikshitMitra/icons/icon-192.png',
+    badge: 'https://sarfarajaalam90-dev.github.io/ShikshitMitra/icons/icon-96.png',
     vibrate: [200, 100, 200],
+    tag: 'shikshit-mitra-notif',
+    renotify: true,
     requireInteraction: false,
-    tag: 'shikshit-mitra-notif' // replaces old notification instead of stacking
-  };
-
-  return self.registration.showNotification(title, options);
+    data: { url: url }
+  });
 });
 
 // When user taps the notification → open the app
