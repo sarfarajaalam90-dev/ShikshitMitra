@@ -1182,6 +1182,12 @@ nav{
             <span style="font-size:9px;font-weight:700;color:var(--text2);text-align:center;line-height:1.2">Clock</span>
           </button>
 
+          <!-- Acts -->
+          <button class="ogrid-btn" onclick="showOtherPanel('acts')" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:14px 6px;background:var(--white);border:1.5px solid var(--border);border-radius:14px;cursor:pointer;transition:all .2s;font-family:inherit">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="2" width="15" height="20" rx="2"/><path d="M7 7h8M7 11h8M7 15h5"/><path d="M17 15l2 2 4-4" stroke-width="2"/></svg>
+            <span style="font-size:9px;font-weight:700;color:var(--text2);text-align:center;line-height:1.2">Acts</span>
+          </button>
+
         </div>
       </div>
 
@@ -1198,6 +1204,20 @@ nav{
         <!-- Panels (old content kept, just now shown inside panel view) -->
         <div id="opanel-links" class="opanel" style="display:none;padding-top:6px">
           <div id="other-list"><div class="loading-box"><div class="spinner"></div>Loading...</div></div>
+        </div>
+
+        <!-- ACTS PANEL -->
+        <div id="opanel-acts" class="opanel" style="display:none;padding:12px 14px">
+          <div style="background:linear-gradient(135deg,#1e3a5f,#1a6b3c);border-radius:14px;padding:14px 16px;margin-bottom:12px;display:flex;align-items:center;gap:12px">
+            <div style="width:44px;height:44px;background:rgba(255,255,255,.15);border-radius:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="2" width="15" height="20" rx="2"/><path d="M7 7h8M7 11h8M7 15h5"/><path d="M17 15l2 2 4-4" stroke-width="2"/></svg>
+            </div>
+            <div>
+              <div style="font-size:15px;font-weight:800;color:#fff">Nepal Government Acts</div>
+              <div style="font-size:10px;color:rgba(255,255,255,.65);margin-top:2px">ऐन, नियम तथा कानुनी दस्तावेजहरू</div>
+            </div>
+          </div>
+          <div id="acts-list"><div class="loading-box"><div class="spinner"></div>Loading Acts...</div></div>
         </div>
 
         <div id="opanel-games" class="opanel game-wave-bg" style="display:none;position:relative;overflow:hidden;padding:12px 14px;background:linear-gradient(160deg,#0a0a1a 0%,#0d1f12 40%,#0a1a2e 100%);min-height:100vh">
@@ -1785,9 +1805,10 @@ function setHeroDate(){
 var QUOTES=['सफलता एक दिनमा आउँदैन, तर मेहनतले दिन आउँछ।','आफ्नो सपनालाई साकार पार्न आज नै सुरु गर्नुहोस्।','पढ्नु भनेको भविष्यको ढोका खोल्नु हो।','लोक सेवाको तयारी गाह्रो छ, तर असम्भव छैन।','ज्ञान नै शक्ति हो — जति पढ्नुहुन्छ, उति अगाडि बढ्नुहुन्छ।','आज गरेको मेहनत भोलिको सफलताको जग हो।','धैर्य र परिश्रमले असम्भवलाई पनि सम्भव बनाउँछ।'];
 function setDailyQuote(){document.getElementById('daily-quote').textContent=QUOTES[new Date().getDate()%QUOTES.length];}
 function showOtherPanel(tab){
-  var titles={games:'Games',pyq:'Past Questions',syllabus:'Syllabus',contact:'Contact',links:'Links',notice:'Notice',schedule:'Schedule',about:'About Us',clock:'Clock'};
+  var titles={games:'Games',pyq:'Past Questions',syllabus:'Syllabus',contact:'Contact',links:'Links',notice:'Notice',schedule:'Schedule',about:'About Us',clock:'Clock',acts:'Acts & Rules'};
   if(panel==='pyq') renderPYQFromSheet();
   if(panel==='syllabus') renderSyllabusFromSheet();
+  if(tab==='acts') renderActsFromSheet();
   document.getElementById('other-grid-menu').style.display='none';
   document.getElementById('other-panel-view').style.display='block';
   document.getElementById('other-panel-title').textContent=titles[tab]||tab;
@@ -1939,7 +1960,8 @@ function fetchWithTimeout(url,ms){
 function processRows(json){
   return json.map(function(r){return{Title:String(r.Title||'').trim(),Link:String(r.Link||'').trim(),Type:String(r.Type||'').trim(),Info:String(r.Info||'').trim(),Pic:String(r.Pic||r.Image||r.Photo||'').trim(),Date:String(r.Date||r.RecDate||'').trim()};}).filter(function(r){return r.Title.length>0;});
 }
-const CSV_URL='https://docs.google.com/spreadsheets/d/e/2PACX-1vT32hr6I6ic59VQhyzmdT58qBgmgIP7zw9zTR2twaKsjl5GO_XTu7mMFnPkGxJID8EKfnFBo3eeBj3S/pub?output=csv';
+const S1_URL='https://docs.google.com/spreadsheets/d/e/2PACX-1vT32hr6I6ic59VQhyzmdT58qBgmgIP7zw9zTR2twaKsjl5GO_XTu7mMFnPkGxJID8EKfnFBo3eeBj3S/pub?output=csv';
+const CSV_URL=S1_URL; // S1 — Main content (Materials, Exams, Live, Notice, etc.)
 
 function parseCSV(csv){
   var lines=csv.trim().split('\n');if(lines.length<2)return[];
@@ -2591,6 +2613,8 @@ function notifyMe(){
    DAILY CHALLENGE GAME
    ============================================================ */
 var DC_SHEET_URL='https://docs.google.com/spreadsheets/d/e/2PACX-1vSvboPbqXSBqbMR5UilxgOyrLvrSsxHl45mTxw6DH8DDnK1sRw_X9qIcke2Wi6zSgX4bv0gyA1hmyE-/pub?gid=0&single=true&output=csv';
+var S2_URL=DC_SHEET_URL; // S2 — Daily Challenge quiz questions
+var S3_URL='https://docs.google.com/spreadsheets/d/e/2PACX-1vTnr1E_poc6b2Cnav2BRg1o00u65WukHAM0c2eahAXYMpsPUwlwmuKjJYQZiHyrfihV6qQXIIvFe281/pub?output=csv'; // S3 — Nepal Government Acts & Rules
 var DC_STORE_KEY='dn-dc-v1';
 var DC_LB_KEY='dn-dc-lb-v1';
 var dcQuestions=[],dcSession={q:[],idx:0,score:0,xp:0,answers:[],startTime:0},dcTimer=null,dcTimeLeft=30;
@@ -3510,6 +3534,57 @@ function renderSyllabusFromSheet(){
       +'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>'
       +'</a>';
   }).join('');
+}
+
+/* ACTS from S3 sheet */
+function renderActsFromSheet(){
+  var el = document.getElementById('acts-list');
+  if(!el) return;
+  el.innerHTML='<div class="loading-box"><div class="spinner"></div>Loading Acts...</div>';
+  function parseActsCSV(csv){
+    var lines=csv.trim().split('\n');if(lines.length<2)return[];
+    var headers=lines[0].split(',').map(function(h){return h.replace(/"/g,'').trim();});
+    return lines.slice(1).map(function(line){
+      var cols=[];var cur='';var inQ=false;
+      for(var i=0;i<line.length;i++){
+        if(line[i]==='"'){inQ=!inQ;}else if(line[i]===','&&!inQ){cols.push(cur.trim());cur='';}else{cur+=line[i];}
+      }
+      cols.push(cur.trim());
+      var obj={};headers.forEach(function(h,i){obj[h]=(cols[i]||'').replace(/^"|"$/g,'').trim();});return obj;
+    }).filter(function(r){return (r.Title||r.title||'').trim().length>0;});
+  }
+  function renderActs(rows){
+    if(!rows||!rows.length){
+      el.innerHTML='<div class="empty-box">No Acts found.<br><small>Add rows in S3 sheet with columns: Title, Link, Info</small></div>';
+      return;
+    }
+    el.innerHTML=rows.map(function(r,i){
+      var title=r.Title||r.title||'';
+      var link=r.Link||r.link||'';
+      var info=r.Info||r.info||'Nepal Government Act';
+      var hasLink=link&&link.startsWith('http');
+      return '<a '+(hasLink?'href="'+link+'" target="_blank" rel="noopener"':'')
+        +' style="text-decoration:none;display:flex;padding:13px 14px;background:var(--white);border:1.5px solid var(--border);border-radius:14px;margin-bottom:8px;align-items:center;gap:12px;animation:cardIn .3s ease '+(i*0.04)+'s both">'
+        +'<div style="width:40px;height:40px;background:var(--primary-light);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0">'
+        +'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="2" width="15" height="20" rx="2"/><path d="M7 7h8M7 11h8M7 15h5"/><path d="M17 15l2 2 4-4" stroke-width="2"/></svg>'
+        +'</div>'
+        +'<div style="flex:1;min-width:0">'
+        +'<div style="font-size:13px;font-weight:700;color:var(--text);line-height:1.4">'+title+'</div>'
+        +'<div style="font-size:11px;color:var(--text2);margin-top:2px">'+info+'</div>'
+        +'</div>'
+        +(hasLink?'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>':'')
+        +'</a>';
+    }).join('');
+  }
+  fetch(S3_URL+'&t='+Date.now())
+    .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.text();})
+    .then(function(csv){renderActs(parseActsCSV(csv));})
+    .catch(function(){
+      return fetch('https://api.allorigins.win/raw?url='+encodeURIComponent(S3_URL))
+        .then(function(r){return r.text();})
+        .then(function(csv){renderActs(parseActsCSV(csv));})
+        .catch(function(){el.innerHTML='<div class="empty-box">Could not load Acts. Check your internet connection.</div>';});
+    });
 }
 
 /* FIRST TIME LOGO PULSE */
