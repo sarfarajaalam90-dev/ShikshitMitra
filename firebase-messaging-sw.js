@@ -1,6 +1,5 @@
 // firebase-messaging-sw.js
 // Place this file in the ROOT of your GitHub Pages repo (same level as index.html)
-// File path in repo: ShikshitMitra/firebase-messaging-sw.js
 
 importScripts('https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js');
 importScripts('https://www.gstatic.com/firebasejs/8.10.1/firebase-messaging.js');
@@ -34,8 +33,10 @@ messaging.onBackgroundMessage(function(payload) {
 
   return self.registration.showNotification(title, {
     body: body,
+    // Large icon shown on the RIGHT side of notification (full app logo)
     icon: 'https://sarfarajaalam90-dev.github.io/ShikshitMitra/icon-192.png',
-    badge: 'https://sarfarajaalam90-dev.github.io/ShikshitMitra/icon-96.png',
+    // Small monochrome badge on the LEFT/status bar (white logo shape on transparent)
+    badge: 'https://sarfarajaalam90-dev.github.io/ShikshitMitra/icon96.png',
     vibrate: [200, 100, 200],
     tag: 'shikshit-mitra-notif',
     renotify: true,
