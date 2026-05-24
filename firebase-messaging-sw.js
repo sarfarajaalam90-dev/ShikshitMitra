@@ -36,7 +36,7 @@ messaging.onBackgroundMessage(function(payload) {
     // Large icon shown on the RIGHT side of notification (full app logo)
     icon: 'https://sarfarajaalam90-dev.github.io/ShikshitMitra/icon-192.png',
     // Small monochrome badge on the LEFT/status bar (white logo shape on transparent)
-    badge: 'https://sarfarajaalam90-dev.github.io/ShikshitMitra/icon-96.png',
+    badge: 'https://sarfarajaalam90-dev.github.io/ShikshitMitra/icon-badge-96.png',
     vibrate: [200, 100, 200],
     tag: 'shikshit-mitra-notif',
     renotify: true,
