@@ -101,8 +101,6 @@ function initFCM() {
     var n = payload.notification || {};
     var title = n.title || 'Shikshit Mitra';
     var body  = n.body  || '';
-    // Show in-app toast + native notification
-    showToast('🔔 ' + title + (body ? ': ' + body : ''));
     if (Notification.permission === 'granted') {
       new Notification(title, {
         body: body,
@@ -1153,6 +1151,7 @@ nav{
           <button class="ptab" id="mtab-2" onclick="switchMatTab('2',this)">2nd Paper</button>
           <button class="ptab" id="mtab-3" onclick="switchMatTab('3',this)">3rd Paper</button>
           <button class="ptab" id="mtab-rec" onclick="switchMatTab('rec',this)">Recording</button>
+          <button class="ptab" id="mtab-extra" onclick="switchMatTab('extra',this)">Extra</button>
         </div>
         <div class="search-bar"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" id="mat-search" placeholder="Search..." oninput="searchMaterials()"></div>
         <!-- 1st Paper: GK + IQ -->
@@ -1198,6 +1197,11 @@ nav{
             <button onclick="applyCustomDate()" style="padding:7px 14px;background:var(--primary);color:#fff;border:none;border-radius:var(--radius-sm);font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">Go</button>
           </div>
           <div id="rec-list"><div class="empty-box"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg><br>No recordings yet.<br><small>Add Type = "Recording" in your sheet.</small></div></div>
+        </div>
+
+        <!-- Extra Materials -->
+        <div class="paper-panel" id="mpanel-extra">
+          <div id="extra-list"><div class="empty-box"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><br>No extra materials yet.<br><small>Add Type = "Extra" in your sheet.</small></div></div>
         </div>
       </div>
 
@@ -2231,8 +2235,8 @@ function switchMatTab(num,btn){
   document.querySelectorAll('#pg-materials .paper-panel').forEach(function(p){p.classList.remove('active');});
   document.getElementById('mpanel-'+num).classList.add('active');
   var searchBar=document.querySelector('#pg-materials .search-bar');
-  if(searchBar) searchBar.style.display=num==='rec'?'none':'flex';
-  if(num==='rec'){renderRecordings();}else{renderMaterials(num);}
+  if(searchBar) searchBar.style.display=(num==='rec'||num==='extra')?'none':'flex';
+  if(num==='rec'){renderRecordings();}else if(num==='extra'){renderExtra();}else{renderMaterials(num);}
 }
 function switchExamTab(num,btn){
   document.querySelectorAll('#pg-exam .ptab').forEach(function(b){b.classList.remove('active');});
@@ -3423,8 +3427,30 @@ function renderRecordings(){
   }).join('');
 }
 
-
-function showToast(msg){var t=document.getElementById('toast');if(!t){t=document.createElement('div');t.id='toast';t.style.cssText='position:fixed;bottom:calc(var(--nav-h) + 12px);left:50%;transform:translateX(-50%);background:#0f172a;color:#fff;padding:9px 18px;border-radius:99px;font-size:12px;font-weight:600;z-index:9999;box-shadow:0 4px 14px rgba(0,0,0,.3);white-space:nowrap;transition:opacity .3s';document.body.appendChild(t);}t.textContent=msg;t.style.opacity='1';clearTimeout(t._t);t._t=setTimeout(function(){t.style.opacity='0';},2500);}
+function renderExtra(){
+  var rows=allRows.filter(function(r){return (r.Type||'').toLowerCase()==='extra';});
+  var el=document.getElementById('extra-list');if(!el)return;
+  if(!rows.length){
+    el.innerHTML='<div class="empty-box"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><br>No extra materials yet.<br><small>Add Type = "Extra" in your sheet.</small></div>';
+    return;
+  }
+  el.innerHTML=rows.map(function(r){
+    var link=r.Link&&r.Link.startsWith('http')?r.Link:'#';
+    var safeTitle=esc(r.Title);var safeLink=esc(link);
+    return '<div style="margin:0 14px 8px;padding:12px 14px;background:var(--white);border:1.5px solid var(--border);border-radius:var(--radius);display:flex;gap:10px;align-items:center">'
+      +'<div style="width:40px;height:40px;border-radius:10px;background:var(--primary-light);display:flex;align-items:center;justify-content:center;flex-shrink:0">'
+      +'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>'
+      +'</div>'
+      +'<div style="flex:1;min-width:0">'
+      +'<div style="font-size:12px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+r.Title+'</div>'
+      +'<div style="font-size:10px;color:var(--text2);margin-bottom:5px">'+(r.Info||'Extra Material')+'</div>'
+      +'<div style="display:flex;gap:5px">'
+      +'<a class="mat-link" href="'+link+'" target="_blank" rel="noopener">Open</a>'
+      +'<button class="share-btn" onclick="shareMaterial(decodeURIComponent(\''+encodeURIComponent(r.Title)+'\'),\''+safeLink+'\')">Share</button>'
+      +'</div></div></div>';
+  }).join('');
+}
+function showToast(msg){var t=document.getElementById('toast');if(!t){t=document.createElement('div');t.id='toast';t.style.cssText='position:fixed;bottom:calc(var(--nav-h) + 12px);left:50%;transform:translateX(-50%);background:#0f172a;color:#fff;padding:9px 18px;border-radius:99px;font-size:12px;font-weight:600;z-index:9999;box-shadow:0 4px 14px rgba(0,0,0,.3);white-space:nowrap;transition:opacity .3s;opacity:0;pointer-events:none';document.body.appendChild(t);}t.textContent=msg;t.style.opacity='1';clearTimeout(t._t);t._t=setTimeout(function(){t.style.opacity='0';},2500);}
 function updateStreak(){
   var now=new Date();var utc=now.getTime()+(now.getTimezoneOffset()*60000);var np=new Date(utc+(5*3600+45*60)*1000);
   var today=np.toDateString();var stored=JSON.parse(localStorage.getItem('dn-streak')||'{}')||{};
