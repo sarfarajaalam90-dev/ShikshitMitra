@@ -1374,6 +1374,31 @@ nav{
           <button onclick="showDCLeaderboard()" style="width:100%;padding:12px;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.12);border-radius:var(--radius-sm);font-family:inherit;font-size:12px;font-weight:700;color:rgba(255,255,255,.8);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:10px;transition:background .2s" onmouseover="this.style.background='rgba(34,197,94,.15)'" onmouseout="this.style.background='rgba(255,255,255,.06)'">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg> View Leaderboard
           </button>
+          <!-- TYPING PRACTICE CARD -->
+          <div onclick="openTypingGame()" style="padding:14px 16px;background:rgba(88,166,255,.08);border:1.5px solid rgba(88,166,255,.25);border-radius:14px;margin-bottom:10px;cursor:pointer;display:flex;align-items:center;gap:12px;transition:all .2s" onmouseover="this.style.background='rgba(88,166,255,.15)';this.style.borderColor='rgba(88,166,255,.5)'" onmouseout="this.style.background='rgba(88,166,255,.08)';this.style.borderColor='rgba(88,166,255,.25)'">
+            <div style="width:48px;height:48px;background:rgba(88,166,255,.15);border:1.5px solid rgba(88,166,255,.35);border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#58a6ff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="4" width="20" height="14" rx="2"/>
+                <rect x="6" y="8" width="2" height="2" rx=".4" fill="#58a6ff" stroke="none"/>
+                <rect x="10" y="8" width="2" height="2" rx=".4" fill="#58a6ff" stroke="none"/>
+                <rect x="14" y="8" width="2" height="2" rx=".4" fill="#58a6ff" stroke="none"/>
+                <rect x="6" y="12" width="2" height="2" rx=".4" fill="#58a6ff" stroke="none"/>
+                <rect x="10" y="12" width="6" height="2" rx=".4" fill="#58a6ff" stroke="none"/>
+                <rect x="4" y="18" width="4" height="2" rx="1"/>
+                <rect x="16" y="18" width="4" height="2" rx="1"/>
+                <line x1="8" y1="19" x2="16" y2="19"/>
+              </svg>
+            </div>
+            <div style="flex:1">
+              <div style="font-size:14px;font-weight:800;color:#fff">Typing Practice</div>
+              <div style="font-size:10px;color:rgba(255,255,255,.55);margin-top:3px;font-weight:600">English &amp; Nepali &bull; WPM &bull; Accuracy &bull; Net WPM</div>
+              <div style="display:flex;gap:5px;margin-top:7px">
+                <span style="font-size:9px;background:rgba(88,166,255,.2);color:#58a6ff;padding:2px 8px;border-radius:99px;font-weight:800;border:1px solid rgba(88,166,255,.3)">EN/NP</span>
+                <span style="font-size:9px;background:rgba(34,197,94,.15);color:#86efac;padding:2px 8px;border-radius:99px;font-weight:800;border:1px solid rgba(34,197,94,.25)">Live Stats</span>
+              </div>
+            </div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </div>
           <div style="padding:14px;background:rgba(255,255,255,.04);border:1.5px solid rgba(255,255,255,.08);border-radius:14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;opacity:.5">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="15" rx="2"/><polyline points="17 2 12 7 7 2"/></svg>
             <div><div style="font-size:13px;font-weight:700;color:var(--text)">Word Scramble</div><div style="font-size:11px;color:var(--text2)">Coming soon...</div></div>
@@ -4283,5 +4308,39 @@ if('serviceWorker' in navigator) {
     </button>
   </div>
 </div>
+
+<!-- ═══ TYPING GAME FULLSCREEN PANEL ═══ -->
+<div id="typing-game-panel" style="display:none;position:fixed;inset:0;z-index:8000;background:#0d1117;flex-direction:column">
+  <!-- Top bar -->
+  <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:#161b22;border-bottom:1px solid #30363d;flex-shrink:0">
+    <button onclick="closeTypingGame()" style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <div>
+      <div style="font-size:14px;font-weight:800;color:#fff">Typing Practice</div>
+      <div style="font-size:10px;color:rgba(255,255,255,.4);font-weight:600">Shikshit Mitra &mdash; Game Zone</div>
+    </div>
+  </div>
+  <!-- iframe loads typing-game.html -->
+  <iframe id="typing-game-iframe" src="" style="flex:1;width:100%;border:none;background:#0d1117" allowfullscreen></iframe>
+</div>
+
+<script>
+function openTypingGame(){
+  var panel = document.getElementById('typing-game-panel');
+  var iframe = document.getElementById('typing-game-iframe');
+  panel.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+  // Load only once
+  if(!iframe.src || iframe.src === window.location.href){
+    iframe.src = 'typing-game.html';
+  }
+}
+function closeTypingGame(){
+  document.getElementById('typing-game-panel').style.display = 'none';
+  document.body.style.overflow = '';
+}
+</script>
+
 <!-- ════════════════════════════════════ -->
 </body>
