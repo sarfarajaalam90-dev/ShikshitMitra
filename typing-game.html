@@ -155,6 +155,13 @@ html,body{
 .timer-dot.pulse{animation:dotPulse 1s ease-in-out infinite;}
 @keyframes dotPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}
 
+/* ── Small section label (e.g. above the typing-echo box) ── */
+.section-label-sm{
+  font-size:11px;font-weight:700;color:var(--text3);
+  text-transform:uppercase;letter-spacing:.8px;
+  margin-bottom:8px;
+}
+
 /* ── Passage box ── */
 .passage-box{
   background:#ffffff;
@@ -375,6 +382,16 @@ html,body{
       </div>
     </div>
 
+    <!-- Live typing echo — shows exactly what the user typed -->
+    <div class="section-label-sm">Your Typing</div>
+    <div class="passage-box" id="typed-box">
+      <div class="passage-viewport" id="typed-viewport">
+        <div class="passage-text" id="typed-display">
+          <span class="char pending">तपाईंले टाइप गरेको यहाँ देखिनेछ… / Your typing will appear here…</span>
+        </div>
+      </div>
+    </div>
+
     <!-- Hidden input -->
     <div class="input-wrap">
       <textarea id="typing-input" rows="1" tabindex="-1" aria-hidden="true"></textarea>
@@ -419,16 +436,12 @@ html,body{
           <div class="result-stat-label">Accuracy</div>
         </div>
         <div class="result-stat">
-          <div class="result-stat-val" style="color:var(--red)" id="r-err">0</div>
-          <div class="result-stat-label">Errors</div>
+          <div class="result-stat-val" style="color:var(--red)" id="r-wrongwords">0</div>
+          <div class="result-stat-label">Wrong Words</div>
         </div>
         <div class="result-stat">
-          <div class="result-stat-val" style="color:var(--text)" id="r-chars">0</div>
-          <div class="result-stat-label">Chars Typed</div>
-        </div>
-        <div class="result-stat">
-          <div class="result-stat-val" style="color:var(--text)" id="r-correct">0</div>
-          <div class="result-stat-label">Correct</div>
+          <div class="result-stat-val" style="color:var(--primary)" id="r-correctwords">0</div>
+          <div class="result-stat-label">Correct Words</div>
         </div>
         <div class="result-stat">
           <div class="result-stat-val" style="color:var(--text)" id="r-time">0s</div>
@@ -436,7 +449,11 @@ html,body{
         </div>
         <div class="result-stat">
           <div class="result-stat-val" style="color:var(--yellow)" id="r-best">0</div>
-          <div class="result-stat-label">Best WPM</div>
+          <div class="result-stat-label">Best Score</div>
+        </div>
+        <div class="result-stat">
+          <div class="result-stat-val" style="color:var(--text)" id="r-backspace">0</div>
+          <div class="result-stat-label">Backspaces</div>
         </div>
       </div>
 
@@ -486,6 +503,8 @@ let passageIndex = 0;
 let passagesLoaded = false;
 let charCorrect = [];      // per-character actual correctness (true/false/undefined)
 let wordErrorWords = new Set(); // start-indices of words that contain at least one error
+let typedChars = [];       // actual character the user typed at each position
+let backspaceCount = 0;     // number of backspace keystrokes used
 
 // Passages fetched from sheet: { en: [...], np: [...] }
 const passages = { en: [], np: [] };
@@ -621,7 +640,11 @@ function init(){
     if(e.key==='Tab'){e.preventDefault();restartGame();}
     if(e.key==='Enter' && !gameStarted && !gameOver && passagesLoaded){e.preventDefault();startGame();}
   });
-  window.addEventListener('resize', ()=>{ if(passagesLoaded) updateViewportHeight(); });
+  window.addEventListener('resize', ()=>{
+    if(!passagesLoaded) return;
+    updateViewportHeight(document.getElementById('passage-viewport'), document.getElementById('passage-display'), 5);
+    updateViewportHeight(document.getElementById('typed-viewport'), document.getElementById('typed-display'), 3);
+  });
 }
 
 function loadPassage(){
@@ -635,7 +658,10 @@ function loadPassage(){
   currentIndex = 0; totalTyped = 0; correctTyped = 0; errorCount = 0;
   charCorrect = [];
   wordErrorWords = new Set();
+  typedChars = [];
+  backspaceCount = 0;
   renderPassage();
+  renderTypedDisplay();
 }
 
 function renderPassage(){
@@ -649,8 +675,8 @@ function renderPassage(){
     const safe = ch.replace(/</g,'&lt;').replace(/>/g,'&gt;');
     return `<span class="char ${cls}" id="c${i}">${safe}</span>`;
   }).join('');
-  updateViewportHeight();
-  scrollToCurrent();
+  updateViewportHeight(document.getElementById('passage-viewport'), el, 5);
+  scrollViewport(el, document.getElementById('c'+currentIndex), 5);
 }
 
 /* ── Get [start,end) indices of the word containing position idx ── */
@@ -662,31 +688,54 @@ function getWordBounds(idx){
   return [start,end];
 }
 
-/* ── Keep the passage viewport fixed to ~5 lines ── */
-function getLineHeight(){
-  const display = document.getElementById('passage-display');
-  const lh = parseFloat(getComputedStyle(display).lineHeight);
+/* ── Render the live "your typing" echo box ── */
+function renderTypedDisplay(){
+  const el = document.getElementById('typed-display');
+  if(!el) return;
+  if(currentIndex === 0){
+    el.className = 'passage-text' + (lang==='np'?' nepali':'');
+    el.style.transform = 'translateY(0px)';
+    el.innerHTML = '<span class="char pending">तपाईंले टाइप गरेको यहाँ देखिनेछ… / Your typing will appear here…</span>';
+    updateViewportHeight(document.getElementById('typed-viewport'), el, 3);
+    return;
+  }
+  let html = '';
+  for(let k=0;k<currentIndex;k++){
+    const [wStart] = getWordBounds(k);
+    const wrong = wordErrorWords.has(wStart);
+    let ch = typedChars[k];
+    if(ch === undefined) ch = currentPassage[k];
+    const safe = ch.replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    html += `<span class="char ${wrong?'wrong':'correct'}">${safe}</span>`;
+  }
+  html += `<span class="char current" id="typed-cursor"> </span>`;
+  el.innerHTML = html;
+  el.className = 'passage-text' + (lang==='np'?' nepali':'');
+  updateViewportHeight(document.getElementById('typed-viewport'), el, 3);
+  scrollViewport(el, document.getElementById('typed-cursor'), 3);
+}
+
+/* ── Generic line-height for a given text element ── */
+function getLineHeight(el){
+  const lh = parseFloat(getComputedStyle(el).lineHeight);
   if(!isNaN(lh) && lh > 0) return lh;
-  // fallback estimate
   return lang==='np' ? 34 : 36;
 }
 
-function updateViewportHeight(){
-  const viewport = document.getElementById('passage-viewport');
-  const lineHeight = getLineHeight();
-  viewport.style.height = (lineHeight * 5) + 'px';
+/* ── Set a viewport's height to fit a fixed number of lines ── */
+function updateViewportHeight(viewportEl, displayEl, lines){
+  if(!viewportEl || !displayEl) return;
+  const lineHeight = getLineHeight(displayEl);
+  viewportEl.style.height = (lineHeight * lines) + 'px';
 }
 
-/* ── Scroll so current line stays within the last visible line ── */
-function scrollToCurrent(){
-  const display = document.getElementById('passage-display');
-  const span = document.getElementById('c'+currentIndex);
-  if(!span) return;
-  const lineHeight = getLineHeight();
-  const visibleLines = 5;
-  const lineIndex = Math.round(span.offsetTop / lineHeight);
-  const maxScrollLine = Math.max(0, lineIndex - (visibleLines - 1));
-  display.style.transform = `translateY(-${maxScrollLine * lineHeight}px)`;
+/* ── Scroll a display element so the target span stays within the last visible line ── */
+function scrollViewport(displayEl, targetSpan, lines){
+  if(!displayEl || !targetSpan) return;
+  const lineHeight = getLineHeight(displayEl);
+  const lineIndex = Math.round(targetSpan.offsetTop / lineHeight);
+  const maxScrollLine = Math.max(0, lineIndex - (lines - 1));
+  displayEl.style.transform = `translateY(-${maxScrollLine * lineHeight}px)`;
 }
 
 /* ═══════════════════════════════════════
@@ -740,6 +789,10 @@ function restartGame(){
   gameStarted=false;gameOver=false;
   timeLeft=duration;
   currentIndex=0;totalTyped=0;correctTyped=0;errorCount=0;
+  charCorrect=[];
+  wordErrorWords=new Set();
+  typedChars=[];
+  backspaceCount=0;
   document.getElementById('typing-input').value='';
   document.getElementById('typing-input').disabled=true;
   document.getElementById('btn-start').disabled=false;
@@ -748,6 +801,7 @@ function restartGame(){
   document.getElementById('result-screen').style.display='none';
   updateTimerDisplay();
   if(passagesLoaded) renderPassage();
+  renderTypedDisplay();
 }
 
 function newPassage(){
@@ -769,10 +823,12 @@ function onKeyDown(e){
   if(!gameStarted) return;
   if(e.key==='Backspace'){
     if(currentIndex>0){
+      backspaceCount++;
       currentIndex--;
       const span=document.getElementById('c'+currentIndex);
       const prev=document.getElementById('c'+(currentIndex+1));
       if(prev) prev.className='char pending';
+      typedChars[currentIndex] = undefined;
 
       const [wStart] = getWordBounds(currentIndex);
       if(currentIndex===wStart){
@@ -788,7 +844,8 @@ function onKeyDown(e){
 
       if(span) span.className='char current';
       playBackspace();
-      scrollToCurrent();
+      scrollViewport(document.getElementById('passage-display'), span, 5);
+      renderTypedDisplay();
     }
     e.preventDefault();
     const inp=document.getElementById('typing-input');
@@ -815,6 +872,7 @@ function onInput(e){
   const [wStart] = getWordBounds(currentIndex);
   const isError = typed !== expected;
   charCorrect[currentIndex] = !isError;
+  typedChars[currentIndex] = typed;
 
   if(isError){
     errorCount++;
@@ -839,7 +897,8 @@ function onInput(e){
 
   const next=document.getElementById('c'+currentIndex);
   if(next) next.className='char current';
-  scrollToCurrent();
+  scrollViewport(document.getElementById('passage-display'), document.getElementById('c'+currentIndex), 5);
+  renderTypedDisplay();
 
   if(currentIndex>=currentPassage.length) loadPassage();
 }
@@ -855,6 +914,21 @@ function calcStats(){
   const netWpm=Math.max(0,Math.round(wpm-errPerMin));
   const acc=totalTyped>0?Math.round((correctTyped/totalTyped)*100):100;
   return{wpm,netWpm,acc,errors:errorCount,chars:totalTyped,correct:correctTyped};
+}
+
+/* ── Count how many words (touched so far) ended up correct vs wrong ── */
+function getTypedWordStats(){
+  let wrong=0, correct=0;
+  let i=0;
+  while(i < currentPassage.length){
+    if(currentPassage[i] === ' '){ i++; continue; }
+    const start = i;
+    while(i < currentPassage.length && currentPassage[i] !== ' ') i++;
+    if(start < currentIndex){
+      if(wordErrorWords.has(start)) wrong++; else correct++;
+    }
+  }
+  return {wrong, correct};
 }
 
 function toggleSound(){
@@ -890,14 +964,15 @@ function showResult(){
   document.getElementById('result-grade').textContent=grade;
   document.getElementById('result-title').textContent=title;
   document.getElementById('result-sub').textContent=lang==='np'?'तपाईंको टाइपिङ परिणाम':'Your typing session results';
+  const wordStats = getTypedWordStats();
   document.getElementById('r-wpm').textContent=s.wpm;
   document.getElementById('r-net').textContent=s.netWpm;
   document.getElementById('r-acc').textContent=s.acc+'%';
-  document.getElementById('r-err').textContent=s.errors;
-  document.getElementById('r-chars').textContent=s.chars;
-  document.getElementById('r-correct').textContent=s.correct;
+  document.getElementById('r-wrongwords').textContent=wordStats.wrong;
+  document.getElementById('r-correctwords').textContent=wordStats.correct;
   document.getElementById('r-time').textContent=timeUsed+'s';
   document.getElementById('r-best').textContent=best;
+  document.getElementById('r-backspace').textContent=backspaceCount;
 
   setTimeout(()=>{
     const speedPct=Math.min(100,(s.wpm/80)*100);
