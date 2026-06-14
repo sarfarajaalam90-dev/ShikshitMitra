@@ -2,119 +2,76 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Shikshit Mitra — Typing Practice</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;600;700;800&family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
 :root{
-  --bg:#0d1117;
-  --surface:#161b22;
-  --surface2:#1c2330;
-  --border:#30363d;
-  --text:#e6edf3;
-  --text2:#8b949e;
-  --text3:#484f58;
-  --primary:#22c55e;
-  --primary-dim:rgba(34,197,94,.12);
-  --red:#f85149;
-  --red-dim:rgba(248,81,73,.12);
-  --yellow:#e3b341;
-  --blue:#58a6ff;
+  --bg:#ffffff;
+  --surface:#f8fafc;
+  --surface2:#f1f5f9;
+  --border:#e2e8f0;
+  --text:#1e293b;
+  --text2:#64748b;
+  --text3:#94a3b8;
+  --primary:#16a34a;
+  --primary-dim:rgba(22,163,74,.10);
+  --red:#dc2626;
+  --red-dim:rgba(220,38,38,.10);
+  --yellow:#ca8a04;
+  --blue:#2563eb;
   --radius:14px;
   --radius-sm:9px;
 }
 
-body{
+html,body{
   font-family:'Sora',sans-serif;
-  background:var(--bg);
+  background:#ffffff;
   color:var(--text);
   min-height:100vh;
   overflow-x:hidden;
+  -webkit-text-size-adjust:100%;
 }
 
-/* ── Animated gradient background ── */
-body::before{
-  content:'';
-  position:fixed;inset:0;
-  background:
-    radial-gradient(ellipse 55% 45% at 15% 15%, rgba(34,197,94,.10) 0%, transparent 60%),
-    radial-gradient(ellipse 50% 40% at 85% 80%, rgba(88,166,255,.09) 0%, transparent 55%),
-    radial-gradient(ellipse 40% 35% at 50% 50%, rgba(227,179,65,.06) 0%, transparent 50%),
-    radial-gradient(ellipse 35% 30% at 80% 15%, rgba(34,197,94,.06) 0%, transparent 50%),
-    radial-gradient(ellipse 45% 35% at 20% 85%, rgba(88,166,255,.07) 0%, transparent 55%);
-  animation:bgPulse 10s ease-in-out infinite alternate;
-  pointer-events:none;
-  z-index:0;
-}
-
-/* ── Animated grid ── */
-body::after{
-  content:'';
-  position:fixed;inset:0;
-  background-image:
-    linear-gradient(rgba(34,197,94,.04) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(34,197,94,.04) 1px,transparent 1px);
-  background-size:44px 44px;
-  animation:gridMove 20s linear infinite;
-  pointer-events:none;
-  z-index:0;
-  mask-image:radial-gradient(ellipse 80% 80% at 50% 50%, black 40%, transparent 100%);
-  -webkit-mask-image:radial-gradient(ellipse 80% 80% at 50% 50%, black 40%, transparent 100%);
-}
-
-/* ── Floating orbs ── */
-.orb{
-  position:fixed;border-radius:50%;filter:blur(80px);
-  pointer-events:none;z-index:0;animation:orbFloat linear infinite;
-}
-.orb1{width:500px;height:500px;background:rgba(34,197,94,.06);top:-100px;left:-100px;animation-duration:25s;}
-.orb2{width:400px;height:400px;background:rgba(88,166,255,.07);bottom:-80px;right:-80px;animation-duration:30s;animation-direction:reverse;}
-.orb3{width:300px;height:300px;background:rgba(227,179,65,.05);top:40%;left:60%;animation-duration:20s;animation-delay:-8s;}
-
-@keyframes bgPulse{
-  0%{opacity:.7;transform:scale(1);}
-  50%{opacity:1;transform:scale(1.05);}
-  100%{opacity:.8;transform:scale(1);}
-}
-@keyframes gridMove{
-  0%{background-position:0 0;}
-  100%{background-position:44px 44px;}
-}
+@keyframes bgPulse{0%{opacity:.7}50%{opacity:1}100%{opacity:.8}}
+@keyframes gridMove{0%{background-position:0 0}100%{background-position:44px 44px}}
 @keyframes orbFloat{
-  0%{transform:translate(0,0) scale(1);}
-  25%{transform:translate(30px,-20px) scale(1.05);}
-  50%{transform:translate(-20px,30px) scale(.95);}
-  75%{transform:translate(20px,20px) scale(1.03);}
-  100%{transform:translate(0,0) scale(1);}
+  0%{transform:translate(0,0) scale(1)}
+  25%{transform:translate(30px,-20px) scale(1.05)}
+  50%{transform:translate(-20px,30px) scale(.95)}
+  75%{transform:translate(20px,20px) scale(1.03)}
+  100%{transform:translate(0,0) scale(1)}
 }
 
+/* ── Main wrapper — fixed laptop width, centered ── */
 .wrap{
   position:relative;z-index:1;
-  max-width:100%;
-  padding:24px 40px 40px;
-}
-
-@media(min-width:900px){
-  .wrap{padding:28px 56px 48px;}
-  .stats-bar{grid-template-columns:repeat(6,1fr);}
+  width:100%;
+  max-width:860px;
+  margin:0 auto;
+  padding:24px 32px 40px;
 }
 
 /* ── Header ── */
 .header{
   display:flex;align-items:center;justify-content:space-between;
   margin-bottom:28px;
+  flex-wrap:nowrap;
+  gap:12px;
 }
-.brand{display:flex;align-items:center;gap:10px}
+.brand{display:flex;align-items:center;gap:10px;flex-shrink:0;}
 .brand-icon{
-  width:38px;height:38px;border-radius:10px;
+  width:38px;height:38px;border-radius:10px;flex-shrink:0;
   background:linear-gradient(135deg,#166534,#22c55e);
   display:flex;align-items:center;justify-content:center;
   font-size:18px;
 }
-.brand-name{font-size:15px;font-weight:800;letter-spacing:-.3px}
-.brand-sub{font-size:10px;color:var(--text2);font-weight:400;margin-top:1px}
+.brand-name{font-size:15px;font-weight:800;letter-spacing:-.3px;white-space:nowrap;}
+.brand-sub{font-size:10px;color:var(--text2);font-weight:400;margin-top:1px;white-space:nowrap;}
+
+.header-right{display:flex;align-items:center;gap:10px;flex-shrink:0;}
 
 /* ── Language toggle ── */
 .lang-toggle{
@@ -122,31 +79,54 @@ body::after{
   background:var(--surface);
   border:1px solid var(--border);
   border-radius:99px;padding:4px;
+  flex-shrink:0;
 }
 .lang-btn{
   padding:6px 16px;border-radius:99px;border:none;
   font-family:'Sora',sans-serif;font-size:12px;font-weight:700;
   cursor:pointer;transition:all .2s;
   color:var(--text2);background:transparent;
+  white-space:nowrap;
 }
 .lang-btn.active{background:var(--primary);color:#000;}
 
-/* ── Timer bar ── */
-.timer-section{margin-bottom:20px;}
-.timer-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+/* ── Timer — small, header right corner ── */
+.timer-chip{
+  display:flex;align-items:center;gap:8px;
+  background:var(--surface);border:1.5px solid var(--border);
+  border-radius:99px;padding:6px 16px;
+  flex-shrink:0;
+}
 .timer-display{
   font-family:'Space Mono',monospace;
-  font-size:36px;font-weight:700;
+  font-size:15px;font-weight:700;
   color:var(--primary);
   line-height:1;
   transition:color .3s;
+  letter-spacing:.5px;
+  min-width:38px;text-align:center;
 }
 .timer-display.warn{color:var(--yellow);}
 .timer-display.danger{color:var(--red);}
 
-.duration-pills{display:flex;gap:6px;}
+.timer-dot{
+  width:7px;height:7px;border-radius:50%;
+  background:var(--primary);flex-shrink:0;
+  transition:background .3s;
+}
+.timer-dot.warn{background:var(--yellow);}
+.timer-dot.danger{background:var(--red);}
+.timer-dot.pulse{animation:dotPulse 1s ease-in-out infinite;}
+@keyframes dotPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}
+
+/* ── Duration pills row (below header) ── */
+.duration-row{
+  display:flex;align-items:center;gap:8px;
+  margin-bottom:16px;flex-wrap:wrap;
+}
+.duration-label{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;}
 .dpill{
-  padding:4px 12px;border-radius:99px;
+  padding:4px 14px;border-radius:99px;
   border:1px solid var(--border);
   background:transparent;color:var(--text2);
   font-family:'Sora',sans-serif;font-size:11px;font-weight:700;
@@ -154,8 +134,10 @@ body::after{
 }
 .dpill.active{border-color:var(--primary);color:var(--primary);background:var(--primary-dim);}
 
+/* ── Slim progress bar just below header ── */
 .timer-bar-track{
-  height:4px;background:var(--surface2);border-radius:99px;overflow:hidden;
+  height:3px;background:var(--surface2);border-radius:99px;overflow:hidden;
+  margin-bottom:20px;
 }
 .timer-bar-fill{
   height:100%;background:var(--primary);border-radius:99px;
@@ -165,59 +147,43 @@ body::after{
 .timer-bar-fill.warn{background:var(--yellow);}
 .timer-bar-fill.danger{background:var(--red);}
 
-/* ── Stats row ── */
-.stats-row{
-  display:grid;grid-template-columns:repeat(4,1fr);gap:10px;
-  margin-bottom:20px;
-}
-.stat-card{
-  background:var(--surface);border:1px solid var(--border);
-  border-radius:var(--radius);padding:12px 14px;
-  text-align:center;
-}
-.stat-val{
-  font-family:'Space Mono',monospace;
-  font-size:22px;font-weight:700;color:var(--text);
-  line-height:1;margin-bottom:4px;
-}
-.stat-val.green{color:var(--primary);}
-.stat-val.red{color:var(--red);}
-.stat-val.blue{color:var(--blue);}
-.stat-val.yellow{color:var(--yellow);}
-.stat-label{font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;}
-
-/* ── Passage display ── */
+/* ── Passage box ── */
 .passage-box{
-  background:var(--surface);border:1px solid var(--border);
-  border-radius:var(--radius);padding:20px;
+  background:#ffffff;
+  border:1.5px solid var(--border);
+  border-radius:var(--radius);padding:24px;
   margin-bottom:14px;
   position:relative;overflow:hidden;
-  min-height:120px;
+  min-height:140px;
+  cursor:text;
+  box-shadow:0 2px 12px rgba(0,0,0,0.07);
 }
 .passage-box::before{
-  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;
   background:linear-gradient(90deg,var(--primary),transparent);
 }
+
 .passage-text{
-  font-size:18px;line-height:1.85;
+  font-size:19px;line-height:1.9;
   font-family:'Sora',sans-serif;
   word-break:break-word;
   user-select:none;
+  color:#1a1a2e;
 }
-.passage-text.nepali{font-family:'Noto Sans Devanagari',sans-serif;font-size:17px;}
+.passage-text.nepali{font-family:'Noto Sans Devanagari',sans-serif;font-size:18px;}
 
 .char{position:relative;transition:background .08s;}
-.char.correct{color:var(--primary);}
-.char.wrong{color:var(--red);background:var(--red-dim);border-radius:2px;}
+.char.correct{color:#16a34a;}
+.char.wrong{color:#dc2626;background:rgba(220,38,38,.12);border-radius:2px;}
 .char.current{
-  background:var(--primary);color:#000;border-radius:3px;
+  background:#22c55e;color:#fff;border-radius:3px;
   animation:blink .8s ease-in-out infinite;
 }
-.char.pending{color:var(--text3);}
+.char.pending{color:#94a3b8;}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
 
-/* ── Input area ── */
-.input-wrap{position:relative;margin-bottom:20px;}
+/* ── Input area (hidden, captures keyboard) ── */
+.input-wrap{position:absolute;opacity:0;pointer-events:none;width:0;height:0;overflow:hidden;}
 #typing-input{
   width:100%;padding:14px 18px;
   background:var(--surface);border:1.5px solid var(--border);
@@ -229,17 +195,31 @@ body::after{
   caret-color:var(--primary);
 }
 #typing-input.nepali-input{font-family:'Noto Sans Devanagari',sans-serif;}
-#typing-input:focus{border-color:var(--primary);}
-#typing-input::placeholder{color:var(--text3);}
-#typing-input:disabled{opacity:.5;cursor:not-allowed;}
 
-.input-hint{
-  position:absolute;right:14px;top:50%;transform:translateY(-50%);
-  font-size:10px;color:var(--text3);font-weight:600;pointer-events:none;
+/* ── Passage hint overlay ── */
+#passage-hint{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  flex-direction:column;gap:8px;
+  pointer-events:none;
+}
+.hint-main{
+  font-size:13px;font-weight:700;color:#64748b;
+  letter-spacing:.5px;text-transform:uppercase;
+}
+.hint-keys{display:flex;gap:8px;align-items:center;}
+.hint-key{
+  background:#f1f5f9;border:1px solid #cbd5e1;border-radius:5px;
+  padding:3px 10px;font-family:'Space Mono',monospace;
+  font-size:10px;color:#475569;font-weight:700;
+}
+
+/* ── Loading state ── */
+.loading-text{
+  text-align:center;color:#64748b;font-size:14px;padding:20px 0;
 }
 
 /* ── Controls ── */
-.controls{display:flex;gap:10px;margin-bottom:24px;flex-wrap:wrap;}
+.controls{display:flex;gap:10px;margin-bottom:0;flex-wrap:wrap;}
 .btn{
   padding:11px 22px;border-radius:var(--radius-sm);border:none;
   font-family:'Sora',sans-serif;font-size:13px;font-weight:700;
@@ -251,56 +231,59 @@ body::after{
 .btn-secondary:hover{border-color:var(--text2);color:var(--text);}
 .btn:disabled{opacity:.4;cursor:not-allowed;transform:none!important;box-shadow:none!important;}
 
-/* ── Difficulty ── */
-.diff-row{display:flex;gap:6px;align-items:center;margin-bottom:20px;}
-.diff-label{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-right:4px;}
-.diff-btn{
-  padding:5px 14px;border-radius:99px;border:1px solid var(--border);
-  background:transparent;color:var(--text2);
-  font-family:'Sora',sans-serif;font-size:11px;font-weight:700;cursor:pointer;transition:all .2s;
+/* ── Sound button ── */
+#sound-toggle{
+  background:var(--surface);border:1px solid var(--border);border-radius:99px;
+  padding:6px 14px;cursor:pointer;display:flex;align-items:center;gap:6px;
+  font-family:'Sora',sans-serif;font-size:11px;font-weight:700;color:var(--text2);
+  transition:all .2s;white-space:nowrap;
 }
-.diff-btn.active{border-color:var(--blue);color:var(--blue);background:rgba(88,166,255,.1);}
 
-/* ── Result screen ── */
+/* ── Divider between timer and passage ── */
+.game-divider{
+  height:1px;background:var(--border);
+  margin:20px 0;opacity:0.4;
+}
+
+/* ── Result screen (shown ONLY after time runs out) ── */
 #result-screen{display:none;}
 .result-card{
   background:var(--surface);border:1px solid var(--border);
-  border-radius:18px;padding:28px 24px;text-align:center;
+  border-radius:18px;padding:32px 28px;text-align:center;
   position:relative;overflow:hidden;
 }
 .result-card::before{
   content:'';position:absolute;top:0;left:0;right:0;height:3px;
   background:linear-gradient(90deg,var(--primary),var(--blue),var(--yellow));
 }
-.result-title{font-size:26px;font-weight:800;margin-bottom:6px;}
+.result-title{font-size:28px;font-weight:800;margin-bottom:6px;}
 .result-sub{font-size:13px;color:var(--text2);margin-bottom:28px;}
 .result-grid{
-  display:grid;grid-template-columns:repeat(2,1fr);gap:12px;
+  display:grid;grid-template-columns:repeat(4,1fr);gap:12px;
   margin-bottom:28px;text-align:left;
 }
-@media(min-width:500px){.result-grid{grid-template-columns:repeat(4,1fr);}}
 .result-stat{
-  background:var(--surface2);border-radius:12px;padding:14px;
+  background:var(--surface2);border-radius:12px;padding:16px;
 }
-.result-stat-val{font-family:'Space Mono',monospace;font-size:28px;font-weight:700;line-height:1;}
-.result-stat-label{font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-top:5px;}
+.result-stat-val{font-family:'Space Mono',monospace;font-size:30px;font-weight:700;line-height:1;}
+.result-stat-label{font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-top:6px;}
 .result-grade{
-  display:inline-block;font-size:48px;margin-bottom:10px;
+  display:inline-block;font-size:56px;margin-bottom:12px;
   animation:pop .4s cubic-bezier(.34,1.56,.64,1) both;
 }
 @keyframes pop{from{transform:scale(0)}to{transform:scale(1)}}
-.perf-bar-wrap{margin-bottom:20px;}
-.perf-bar-label{display:flex;justify-content:space-between;font-size:11px;font-weight:600;color:var(--text2);margin-bottom:5px;}
+.perf-bar-wrap{margin-bottom:16px;text-align:left;}
+.perf-bar-label{display:flex;justify-content:space-between;font-size:11px;font-weight:600;color:var(--text2);margin-bottom:6px;}
 .perf-bar-track{height:8px;background:var(--surface2);border-radius:99px;overflow:hidden;}
 .perf-bar-fill{height:100%;border-radius:99px;transition:width 1s ease .3s;}
 
-/* ── Keyboard hint ── */
+/* ── Keyboard hint bar ── */
 .keyboard-hint{
   background:var(--surface);border:1px solid var(--border);
-  border-radius:var(--radius);padding:12px 16px;
+  border-radius:var(--radius);padding:10px 16px;
   font-size:11px;color:var(--text2);
   display:flex;align-items:center;gap:8px;
-  margin-bottom:16px;
+  margin-bottom:16px;flex-wrap:wrap;
 }
 .kbd{
   display:inline-flex;align-items:center;justify-content:center;
@@ -310,27 +293,29 @@ body::after{
   font-weight:700;
 }
 
-/* ── Responsive ── */
-@media(max-width:500px){
-  .stats-row{grid-template-columns:repeat(2,1fr);}
-  .passage-text{font-size:15px;}
-  .timer-display{font-size:28px;}
-  .result-grid{grid-template-columns:repeat(2,1fr);}
+/* ── Error banner ── */
+.error-banner{
+  background:rgba(248,81,73,.1);border:1px solid rgba(248,81,73,.3);
+  border-radius:var(--radius-sm);padding:12px 16px;
+  font-size:12px;color:var(--red);
+  margin-bottom:14px;text-align:center;display:none;
 }
 
 /* ── Confetti canvas ── */
 #confetti-canvas{position:fixed;inset:0;pointer-events:none;z-index:999;}
 
-/* ── Pulse on start ── */
 @keyframes pulseGreen{0%{box-shadow:0 0 0 0 rgba(34,197,94,.4)}70%{box-shadow:0 0 0 10px transparent}100%{box-shadow:0 0 0 0 transparent}}
 .passage-box.active{animation:pulseGreen 1s ease 1;}
+
+/* ── Spacer between controls and passage ── */
+.controls-row{
+  display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;
+}
 </style>
 </head>
 <body>
-<div class="orb orb1"></div>
-<div class="orb orb2"></div>
-<div class="orb orb3"></div>
 <canvas id="confetti-canvas"></canvas>
+
 <div class="wrap">
 
   <!-- Header -->
@@ -348,13 +333,8 @@ body::after{
         <div class="brand-sub">Typing Practice</div>
       </div>
     </div>
-    <div style="display:flex;align-items:center;gap:10px;">
-      <button id="sound-toggle" onclick="toggleSound()" title="Toggle sound" style="
-        background:var(--surface);border:1px solid var(--border);border-radius:99px;
-        padding:6px 14px;cursor:pointer;display:flex;align-items:center;gap:6px;
-        font-family:'Sora',sans-serif;font-size:11px;font-weight:700;color:var(--text2);
-        transition:all .2s;
-      ">
+    <div class="header-right">
+      <button id="sound-toggle" onclick="toggleSound()" title="Toggle sound">
         <svg id="sound-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
           <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
           <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
@@ -362,76 +342,65 @@ body::after{
         </svg>
         <span id="sound-label">Sound</span>
       </button>
-    <div class="lang-toggle">
-      <button class="lang-btn active" onclick="setLang('en')" id="btn-en">English</button>
-      <button class="lang-btn" onclick="setLang('np')" id="btn-np">नेपाली</button>
-    </div>
+      <div class="lang-toggle">
+        <button class="lang-btn active" onclick="setLang('en')" id="btn-en">English</button>
+        <button class="lang-btn" onclick="setLang('np')" id="btn-np">नेपाली</button>
+      </div>
+      <!-- Timer chip — small, right corner -->
+      <div class="timer-chip">
+        <div class="timer-dot" id="timer-dot"></div>
+        <div class="timer-display" id="timer-display">1:00</div>
+      </div>
     </div>
   </div>
 
   <!-- Game screen -->
   <div id="game-screen">
 
-    <!-- Timer -->
-    <div class="timer-section">
-      <div class="timer-row">
-        <div class="timer-display" id="timer-display">60</div>
-        <div class="duration-pills">
-          <button class="dpill active" onclick="setDuration(60)" id="d60">1 min</button>
-          <button class="dpill" onclick="setDuration(300)" id="d300">5 min</button>
-          <button class="dpill" onclick="setDuration(600)" id="d600">10 min</button>
+    <!-- Slim progress bar -->
+    <div class="timer-bar-track"><div class="timer-bar-fill" id="timer-bar"></div></div>
+
+    <!-- Duration row -->
+    <div class="duration-row">
+      <span class="duration-label">Duration:</span>
+      <button class="dpill active" onclick="setDuration(60)" id="d60">1 min</button>
+      <button class="dpill" onclick="setDuration(300)" id="d300">5 min</button>
+      <button class="dpill" onclick="setDuration(600)" id="d600">10 min</button>
+    </div>
+
+    <!-- Error banner -->
+    <div class="error-banner" id="error-banner">
+      ⚠️ Could not load passages from Google Sheets. Check your internet connection and try again.
+    </div>
+
+    <!-- Passage — WHITE background -->
+    <div class="passage-box" id="passage-box" tabindex="0" onclick="focusInput()">
+      <div class="passage-text" id="passage-display">
+        <div class="loading-text">Loading passages…</div>
+      </div>
+      <div id="passage-hint">
+        <div class="hint-main">Click here and start typing</div>
+        <div class="hint-keys">
+          <span class="hint-key">Tab</span><span style="color:#94a3b8;font-size:11px">restart</span>
+          &nbsp;
+          <span class="hint-key">Enter</span><span style="color:#94a3b8;font-size:11px">start</span>
         </div>
       </div>
-      <div class="timer-bar-track"><div class="timer-bar-fill" id="timer-bar"></div></div>
-    </div>
-
-    <!-- Stats -->
-    <div class="stats-row">
-      <div class="stat-card">
-        <div class="stat-val green" id="stat-wpm">0</div>
-        <div class="stat-label">WPM</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-val blue" id="stat-net">0</div>
-        <div class="stat-label">Net WPM</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-val yellow" id="stat-acc">100%</div>
-        <div class="stat-label">Accuracy</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-val red" id="stat-err">0</div>
-        <div class="stat-label">Errors</div>
-      </div>
-    </div>
-
-    <!-- Difficulty -->
-    <div class="diff-row">
-      <span class="diff-label">Difficulty:</span>
-      <button class="diff-btn active" onclick="setDiff('easy')" id="diff-easy">Easy</button>
-      <button class="diff-btn" onclick="setDiff('medium')" id="diff-medium">Medium</button>
-      <button class="diff-btn" onclick="setDiff('hard')" id="diff-hard">Hard</button>
-    </div>
-
-    <!-- Passage -->
-    <div class="passage-box" id="passage-box" tabindex="0" onclick="focusInput()" style="cursor:text;">
-      <div class="passage-text" id="passage-display"></div>
-      <div id="passage-hint" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:12px;font-weight:700;letter-spacing:.5px;pointer-events:none;text-transform:uppercase;">Click here and start typing…</div>
     </div>
 
     <!-- Keyboard hint -->
     <div class="keyboard-hint">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-      Click the passage to start typing &nbsp;|&nbsp; <span class="kbd">Tab</span> to restart &nbsp;|&nbsp; <span class="kbd">Enter</span> to start
+      Click the passage to focus &nbsp;|&nbsp; <span class="kbd">Tab</span> restart &nbsp;|&nbsp; <span class="kbd">Enter</span> start &nbsp;|&nbsp; Stats shown after time ends
     </div>
 
-    <!-- Input (hidden, captures keyboard) -->
-    <div class="input-wrap" style="position:absolute;opacity:0;pointer-events:none;width:0;height:0;overflow:hidden;">
+    <!-- Hidden input -->
+    <div class="input-wrap">
       <textarea id="typing-input" rows="1" tabindex="-1" aria-hidden="true"></textarea>
     </div>
 
     <!-- Controls -->
-    <div class="controls">
+    <div class="controls-row">
       <button class="btn btn-primary" id="btn-start" onclick="startGame()">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
         Start
@@ -448,7 +417,7 @@ body::after{
 
   </div><!-- /game-screen -->
 
-  <!-- Result screen -->
+  <!-- Result screen — shown ONLY when time runs out -->
   <div id="result-screen">
     <div class="result-card">
       <div class="result-grade" id="result-grade">🎉</div>
@@ -478,19 +447,18 @@ body::after{
         </div>
         <div class="result-stat">
           <div class="result-stat-val" style="color:var(--text)" id="r-correct">0</div>
-          <div class="result-stat-label">Correct Chars</div>
+          <div class="result-stat-label">Correct</div>
         </div>
         <div class="result-stat">
           <div class="result-stat-val" style="color:var(--text)" id="r-time">0s</div>
           <div class="result-stat-label">Time Used</div>
         </div>
         <div class="result-stat">
-          <div class="result-stat-val" style="color:var(--text)" id="r-best">0</div>
+          <div class="result-stat-val" style="color:var(--yellow)" id="r-best">0</div>
           <div class="result-stat-label">Best WPM</div>
         </div>
       </div>
 
-      <!-- Performance bars -->
       <div class="perf-bar-wrap">
         <div class="perf-bar-label"><span>Speed</span><span id="pb-speed-val">0 WPM</span></div>
         <div class="perf-bar-track"><div class="perf-bar-fill" id="pb-speed" style="background:var(--primary);width:0%"></div></div>
@@ -500,7 +468,7 @@ body::after{
         <div class="perf-bar-track"><div class="perf-bar-fill" id="pb-acc" style="background:var(--blue);width:0%"></div></div>
       </div>
 
-      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:8px;">
         <button class="btn btn-primary" onclick="playAgain()">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg>
           Play Again
@@ -514,50 +482,14 @@ body::after{
 
 <script>
 /* ═══════════════════════════════════════
-   PASSAGES
+   GOOGLE SHEETS CSV URL
 ═══════════════════════════════════════ */
-const passages = {
-  en: {
-    easy: [
-      "The sun rises in the east and sets in the west. Every morning brings a new chance to learn and grow. Students who work hard and stay focused will always find success in their lives. Reading books every day helps improve your vocabulary and writing skills. A good education opens many doors and creates new opportunities for everyone.",
-      "Nepal is a beautiful country located in South Asia. It is home to the highest mountain in the world, Mount Everest. Every year millions of tourists visit Nepal to enjoy its natural beauty and rich culture. The people of Nepal are known for their warmth and hospitality. The country has a long and fascinating history that spans thousands of years.",
-      "Water is one of the most important resources on our planet. Without clean water, life cannot survive. We must take care of our rivers, lakes, and oceans. Pollution is a major problem that affects water quality all around the world. Every person has a responsibility to protect our natural environment for future generations to come.",
-    ],
-    medium: [
-      "The civil service examination is one of the most competitive tests in Nepal. Thousands of candidates appear every year hoping to secure a government position. Preparation requires dedication, consistency, and a strong grasp of subjects like general knowledge, mathematics, and current affairs. Many aspirants spend years studying before they finally achieve their goal of becoming a civil servant.",
-      "Democracy is a system of government in which power is vested in the people. Citizens exercise this power directly or through elected representatives. Nepal became a federal democratic republic in 2008 after abolishing the monarchy. The constitution of Nepal guarantees fundamental rights to all citizens including freedom of speech, right to equality, and right to education.",
-      "Good governance requires transparency, accountability, and the rule of law. Public servants must uphold ethical standards and serve citizens with honesty and integrity. Corruption weakens institutions and erodes public trust. Countries that invest in strong institutions and enforce laws fairly tend to achieve higher levels of economic development and social well-being.",
-    ],
-    hard: [
-      "The federalization of Nepal transformed the unitary state into a three-tier governmental structure comprising the federal, provincial, and local levels. This constitutional arrangement, enshrined in the Constitution of Nepal promulgated in 2015, was designed to devolve power from the center and ensure more equitable distribution of resources and opportunities across diverse geographic and ethnic communities.",
-      "Administrative law governs the relationship between government agencies and the citizens they serve. It encompasses the legal principles that regulate the exercise of public authority, including rulemaking, adjudication, and enforcement. Judicial review enables courts to examine whether administrative decisions comply with statutory mandates and constitutional requirements, thereby safeguarding individual rights against arbitrary governmental action.",
-      "Public financial management encompasses the institutions, systems, and processes through which governments mobilize revenue, allocate resources, and ensure accountability for expenditures. Effective PFM frameworks are essential for fiscal sustainability and the delivery of quality public services. Key components include budget formulation, treasury management, internal controls, external audit, and legislative oversight mechanisms.",
-    ]
-  },
-  np: {
-    easy: [
-      "नेपाल एउटा सुन्दर देश हो जुन हिमालयको काखमा अवस्थित छ। यहाँ संसारकै अग्लो हिमाल सगरमाथा छ। नेपालका मानिसहरू मिलनसार र आतिथ्यशील हुन्छन्। यहाँको प्रकृति र संस्कृति अत्यन्तै विशेष छ। हाम्रो देशको गौरवशाली इतिहास हजारौं वर्ष पुरानो छ। हामीले आफ्नो देशलाई माया गर्नुपर्छ।",
-      "शिक्षा जीवनको सबैभन्दा महत्त्वपूर्ण कुरा हो। राम्रो शिक्षाले मानिसको जीवन बदल्न सक्छ। विद्यार्थीहरूले मन लगाएर पढ्नुपर्छ र समयको सदुपयोग गर्नुपर्छ। पुस्तकहरू पढ्ने बानी राख्नुपर्छ। ज्ञान नै असली सम्पत्ति हो जुन कसैले चोर्न सक्दैन। परिश्रम र लगनले सफलता आउँछ।",
-      "पानी जीवनको आधार हो। सफा पानी बिना जीवन सम्भव छैन। नदी, तालतलैया र समुद्रको सुरक्षा गर्नु हाम्रो कर्तव्य हो। प्रदूषणले पानीको गुणस्तरमा नकारात्मक असर पारेको छ। भावी पुस्ताका लागि हामीले वातावरण जोगाउनुपर्छ।",
-    ],
-    medium: [
-      "लोकसेवा आयोगको परीक्षा नेपालमा सबैभन्दा प्रतिस्पर्धात्मक परीक्षाहरूमध्ये एक हो। हरेक वर्ष हजारौं उम्मेदवारहरू सरकारी जागिरका लागि परीक्षामा सामेल हुन्छन्। तयारीका लागि कडा मिहिनेत, निरन्तरता र सामान्य ज्ञान तथा गणितमा राम्रो पकड आवश्यक हुन्छ। धेरै उम्मेदवारहरू वर्षौं अध्ययन गरेपछि मात्र सफल हुन्छन्।",
-      "नेपालको संविधान २०७२ ले देशलाई संघीय लोकतान्त्रिक गणतन्त्र घोषणा गरेको छ। यस संविधानले नागरिकहरूलाई मौलिक हक र स्वतन्त्रता प्रदान गरेको छ। तीन तहको सरकार अर्थात संघ, प्रदेश र स्थानीय तहको व्यवस्था गरिएको छ। सुशासन र जवाफदेहिता लोकतन्त्रको आधारभूत सिद्धान्त हुन्।",
-      "सुशासनका लागि पारदर्शिता, जवाफदेहिता र कानुनको शासन अपरिहार्य छ। सार्वजनिक सेवकहरूले इमानदारिताका साथ आफ्नो कर्तव्य पालना गर्नुपर्छ। भ्रष्टाचारले राज्यका संस्थाहरूलाई कमजोर बनाउँछ र जनताको विश्वास घटाउँछ। राम्रो संस्थाहरू भएका देशहरूमा विकास र समृद्धि छिटो आउँछ।",
-    ],
-    hard: [
-      "नेपालको संघीयकरणले एकात्मक राज्य व्यवस्थालाई तीन तहको सरकारी संरचनामा रूपान्तरण गर्यो। यो संवैधानिक व्यवस्थाले केन्द्रबाट शक्तिको विकेन्द्रीकरण गरी विभिन्न भौगोलिक तथा जातीय समुदायहरूमा स्रोत र अवसरको न्यायपूर्ण वितरण सुनिश्चित गर्ने लक्ष्य राखेको थियो।",
-      "प्रशासनिक कानुनले सरकारी निकाय र नागरिकबीचको सम्बन्धलाई नियमन गर्छ। यसले सार्वजनिक अधिकारको प्रयोगलाई नियमन गर्ने कानुनी सिद्धान्तहरू समेट्छ। न्यायिक पुनरावलोकनले प्रशासनिक निर्णयहरू वैधानिक र संवैधानिक आवश्यकताहरूको पालना गर्छ कि गर्दैन भनी अदालतलाई परीक्षण गर्ने अधिकार दिन्छ।",
-      "सार्वजनिक वित्त व्यवस्थापनले सरकारले राजस्व संकलन, स्रोत विनियोजन र खर्चको जवाफदेहिता सुनिश्चित गर्ने संस्था, प्रणाली र प्रक्रियाहरू समेट्छ। प्रभावकारी वित्त व्यवस्थापन ढाँचाहरू राजकोषीय दिगोपना र गुणस्तरीय सार्वजनिक सेवा प्रदानका लागि आवश्यक छन्।",
-    ]
-  }
-};
+const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSCjPD_E5TAQIl90ANdWSqGVYfuFv_TNnWPgp-1mUQ9KCWQHu8cmQVMwvQWxLxjZ_Q1jcVWnIVuhYLs/pub?output=csv';
 
 /* ═══════════════════════════════════════
    STATE
 ═══════════════════════════════════════ */
 let lang = 'en';
-let diff = 'easy';
 let duration = 60;
 let timeLeft = 60;
 let timerInterval = null;
@@ -570,132 +502,147 @@ let correctTyped = 0;
 let errorCount = 0;
 let startTime = null;
 let passageIndex = 0;
+let passagesLoaded = false;
+
+// Passages fetched from sheet: { en: [...], np: [...] }
+const passages = { en: [], np: [] };
 
 /* ═══════════════════════════════════════
-   SOUND ENGINE  (Web Audio API — no files)
+   FETCH PASSAGES FROM GOOGLE SHEETS
+   Sheet columns: Language (en/np), Passage
+═══════════════════════════════════════ */
+async function fetchPassages() {
+  try {
+    const res = await fetch(SHEET_CSV_URL);
+    if (!res.ok) throw new Error('Network error');
+    const csv = await res.text();
+    const rows = parseCSV(csv);
+    passages.en = [];
+    passages.np = [];
+    // Skip header row (row 0), then parse
+    for (let i = 1; i < rows.length; i++) {
+      const row = rows[i];
+      if (!row || row.length < 2) continue;
+      const langCol = (row[0] || '').trim().toLowerCase();
+      const text = (row[1] || '').trim();
+      if (!text) continue;
+      if (langCol === 'en' || langCol === 'english') passages.en.push(text);
+      else if (langCol === 'np' || langCol === 'nepali' || langCol === 'ne') passages.np.push(text);
+    }
+    // Fallback if no passages found
+    if (passages.en.length === 0) passages.en = ['No English passages found. Please add passages to your Google Sheet with language column "en".'];
+    if (passages.np.length === 0) passages.np = ['कुनै नेपाली अनुच्छेद फेला परेन। कृपया Google Sheet मा "np" भाषा स्तम्भ सहित अनुच्छेदहरू थप्नुहोस्।'];
+    passagesLoaded = true;
+    document.getElementById('error-banner').style.display = 'none';
+    loadPassage();
+  } catch (err) {
+    console.error('Failed to load passages:', err);
+    document.getElementById('error-banner').style.display = 'block';
+    // Show error in passage box
+    document.getElementById('passage-display').innerHTML = '<div class="loading-text" style="color:#f85149;">Failed to load passages. Check internet connection.</div>';
+  }
+}
+
+/* ─ Simple CSV parser ─ */
+function parseCSV(text) {
+  const rows = [];
+  const lines = text.split('\n');
+  for (const line of lines) {
+    if (!line.trim()) continue;
+    const cols = [];
+    let inQuote = false;
+    let cur = '';
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (ch === '"') { inQuote = !inQuote; }
+      else if (ch === ',' && !inQuote) { cols.push(cur); cur = ''; }
+      else { cur += ch; }
+    }
+    cols.push(cur);
+    rows.push(cols);
+  }
+  return rows;
+}
+
+/* ═══════════════════════════════════════
+   SOUND ENGINE
 ═══════════════════════════════════════ */
 let audioCtx = null;
 let soundEnabled = true;
 
 function getAudioCtx(){
   if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  // Resume if browser suspended it
   if(audioCtx.state === 'suspended') audioCtx.resume();
   return audioCtx;
 }
 
-/* Mechanical key click — layered noise burst + subtle tone */
 function playKeyClick(correct){
   if(!soundEnabled) return;
   try{
     const ctx = getAudioCtx();
     const now = ctx.currentTime;
-
-    // ── Noise burst (the "thock") ──
     const bufLen = ctx.sampleRate * 0.045;
     const buf = ctx.createBuffer(1, bufLen, ctx.sampleRate);
     const data = buf.getChannelData(0);
-    for(let i = 0; i < bufLen; i++){
-      // Pink-ish noise: heavier at start, fades fast
-      data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i/bufLen, 2.5);
-    }
-    const noise = ctx.createBufferSource();
-    noise.buffer = buf;
-
-    // Bandpass filter — makes it sound like a key, not just noise
-    const bp = ctx.createBiquadFilter();
-    bp.type = 'bandpass';
-    bp.frequency.value = correct ? 1800 : 1100;  // higher pitch = correct
-    bp.Q.value = 0.8;
-
-    // High shelf boost for click crispness
-    const hs = ctx.createBiquadFilter();
-    hs.type = 'highshelf';
-    hs.frequency.value = 4000;
-    hs.gain.value = correct ? 6 : 2;
-
-    const noiseGain = ctx.createGain();
-    noiseGain.gain.setValueAtTime(correct ? 0.28 : 0.22, now);
-    noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.042);
-
-    noise.connect(bp); bp.connect(hs); hs.connect(noiseGain); noiseGain.connect(ctx.destination);
-    noise.start(now); noise.stop(now + 0.05);
-
-    // ── Subtle tonal click (the "clack" resonance) ──
-    const osc = ctx.createOscillator();
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(correct ? 680 : 420, now);
-    osc.frequency.exponentialRampToValueAtTime(correct ? 320 : 200, now + 0.03);
-
-    const oscGain = ctx.createGain();
-    oscGain.gain.setValueAtTime(correct ? 0.09 : 0.07, now);
-    oscGain.gain.exponentialRampToValueAtTime(0.001, now + 0.035);
-
-    osc.connect(oscGain); oscGain.connect(ctx.destination);
-    osc.start(now); osc.stop(now + 0.04);
-
-  } catch(err){ /* silent fail */ }
+    for(let i=0;i<bufLen;i++) data[i]=(Math.random()*2-1)*Math.pow(1-i/bufLen,2.5);
+    const noise = ctx.createBufferSource(); noise.buffer = buf;
+    const bp = ctx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=correct?1800:1100; bp.Q.value=0.8;
+    const hs = ctx.createBiquadFilter(); hs.type='highshelf'; hs.frequency.value=4000; hs.gain.value=correct?6:2;
+    const ng = ctx.createGain(); ng.gain.setValueAtTime(correct?.28:.22,now); ng.gain.exponentialRampToValueAtTime(0.001,now+0.042);
+    noise.connect(bp);bp.connect(hs);hs.connect(ng);ng.connect(ctx.destination);
+    noise.start(now);noise.stop(now+0.05);
+    const osc=ctx.createOscillator();osc.type='sine';osc.frequency.setValueAtTime(correct?680:420,now);osc.frequency.exponentialRampToValueAtTime(correct?320:200,now+0.03);
+    const og=ctx.createGain();og.gain.setValueAtTime(correct?.09:.07,now);og.gain.exponentialRampToValueAtTime(0.001,now+0.035);
+    osc.connect(og);og.connect(ctx.destination);osc.start(now);osc.stop(now+0.04);
+  }catch(e){}
 }
 
-/* Backspace — soft low thud */
 function playBackspace(){
   if(!soundEnabled) return;
   try{
-    const ctx = getAudioCtx();
-    const now = ctx.currentTime;
-
-    const bufLen = ctx.sampleRate * 0.035;
-    const buf = ctx.createBuffer(1, bufLen, ctx.sampleRate);
-    const d = buf.getChannelData(0);
-    for(let i = 0; i < bufLen; i++) d[i] = (Math.random()*2-1) * Math.pow(1-i/bufLen, 3);
-    const noise = ctx.createBufferSource(); noise.buffer = buf;
-    const lp = ctx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=600;
-    const g = ctx.createGain(); g.gain.setValueAtTime(0.15, now); g.gain.exponentialRampToValueAtTime(0.001, now+0.032);
-    noise.connect(lp); lp.connect(g); g.connect(ctx.destination);
-    noise.start(now); noise.stop(now+0.04);
-  } catch(err){}
+    const ctx=getAudioCtx();const now=ctx.currentTime;
+    const bufLen=ctx.sampleRate*0.035;const buf=ctx.createBuffer(1,bufLen,ctx.sampleRate);const d=buf.getChannelData(0);
+    for(let i=0;i<bufLen;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/bufLen,3);
+    const noise=ctx.createBufferSource();noise.buffer=buf;
+    const lp=ctx.createBiquadFilter();lp.type='lowpass';lp.frequency.value=600;
+    const g=ctx.createGain();g.gain.setValueAtTime(0.15,now);g.gain.exponentialRampToValueAtTime(0.001,now+0.032);
+    noise.connect(lp);lp.connect(g);g.connect(ctx.destination);noise.start(now);noise.stop(now+0.04);
+  }catch(e){}
 }
 
-/* Space bar — deeper thock */
 function playSpace(){
   if(!soundEnabled) return;
   try{
-    const ctx = getAudioCtx();
-    const now = ctx.currentTime;
-
-    const bufLen = ctx.sampleRate * 0.06;
-    const buf = ctx.createBuffer(1, bufLen, ctx.sampleRate);
-    const d = buf.getChannelData(0);
-    for(let i=0;i<bufLen;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/bufLen,2);
-    const noise=ctx.createBufferSource(); noise.buffer=buf;
-    const bp=ctx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=900; bp.Q.value=0.6;
-    const g=ctx.createGain(); g.gain.setValueAtTime(0.32,now); g.gain.exponentialRampToValueAtTime(0.001,now+0.055);
-    noise.connect(bp); bp.connect(g); g.connect(ctx.destination);
-    noise.start(now); noise.stop(now+0.065);
-
-    const osc=ctx.createOscillator(); osc.type='sine'; osc.frequency.setValueAtTime(280,now); osc.frequency.exponentialRampToValueAtTime(130,now+0.05);
-    const og=ctx.createGain(); og.gain.setValueAtTime(0.12,now); og.gain.exponentialRampToValueAtTime(0.001,now+0.05);
-    osc.connect(og); og.connect(ctx.destination); osc.start(now); osc.stop(now+0.06);
-  } catch(err){}
+    const ctx=getAudioCtx();const now=ctx.currentTime;
+    const bufLen=ctx.sampleRate*0.06;const buf=ctx.createBuffer(1,bufLen,ctx.sampleRate);const d=buf.getChannelData(0);
+    for(let i=0;i<bufLen;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/bufLen,2);
+    const noise=ctx.createBufferSource();noise.buffer=buf;
+    const bp=ctx.createBiquadFilter();bp.type='bandpass';bp.frequency.value=900;bp.Q.value=0.6;
+    const g=ctx.createGain();g.gain.setValueAtTime(0.32,now);g.gain.exponentialRampToValueAtTime(0.001,now+0.055);
+    noise.connect(bp);bp.connect(g);g.connect(ctx.destination);noise.start(now);noise.stop(now+0.065);
+    const osc=ctx.createOscillator();osc.type='sine';osc.frequency.setValueAtTime(280,now);osc.frequency.exponentialRampToValueAtTime(130,now+0.05);
+    const og=ctx.createGain();og.gain.setValueAtTime(0.12,now);og.gain.exponentialRampToValueAtTime(0.001,now+0.05);
+    osc.connect(og);og.connect(ctx.destination);osc.start(now);osc.stop(now+0.06);
+  }catch(e){}
 }
 
 /* ═══════════════════════════════════════
    INIT
 ═══════════════════════════════════════ */
 function init(){
-  loadPassage();
+  fetchPassages();
   updateTimerDisplay();
   document.getElementById('typing-input').addEventListener('input', onInput);
   document.getElementById('typing-input').addEventListener('keydown', onKeyDown);
   document.addEventListener('keydown', function(e){
-    if(e.key === 'Tab'){ e.preventDefault(); restartGame(); }
-    if(e.key === 'Enter' && !gameStarted && !gameOver){ e.preventDefault(); startGame(); }
+    if(e.key==='Tab'){e.preventDefault();restartGame();}
+    if(e.key==='Enter' && !gameStarted && !gameOver && passagesLoaded){e.preventDefault();startGame();}
   });
 }
 
 function loadPassage(){
-  const pool = passages[lang][diff];
-  // Pick a random passage different from the current one
+  if(!passagesLoaded) return;
+  const pool = passages[lang];
   let newIndex;
   do { newIndex = Math.floor(Math.random() * pool.length); }
   while(pool.length > 1 && newIndex === passageIndex);
@@ -703,25 +650,23 @@ function loadPassage(){
   currentPassage = pool[passageIndex];
   currentIndex = 0; totalTyped = 0; correctTyped = 0; errorCount = 0;
   renderPassage();
-  updateStats();
 }
 
 function renderPassage(){
   const el = document.getElementById('passage-display');
-  el.className = 'passage-text' + (lang === 'np' ? ' nepali' : '');
-  el.innerHTML = currentPassage.split('').map((ch, i) => {
+  el.className = 'passage-text' + (lang==='np'?' nepali':'');
+  el.innerHTML = currentPassage.split('').map((ch,i)=>{
     let cls = 'pending';
-    if(i < currentIndex) cls = 'correct';
-    if(i === currentIndex) cls = 'current';
-    const safe = ch === ' ' ? '&nbsp;' : ch.replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    if(i<currentIndex) cls='correct';
+    if(i===currentIndex) cls='current';
+    const safe = ch===' '?'&nbsp;':ch.replace(/</g,'&lt;').replace(/>/g,'&gt;');
     return `<span class="char ${cls}" id="c${i}">${safe}</span>`;
   }).join('');
-  // Scroll current char into view
   scrollToCurrent();
 }
 
 function scrollToCurrent(){
-  const el = document.getElementById('c' + currentIndex);
+  const el = document.getElementById('c'+currentIndex);
   if(el) el.scrollIntoView({block:'nearest',behavior:'smooth'});
 }
 
@@ -731,81 +676,72 @@ function scrollToCurrent(){
 function focusInput(){
   const inp = document.getElementById('typing-input');
   if(!inp.disabled) inp.focus();
-  else if(!gameStarted && !gameOver) startGame();
+  else if(!gameStarted && !gameOver && passagesLoaded) startGame();
 }
 
 function startGame(){
-  if(gameStarted) return;
-  gameStarted = true; gameOver = false;
-  startTime = Date.now();
-  timeLeft = duration;
+  if(gameStarted || !passagesLoaded) return;
+  gameStarted=true;gameOver=false;
+  startTime=Date.now();
+  timeLeft=duration;
   updateTimerDisplay();
-  document.getElementById('typing-input').disabled = false;
+  document.getElementById('typing-input').disabled=false;
   document.getElementById('typing-input').focus();
-  document.getElementById('btn-start').disabled = true;
-  document.getElementById('btn-restart').disabled = false;
+  document.getElementById('btn-start').disabled=true;
+  document.getElementById('btn-restart').disabled=false;
   document.getElementById('passage-box').classList.add('active');
-  const hint = document.getElementById('passage-hint');
-  if(hint) hint.style.display = 'none';
-  timerInterval = setInterval(tick, 1000);
+  const hint=document.getElementById('passage-hint');
+  if(hint) hint.style.display='none';
+  timerInterval=setInterval(tick,1000);
   renderPassage();
 }
 
 function tick(){
   timeLeft--;
   updateTimerDisplay();
-  updateStats();
-  if(timeLeft <= 0){ endGame(); }
+  if(timeLeft<=0) endGame();
 }
 
 function updateTimerDisplay(){
-  const el = document.getElementById('timer-display');
-  const bar = document.getElementById('timer-bar');
-  // Format as MM:SS for durations >= 60s when time >= 60
-  if(duration >= 60){
-    const m = Math.floor(timeLeft / 60);
-    const s = timeLeft % 60;
-    el.textContent = m + ':' + (s < 10 ? '0' : '') + s;
-  } else {
-    el.textContent = timeLeft;
-  }
-  const pct = (timeLeft / duration) * 100;
-  bar.style.width = pct + '%';
-  // Color states
-  const warn = timeLeft <= duration * 0.4;
-  const danger = timeLeft <= duration * 0.15;
-  el.className = 'timer-display' + (danger ? ' danger' : warn ? ' warn' : '');
-  bar.className = 'timer-bar-fill' + (danger ? ' danger' : warn ? ' warn' : '');
+  const el=document.getElementById('timer-display');
+  const bar=document.getElementById('timer-bar');
+  const m=Math.floor(timeLeft/60);
+  const s=timeLeft%60;
+  el.textContent=m+':'+(s<10?'0':'')+s;
+  const pct=(timeLeft/duration)*100;
+  bar.style.width=pct+'%';
+  const warn=timeLeft<=duration*0.4;
+  const danger=timeLeft<=duration*0.15;
+  el.className='timer-display'+(danger?' danger':warn?' warn':'');
+  bar.className='timer-bar-fill'+(danger?' danger':warn?' warn':'');
 }
 
 function restartGame(){
   clearInterval(timerInterval);
-  gameStarted = false; gameOver = false;
-  timeLeft = duration;
-  currentIndex = 0; totalTyped = 0; correctTyped = 0; errorCount = 0;
-  document.getElementById('typing-input').value = '';
-  document.getElementById('typing-input').disabled = true;
-  document.getElementById('btn-start').disabled = false;
-  document.getElementById('btn-restart').disabled = true;
-  document.getElementById('game-screen').style.display = '';
-  document.getElementById('result-screen').style.display = 'none';
-  const hint = document.getElementById('passage-hint');
-  if(hint) hint.style.display = '';
+  gameStarted=false;gameOver=false;
+  timeLeft=duration;
+  currentIndex=0;totalTyped=0;correctTyped=0;errorCount=0;
+  document.getElementById('typing-input').value='';
+  document.getElementById('typing-input').disabled=true;
+  document.getElementById('btn-start').disabled=false;
+  document.getElementById('btn-restart').disabled=true;
+  document.getElementById('game-screen').style.display='';
+  document.getElementById('result-screen').style.display='none';
+  const hint=document.getElementById('passage-hint');
+  if(hint) hint.style.display='';
   updateTimerDisplay();
-  renderPassage();
-  updateStats();
+  if(passagesLoaded) renderPassage();
 }
 
 function newPassage(){
-  passageIndex++;
   restartGame();
-  loadPassage();
+  if(passagesLoaded) loadPassage();
 }
 
 function endGame(){
   clearInterval(timerInterval);
-  gameStarted = false; gameOver = true;
-  document.getElementById('typing-input').disabled = true;
+  gameStarted=false;gameOver=true;
+  document.getElementById('typing-input').disabled=true;
   showResult();
 }
 
@@ -814,199 +750,153 @@ function endGame(){
 ═══════════════════════════════════════ */
 function onKeyDown(e){
   if(!gameStarted) return;
-  if(e.key === 'Backspace'){
-    // Allow backspace to remove last char
-    if(currentIndex > 0){
+  if(e.key==='Backspace'){
+    if(currentIndex>0){
       currentIndex--;
-      // revert char
-      const span = document.getElementById('c' + currentIndex);
-      if(span) span.className = 'char current';
-      // fix prev current
-      const prev = document.getElementById('c' + (currentIndex + 1));
-      if(prev) prev.className = 'char pending';
+      const span=document.getElementById('c'+currentIndex);
+      if(span) span.className='char current';
+      const prev=document.getElementById('c'+(currentIndex+1));
+      if(prev) prev.className='char pending';
       playBackspace();
     }
     e.preventDefault();
-    // sync input
-    const inp = document.getElementById('typing-input');
-    inp.value = inp.value.slice(0, -1);
+    const inp=document.getElementById('typing-input');
+    inp.value=inp.value.slice(0,-1);
   }
 }
 
 function onInput(e){
-  if(!gameStarted || gameOver) return;
-  const inp = document.getElementById('typing-input');
-  const val = inp.value;
+  if(!gameStarted||gameOver) return;
+  const inp=document.getElementById('typing-input');
+  const val=inp.value;
   if(!val.length) return;
-  const typed = val[val.length - 1];
-  inp.value = ''; // clear after each char for clean tracking
+  const typed=val[val.length-1];
+  inp.value='';
 
-  if(currentIndex >= currentPassage.length){
-    const pool = passages[lang][diff];
-    let newIndex;
-    do { newIndex = Math.floor(Math.random() * pool.length); }
-    while(pool.length > 1 && newIndex === passageIndex);
-    passageIndex = newIndex;
-    currentPassage = pool[passageIndex];
-    currentIndex = 0;
-    renderPassage();
-    return;
+  if(currentIndex>=currentPassage.length){
+    loadPassage();return;
   }
 
-  const expected = currentPassage[currentIndex];
-  const span = document.getElementById('c' + currentIndex);
+  const expected=currentPassage[currentIndex];
+  const span=document.getElementById('c'+currentIndex);
   totalTyped++;
 
-  if(typed === expected){
+  if(typed===expected){
     correctTyped++;
-    if(span) span.className = 'char correct';
-    if(typed === ' ') playSpace(); else playKeyClick(true);
+    if(span) span.className='char correct';
+    if(typed===' ') playSpace(); else playKeyClick(true);
   } else {
     errorCount++;
-    if(span) span.className = 'char wrong';
+    if(span) span.className='char wrong';
     playKeyClick(false);
   }
   currentIndex++;
 
-  // Update next current
-  const next = document.getElementById('c' + currentIndex);
-  if(next) next.className = 'char current';
+  const next=document.getElementById('c'+currentIndex);
+  if(next) next.className='char current';
   scrollToCurrent();
-  updateStats();
 
-  // Passage done
-  if(currentIndex >= currentPassage.length){
-    const pool = passages[lang][diff];
-    let newIndex;
-    do { newIndex = Math.floor(Math.random() * pool.length); }
-    while(pool.length > 1 && newIndex === passageIndex);
-    passageIndex = newIndex;
-    currentPassage = pool[passageIndex];
-    currentIndex = 0;
-    renderPassage();
-  }
+  if(currentIndex>=currentPassage.length) loadPassage();
 }
 
 /* ═══════════════════════════════════════
    STATS
 ═══════════════════════════════════════ */
 function calcStats(){
-  const elapsed = gameStarted ? (Date.now() - startTime) / 60000 : (duration / 60);
-  const minutes = Math.max(elapsed, 0.01);
-  const wpm = Math.round(correctTyped / 5 / minutes);
-  const errPerMin = errorCount / Math.max((Date.now() - (startTime || Date.now())) / 60000, 0.01);
-  const netWpm = Math.max(0, Math.round(wpm - errPerMin));
-  const acc = totalTyped > 0 ? Math.round((correctTyped / totalTyped) * 100) : 100;
-  return { wpm, netWpm, acc, errors: errorCount, chars: totalTyped, correct: correctTyped };
+  const elapsed=gameStarted?(Date.now()-startTime)/60000:(duration/60);
+  const minutes=Math.max(elapsed,0.01);
+  const wpm=Math.round(correctTyped/5/minutes);
+  const errPerMin=errorCount/Math.max((Date.now()-(startTime||Date.now()))/60000,0.01);
+  const netWpm=Math.max(0,Math.round(wpm-errPerMin));
+  const acc=totalTyped>0?Math.round((correctTyped/totalTyped)*100):100;
+  return{wpm,netWpm,acc,errors:errorCount,chars:totalTyped,correct:correctTyped};
 }
 
 function toggleSound(){
-  soundEnabled = !soundEnabled;
-  const btn = document.getElementById('sound-toggle');
-  const icon = document.getElementById('sound-icon');
-  const label = document.getElementById('sound-label');
+  soundEnabled=!soundEnabled;
+  const label=document.getElementById('sound-label');
+  const icon=document.getElementById('sound-icon');
+  const btn=document.getElementById('sound-toggle');
   if(soundEnabled){
-    label.textContent = 'Sound';
-    btn.style.color = 'var(--text2)';
-    btn.style.borderColor = 'var(--border)';
-    icon.innerHTML = `<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>`;
+    label.textContent='Sound';btn.style.color='var(--text2)';btn.style.borderColor='var(--border)';
+    icon.innerHTML=`<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>`;
   } else {
-    label.textContent = 'Muted';
-    btn.style.color = 'var(--text3)';
-    btn.style.borderColor = 'var(--text3)';
-    icon.innerHTML = `<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/>`;
+    label.textContent='Muted';btn.style.color='var(--text3)';btn.style.borderColor='var(--text3)';
+    icon.innerHTML=`<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/>`;
   }
 }
 
-function updateStats(){
-  const s = calcStats();
-  document.getElementById('stat-wpm').textContent = s.wpm;
-  document.getElementById('stat-net').textContent = s.netWpm;
-  document.getElementById('stat-acc').textContent = s.acc + '%';
-  document.getElementById('stat-err').textContent = s.errors;
-}
-
 /* ═══════════════════════════════════════
-   RESULT
+   RESULT — shown only after time ends
 ═══════════════════════════════════════ */
 function showResult(){
-  const s = calcStats();
-  const timeUsed = duration - timeLeft;
+  const s=calcStats();
+  const timeUsed=duration-timeLeft;
+  const bestKey='sm-best-wpm-'+lang;
+  const prev=parseInt(localStorage.getItem(bestKey)||'0');
+  const best=Math.max(prev,s.wpm);
+  localStorage.setItem(bestKey,best);
 
-  // Best WPM
-  const bestKey = 'sm-best-wpm-' + lang;
-  const prev = parseInt(localStorage.getItem(bestKey) || '0');
-  const best = Math.max(prev, s.wpm);
-  localStorage.setItem(bestKey, best);
+  let grade='😐';let title='Keep Practicing!';
+  if(s.acc>=95&&s.wpm>=50){grade='🏆';title='Outstanding!';}
+  else if(s.acc>=90&&s.wpm>=35){grade='🎉';title='Excellent Work!';}
+  else if(s.acc>=85&&s.wpm>=25){grade='👍';title='Good Job!';}
+  else if(s.acc>=70){grade='📈';title='Getting Better!';}
 
-  // Grade
-  let grade = '😐'; let title = 'Keep Practicing!';
-  if(s.acc >= 95 && s.wpm >= 50){ grade = '🏆'; title = 'Outstanding!'; }
-  else if(s.acc >= 90 && s.wpm >= 35){ grade = '🎉'; title = 'Excellent Work!'; }
-  else if(s.acc >= 85 && s.wpm >= 25){ grade = '👍'; title = 'Good Job!'; }
-  else if(s.acc >= 70){ grade = '📈'; title = 'Getting Better!'; }
+  document.getElementById('result-grade').textContent=grade;
+  document.getElementById('result-title').textContent=title;
+  document.getElementById('result-sub').textContent=lang==='np'?'तपाईंको टाइपिङ परिणाम':'Your typing session results';
+  document.getElementById('r-wpm').textContent=s.wpm;
+  document.getElementById('r-net').textContent=s.netWpm;
+  document.getElementById('r-acc').textContent=s.acc+'%';
+  document.getElementById('r-err').textContent=s.errors;
+  document.getElementById('r-chars').textContent=s.chars;
+  document.getElementById('r-correct').textContent=s.correct;
+  document.getElementById('r-time').textContent=timeUsed+'s';
+  document.getElementById('r-best').textContent=best;
 
-  document.getElementById('result-grade').textContent = grade;
-  document.getElementById('result-title').textContent = title;
-  document.getElementById('result-sub').textContent = lang === 'np' ? 'तपाईंको टाइपिङ परिणाम' : 'Your typing session results';
-  document.getElementById('r-wpm').textContent = s.wpm;
-  document.getElementById('r-net').textContent = s.netWpm;
-  document.getElementById('r-acc').textContent = s.acc + '%';
-  document.getElementById('r-err').textContent = s.errors;
-  document.getElementById('r-chars').textContent = s.chars;
-  document.getElementById('r-correct').textContent = s.correct;
-  document.getElementById('r-time').textContent = timeUsed + 's';
-  document.getElementById('r-best').textContent = best;
+  setTimeout(()=>{
+    const speedPct=Math.min(100,(s.wpm/80)*100);
+    document.getElementById('pb-speed').style.width=speedPct+'%';
+    document.getElementById('pb-speed-val').textContent=s.wpm+' WPM';
+    document.getElementById('pb-acc').style.width=s.acc+'%';
+    document.getElementById('pb-acc-val').textContent=s.acc+'%';
+  },100);
 
-  // Progress bars (animate after tiny delay)
-  setTimeout(() => {
-    const speedPct = Math.min(100, (s.wpm / 80) * 100);
-    document.getElementById('pb-speed').style.width = speedPct + '%';
-    document.getElementById('pb-speed-val').textContent = s.wpm + ' WPM';
-    document.getElementById('pb-acc').style.width = s.acc + '%';
-    document.getElementById('pb-acc-val').textContent = s.acc + '%';
-  }, 100);
+  document.getElementById('game-screen').style.display='none';
+  document.getElementById('result-screen').style.display='block';
+  window.scrollTo(0,0);
 
-  document.getElementById('game-screen').style.display = 'none';
-  document.getElementById('result-screen').style.display = 'block';
-
-  if(s.wpm >= 35 && s.acc >= 85) launchConfetti();
+  if(s.wpm>=35&&s.acc>=85) launchConfetti();
 }
 
 function playAgain(){
-  document.getElementById('result-screen').style.display = 'none';
-  document.getElementById('game-screen').style.display = '';
+  document.getElementById('result-screen').style.display='none';
+  document.getElementById('game-screen').style.display='';
   restartGame();
 }
 function newPassageResult(){
-  document.getElementById('result-screen').style.display = 'none';
-  document.getElementById('game-screen').style.display = '';
+  document.getElementById('result-screen').style.display='none';
+  document.getElementById('game-screen').style.display='';
   newPassage();
 }
 
 /* ═══════════════════════════════════════
-   LANGUAGE / DIFFICULTY / DURATION
+   LANGUAGE / DURATION
 ═══════════════════════════════════════ */
 function setLang(l){
-  lang = l;
-  document.getElementById('btn-en').classList.toggle('active', l === 'en');
-  document.getElementById('btn-np').classList.toggle('active', l === 'np');
-  const inp = document.getElementById('typing-input');
-  inp.className = l === 'np' ? 'nepali-input' : '';
-  passageIndex = 0;
-  restartGame(); loadPassage();
-}
-
-function setDiff(d){
-  diff = d;
-  ['easy','medium','hard'].forEach(x => document.getElementById('diff-'+x).classList.toggle('active', x === d));
-  passageIndex = 0;
-  restartGame(); loadPassage();
+  lang=l;
+  document.getElementById('btn-en').classList.toggle('active',l==='en');
+  document.getElementById('btn-np').classList.toggle('active',l==='np');
+  const inp=document.getElementById('typing-input');
+  inp.className=l==='np'?'nepali-input':'';
+  restartGame();
+  if(passagesLoaded) loadPassage();
 }
 
 function setDuration(sec){
-  duration = sec; timeLeft = sec;
-  [60,300,600].forEach(x => document.getElementById('d'+x).classList.toggle('active', x === sec));
+  duration=sec;timeLeft=sec;
+  [60,300,600].forEach(x=>document.getElementById('d'+x).classList.toggle('active',x===sec));
   restartGame();
 }
 
@@ -1014,37 +904,35 @@ function setDuration(sec){
    CONFETTI
 ═══════════════════════════════════════ */
 function launchConfetti(){
-  const canvas = document.getElementById('confetti-canvas');
-  const ctx = canvas.getContext('2d');
-  canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-  const pieces = Array.from({length:120}, () => ({
-    x: Math.random() * canvas.width, y: -20,
-    w: 6 + Math.random()*8, h: 10 + Math.random()*6,
-    color: ['#22c55e','#58a6ff','#e3b341','#f85149','#c084fc'][Math.floor(Math.random()*5)],
-    vx: (Math.random()-0.5)*4, vy: 2 + Math.random()*4,
-    rot: Math.random()*360, vr: (Math.random()-0.5)*8,
-    alpha: 1
+  const canvas=document.getElementById('confetti-canvas');
+  const ctx=canvas.getContext('2d');
+  canvas.width=window.innerWidth;canvas.height=window.innerHeight;
+  const pieces=Array.from({length:120},()=>({
+    x:Math.random()*canvas.width,y:-20,
+    w:6+Math.random()*8,h:10+Math.random()*6,
+    color:['#22c55e','#58a6ff','#e3b341','#f85149','#c084fc'][Math.floor(Math.random()*5)],
+    vx:(Math.random()-.5)*4,vy:2+Math.random()*4,
+    rot:Math.random()*360,vr:(Math.random()-.5)*8,alpha:1
   }));
   let frame;
   function draw(){
     ctx.clearRect(0,0,canvas.width,canvas.height);
-    let alive = 0;
-    pieces.forEach(p => {
-      p.x += p.vx; p.y += p.vy; p.rot += p.vr;
-      if(p.y > canvas.height * 0.6) p.alpha -= 0.02;
-      if(p.alpha > 0){ alive++;
-        ctx.save(); ctx.globalAlpha = p.alpha;
-        ctx.translate(p.x, p.y); ctx.rotate(p.rot * Math.PI/180);
-        ctx.fillStyle = p.color;
-        ctx.fillRect(-p.w/2, -p.h/2, p.w, p.h);
+    let alive=0;
+    pieces.forEach(p=>{
+      p.x+=p.vx;p.y+=p.vy;p.rot+=p.vr;
+      if(p.y>canvas.height*.6) p.alpha-=0.02;
+      if(p.alpha>0){alive++;
+        ctx.save();ctx.globalAlpha=p.alpha;
+        ctx.translate(p.x,p.y);ctx.rotate(p.rot*Math.PI/180);
+        ctx.fillStyle=p.color;ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);
         ctx.restore();
       }
     });
-    if(alive > 0) frame = requestAnimationFrame(draw);
+    if(alive>0) frame=requestAnimationFrame(draw);
     else ctx.clearRect(0,0,canvas.width,canvas.height);
   }
   draw();
-  setTimeout(() => { cancelAnimationFrame(frame); ctx.clearRect(0,0,canvas.width,canvas.height); }, 4000);
+  setTimeout(()=>{cancelAnimationFrame(frame);ctx.clearRect(0,0,canvas.width,canvas.height);},4000);
 }
 
 /* ── Start ── */
