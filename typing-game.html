@@ -180,7 +180,7 @@ html,body{
 .passage-text{
   font-size:19px;line-height:1.9;
   font-family:'Sora',sans-serif;
-  font-weight:700;
+  font-weight:600;
   word-break:normal;
   overflow-wrap:normal;
   user-select:none;
@@ -188,7 +188,7 @@ html,body{
   transition:transform .35s ease;
   will-change:transform;
 }
-.passage-text.nepali{font-family:'Noto Sans Devanagari',sans-serif;font-size:18px;font-weight:700;}
+.passage-text.nepali{font-family:'Noto Sans Devanagari',sans-serif;font-size:18px;font-weight:600;}
 
 .char{position:relative;transition:background .08s;}
 .char.correct{color:#16a34a;}
@@ -484,6 +484,8 @@ let errorCount = 0;
 let startTime = null;
 let passageIndex = 0;
 let passagesLoaded = false;
+let charCorrect = [];      // per-character actual correctness (true/false/undefined)
+let wordErrorWords = new Set(); // start-indices of words that contain at least one error
 
 // Passages fetched from sheet: { en: [...], np: [...] }
 const passages = { en: [], np: [] };
@@ -631,6 +633,8 @@ function loadPassage(){
   passageIndex = newIndex;
   currentPassage = pool[passageIndex];
   currentIndex = 0; totalTyped = 0; correctTyped = 0; errorCount = 0;
+  charCorrect = [];
+  wordErrorWords = new Set();
   renderPassage();
 }
 
@@ -642,11 +646,20 @@ function renderPassage(){
     let cls = 'pending';
     if(i<currentIndex) cls='correct';
     if(i===currentIndex) cls='current';
-    const safe = ch===' '?'&nbsp;':ch.replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const safe = ch.replace(/</g,'&lt;').replace(/>/g,'&gt;');
     return `<span class="char ${cls}" id="c${i}">${safe}</span>`;
   }).join('');
   updateViewportHeight();
   scrollToCurrent();
+}
+
+/* ── Get [start,end) indices of the word containing position idx ── */
+function getWordBounds(idx){
+  let start = idx;
+  while(start>0 && currentPassage[start-1] !== ' ') start--;
+  let end = idx;
+  while(end<currentPassage.length && currentPassage[end] !== ' ') end++;
+  return [start,end];
 }
 
 /* ── Keep the passage viewport fixed to ~5 lines ── */
@@ -758,9 +771,22 @@ function onKeyDown(e){
     if(currentIndex>0){
       currentIndex--;
       const span=document.getElementById('c'+currentIndex);
-      if(span) span.className='char current';
       const prev=document.getElementById('c'+(currentIndex+1));
       if(prev) prev.className='char pending';
+
+      const [wStart] = getWordBounds(currentIndex);
+      if(currentIndex===wStart){
+        // Backspaced to the start of this word — clear its error flag
+        wordErrorWords.delete(wStart);
+      } else if(!wordErrorWords.has(wStart)){
+        // Word no longer flagged — restore based on actual correctness
+        for(let k=wStart;k<currentIndex;k++){
+          const s=document.getElementById('c'+k);
+          if(s) s.className='char '+(charCorrect[k]?'correct':'wrong');
+        }
+      }
+
+      if(span) span.className='char current';
       playBackspace();
       scrollToCurrent();
     }
@@ -786,15 +812,29 @@ function onInput(e){
   const span=document.getElementById('c'+currentIndex);
   totalTyped++;
 
-  if(typed===expected){
-    correctTyped++;
-    if(span) span.className='char correct';
-    if(typed===' ') playSpace(); else playKeyClick(true);
-  } else {
+  const [wStart] = getWordBounds(currentIndex);
+  const isError = typed !== expected;
+  charCorrect[currentIndex] = !isError;
+
+  if(isError){
     errorCount++;
-    if(span) span.className='char wrong';
-    playKeyClick(false);
+    wordErrorWords.add(wStart);
+    if(typed===' ') playSpace(); else playKeyClick(false);
+  } else {
+    correctTyped++;
+    if(typed===' ') playSpace(); else playKeyClick(true);
   }
+
+  // If this word now has an error, mark the whole word (typed so far) as wrong
+  if(wordErrorWords.has(wStart)){
+    for(let k=wStart;k<=currentIndex;k++){
+      const s=document.getElementById('c'+k);
+      if(s) s.className='char wrong';
+    }
+  } else if(span){
+    span.className='char correct';
+  }
+
   currentIndex++;
 
   const next=document.getElementById('c'+currentIndex);
