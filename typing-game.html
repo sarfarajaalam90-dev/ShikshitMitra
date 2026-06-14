@@ -36,7 +36,6 @@ html,body{
   -webkit-text-size-adjust:100%;
 }
 
-/* ── Main wrapper — fixed laptop width, centered ── */
 .wrap{
   position:relative;z-index:1;
   width:100%;
@@ -49,7 +48,6 @@ html,body{
   .wrap{padding:28px 48px 44px;}
 }
 
-/* ── Header ── */
 .header{
   display:flex;align-items:center;justify-content:space-between;
   margin-bottom:20px;
@@ -68,7 +66,6 @@ html,body{
 
 .header-right{display:flex;align-items:center;gap:8px;flex-shrink:0;}
 
-/* ── Sound icon button (icon only) ── */
 #sound-toggle{
   width:34px;height:34px;
   background:var(--surface);border:1px solid var(--border);border-radius:50%;
@@ -77,7 +74,6 @@ html,body{
 }
 #sound-toggle.muted{color:var(--text3);border-color:var(--text3);}
 
-/* ── Language toggle ── */
 .lang-toggle{
   display:flex;gap:4px;
   background:var(--surface);
@@ -94,7 +90,6 @@ html,body{
 }
 .lang-btn.active{background:var(--primary);color:#000;}
 
-/* ── Slim progress bar (green line) ── */
 .timer-bar-track{
   height:3px;background:var(--surface2);border-radius:99px;overflow:hidden;
   margin-bottom:10px;
@@ -107,7 +102,6 @@ html,body{
 .timer-bar-fill.warn{background:var(--yellow);}
 .timer-bar-fill.danger{background:var(--red);}
 
-/* ── Duration row (below green line) — timer chip on right ── */
 .duration-row{
   display:flex;align-items:center;justify-content:space-between;
   gap:8px;
@@ -128,7 +122,6 @@ html,body{
 }
 .dpill.active{border-color:var(--primary);color:var(--primary);background:var(--primary-dim);}
 
-/* ── Timer chip — right side of duration row ── */
 .timer-chip{
   display:flex;align-items:center;gap:6px;
   flex-shrink:0;
@@ -155,14 +148,13 @@ html,body{
 .timer-dot.pulse{animation:dotPulse 1s ease-in-out infinite;}
 @keyframes dotPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}
 
-/* ── Small section label (e.g. above the typing-echo box) ── */
 .section-label-sm{
   font-size:11px;font-weight:700;color:var(--text3);
   text-transform:uppercase;letter-spacing:.8px;
   margin-bottom:8px;
 }
 
-/* ── Passage box ── */
+/* ── Passage box — main text, more prominent ── */
 .passage-box{
   background:#ffffff;
   border:1.5px solid var(--border);
@@ -177,25 +169,56 @@ html,body{
   background:linear-gradient(90deg,var(--primary),transparent);
 }
 
-/* ── Viewport: clips to ~5 lines, scrolls internally ── */
+/* ── "Your Typing" box — slightly dimmer to contrast with passage ── */
+.typed-box{
+  background:#f8fafc;
+  border:1.5px solid var(--border);
+  border-radius:var(--radius);padding:20px;
+  margin-bottom:14px;
+  position:relative;overflow:hidden;
+  cursor:text;
+  box-shadow:0 1px 6px rgba(0,0,0,0.04);
+  opacity:0.88;
+}
+.typed-box::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,var(--blue),transparent);
+}
+
 .passage-viewport{
   overflow:hidden;
   position:relative;
-  height:190px; /* recalculated by JS for exact 5 lines */
+  height:190px;
 }
 
+/* ── Main passage text — bolder, darker, more prominent ── */
 .passage-text{
-  font-size:19px;line-height:1.9;
+  font-size:20px;line-height:1.9;
+  font-family:'Sora',sans-serif;
+  font-weight:700;
+  word-break:normal;
+  overflow-wrap:normal;
+  user-select:none;
+  color:#0f172a;
+  letter-spacing:0.01em;
+  transition:transform .35s ease;
+  will-change:transform;
+}
+.passage-text.nepali{font-family:'Noto Sans Devanagari',sans-serif;font-size:19px;font-weight:700;}
+
+/* ── Typed echo text — slightly smaller & lighter than passage ── */
+.typed-text{
+  font-size:18px;line-height:1.9;
   font-family:'Sora',sans-serif;
   font-weight:600;
   word-break:normal;
   overflow-wrap:normal;
   user-select:none;
-  color:#1a1a2e;
+  color:#334155;
   transition:transform .35s ease;
   will-change:transform;
 }
-.passage-text.nepali{font-family:'Noto Sans Devanagari',sans-serif;font-size:18px;font-weight:600;}
+.typed-text.nepali{font-family:'Noto Sans Devanagari',sans-serif;font-size:17px;font-weight:600;}
 
 .char{position:relative;transition:background .08s;}
 .char.correct{color:#16a34a;}
@@ -204,10 +227,10 @@ html,body{
   background:#22c55e;color:#fff;border-radius:3px;
   animation:blink .8s ease-in-out infinite;
 }
-.char.pending{color:#94a3b8;}
+/* ── Pending chars in passage — visible but clearly untyped ── */
+.char.pending{color:#64748b;}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
 
-/* ── Input area (hidden, captures keyboard) ── */
 .input-wrap{position:absolute;opacity:0;pointer-events:none;width:0;height:0;overflow:hidden;}
 #typing-input{
   width:100%;padding:14px 18px;
@@ -221,12 +244,10 @@ html,body{
 }
 #typing-input.nepali-input{font-family:'Noto Sans Devanagari',sans-serif;}
 
-/* ── Loading state ── */
 .loading-text{
   text-align:center;color:#64748b;font-size:14px;padding:20px 0;
 }
 
-/* ── Controls — small, one line, evenly spaced ── */
 .controls-row{
   display:flex;gap:8px;flex-wrap:nowrap;
 }
@@ -244,7 +265,6 @@ html,body{
 .btn-secondary:hover{border-color:var(--text2);color:var(--text);}
 .btn:disabled{opacity:.4;cursor:not-allowed;transform:none!important;box-shadow:none!important;}
 
-/* ── Result screen (shown ONLY after time runs out) ── */
 #result-screen{display:none;}
 .result-card{
   background:var(--surface);border:1px solid var(--border);
@@ -276,7 +296,6 @@ html,body{
 .perf-bar-track{height:8px;background:var(--surface2);border-radius:99px;overflow:hidden;}
 .perf-bar-fill{height:100%;border-radius:99px;transition:width 1s ease .3s;}
 
-/* ── Error banner ── */
 .error-banner{
   background:rgba(248,81,73,.1);border:1px solid rgba(248,81,73,.3);
   border-radius:var(--radius-sm);padding:12px 16px;
@@ -284,13 +303,11 @@ html,body{
   margin-bottom:14px;text-align:center;display:none;
 }
 
-/* ── Confetti canvas ── */
 #confetti-canvas{position:fixed;inset:0;pointer-events:none;z-index:999;}
 
 @keyframes pulseGreen{0%{box-shadow:0 0 0 0 rgba(34,197,94,.4)}70%{box-shadow:0 0 0 10px transparent}100%{box-shadow:0 0 0 0 transparent}}
 .passage-box.active{animation:pulseGreen 1s ease 1;}
 
-/* ── Mobile tweaks ── */
 @media (max-width:480px){
   .wrap{padding:14px 12px 24px;}
   .brand-name{font-size:14px;}
@@ -300,8 +317,11 @@ html,body{
   .lang-btn{padding:6px 10px;font-size:11px;}
   #sound-toggle{width:30px;height:30px;}
   .passage-box{padding:14px;}
-  .passage-text{font-size:16px;line-height:1.85;}
+  .typed-box{padding:14px;}
+  .passage-text{font-size:17px;line-height:1.85;}
   .passage-text.nepali{font-size:15px;}
+  .typed-text{font-size:15px;line-height:1.85;}
+  .typed-text.nepali{font-size:14px;}
   .result-grid{grid-template-columns:repeat(2,1fr);}
   .btn{font-size:11px;padding:9px 6px;}
   .duration-label{display:none;}
@@ -351,10 +371,8 @@ html,body{
   <!-- Game screen -->
   <div id="game-screen">
 
-    <!-- Slim progress bar (green line) -->
     <div class="timer-bar-track"><div class="timer-bar-fill" id="timer-bar"></div></div>
 
-    <!-- Duration row — timer on right side -->
     <div class="duration-row">
       <div class="duration-left">
         <span class="duration-label">Duration:</span>
@@ -368,12 +386,11 @@ html,body{
       </div>
     </div>
 
-    <!-- Error banner -->
     <div class="error-banner" id="error-banner">
       ⚠️ Could not load passages from Google Sheets. Check your internet connection and try again.
     </div>
 
-    <!-- Passage — WHITE background, shows ~5 lines at a time -->
+    <!-- Main passage box — more prominent -->
     <div class="passage-box" id="passage-box" tabindex="0" onclick="focusInput()">
       <div class="passage-viewport" id="passage-viewport">
         <div class="passage-text" id="passage-display">
@@ -382,22 +399,20 @@ html,body{
       </div>
     </div>
 
-    <!-- Live typing echo — shows exactly what the user typed -->
+    <!-- Your Typing box — slightly dimmer -->
     <div class="section-label-sm">Your Typing</div>
-    <div class="passage-box" id="typed-box">
+    <div class="typed-box" id="typed-box" tabindex="0" onclick="focusInput()">
       <div class="passage-viewport" id="typed-viewport">
-        <div class="passage-text" id="typed-display">
+        <div class="typed-text" id="typed-display">
           <span class="char pending">तपाईंले टाइप गरेको यहाँ देखिनेछ… / Your typing will appear here…</span>
         </div>
       </div>
     </div>
 
-    <!-- Hidden input -->
     <div class="input-wrap">
       <textarea id="typing-input" rows="1" tabindex="-1" aria-hidden="true"></textarea>
     </div>
 
-    <!-- Controls -->
     <div class="controls-row">
       <button class="btn btn-primary" id="btn-start" onclick="startGame()">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
@@ -415,7 +430,7 @@ html,body{
 
   </div><!-- /game-screen -->
 
-  <!-- Result screen — shown ONLY when time runs out -->
+  <!-- Result screen -->
   <div id="result-screen">
     <div class="result-card">
       <div class="result-grade" id="result-grade">🎉</div>
@@ -479,14 +494,8 @@ html,body{
 </div><!-- /wrap -->
 
 <script>
-/* ═══════════════════════════════════════
-   GOOGLE SHEETS CSV URL
-═══════════════════════════════════════ */
 const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSCjPD_E5TAQIl90ANdWSqGVYfuFv_TNnWPgp-1mUQ9KCWQHu8cmQVMwvQWxLxjZ_Q1jcVWnIVuhYLs/pub?output=csv';
 
-/* ═══════════════════════════════════════
-   STATE
-═══════════════════════════════════════ */
 let lang = 'en';
 let duration = 60;
 let timeLeft = 60;
@@ -501,18 +510,13 @@ let errorCount = 0;
 let startTime = null;
 let passageIndex = 0;
 let passagesLoaded = false;
-let charCorrect = [];      // per-character actual correctness (true/false/undefined)
-let wordErrorWords = new Set(); // start-indices of words that contain at least one error
-let typedChars = [];       // actual character the user typed at each position
-let backspaceCount = 0;     // number of backspace keystrokes used
+let charCorrect = [];
+let wordErrorWords = new Set();
+let typedChars = [];
+let backspaceCount = 0;
 
-// Passages fetched from sheet: { en: [...], np: [...] }
 const passages = { en: [], np: [] };
 
-/* ═══════════════════════════════════════
-   FETCH PASSAGES FROM GOOGLE SHEETS
-   Sheet columns: Language (en/np), Passage
-═══════════════════════════════════════ */
 async function fetchPassages() {
   try {
     const res = await fetch(SHEET_CSV_URL);
@@ -521,7 +525,6 @@ async function fetchPassages() {
     const rows = parseCSV(csv);
     passages.en = [];
     passages.np = [];
-    // Skip header row (row 0), then parse
     for (let i = 1; i < rows.length; i++) {
       const row = rows[i];
       if (!row || row.length < 2) continue;
@@ -531,7 +534,6 @@ async function fetchPassages() {
       if (langCol === 'en' || langCol === 'english') passages.en.push(text);
       else if (langCol === 'np' || langCol === 'nepali' || langCol === 'ne') passages.np.push(text);
     }
-    // Fallback if no passages found
     if (passages.en.length === 0) passages.en = ['No English passages found. Please add passages to your Google Sheet with language column "en".'];
     if (passages.np.length === 0) passages.np = ['कुनै नेपाली अनुच्छेद फेला परेन। कृपया Google Sheet मा "np" भाषा स्तम्भ सहित अनुच्छेदहरू थप्नुहोस्।'];
     passagesLoaded = true;
@@ -540,12 +542,10 @@ async function fetchPassages() {
   } catch (err) {
     console.error('Failed to load passages:', err);
     document.getElementById('error-banner').style.display = 'block';
-    // Show error in passage box
     document.getElementById('passage-display').innerHTML = '<div class="loading-text" style="color:#f85149;">Failed to load passages. Check internet connection.</div>';
   }
 }
 
-/* ─ Simple CSV parser ─ */
 function parseCSV(text) {
   const rows = [];
   const lines = text.split('\n');
@@ -679,7 +679,6 @@ function renderPassage(){
   scrollViewport(el, document.getElementById('c'+currentIndex), 5);
 }
 
-/* ── Get [start,end) indices of the word containing position idx ── */
 function getWordBounds(idx){
   let start = idx;
   while(start>0 && currentPassage[start-1] !== ' ') start--;
@@ -688,12 +687,11 @@ function getWordBounds(idx){
   return [start,end];
 }
 
-/* ── Render the live "your typing" echo box ── */
 function renderTypedDisplay(){
   const el = document.getElementById('typed-display');
   if(!el) return;
   if(currentIndex === 0){
-    el.className = 'passage-text' + (lang==='np'?' nepali':'');
+    el.className = 'typed-text' + (lang==='np'?' nepali':'');
     el.style.transform = 'translateY(0px)';
     el.innerHTML = '<span class="char pending">तपाईंले टाइप गरेको यहाँ देखिनेछ… / Your typing will appear here…</span>';
     updateViewportHeight(document.getElementById('typed-viewport'), el, 3);
@@ -710,26 +708,23 @@ function renderTypedDisplay(){
   }
   html += `<span class="char current" id="typed-cursor"> </span>`;
   el.innerHTML = html;
-  el.className = 'passage-text' + (lang==='np'?' nepali':'');
+  el.className = 'typed-text' + (lang==='np'?' nepali':'');
   updateViewportHeight(document.getElementById('typed-viewport'), el, 3);
   scrollViewport(el, document.getElementById('typed-cursor'), 3);
 }
 
-/* ── Generic line-height for a given text element ── */
 function getLineHeight(el){
   const lh = parseFloat(getComputedStyle(el).lineHeight);
   if(!isNaN(lh) && lh > 0) return lh;
   return lang==='np' ? 34 : 36;
 }
 
-/* ── Set a viewport's height to fit a fixed number of lines ── */
 function updateViewportHeight(viewportEl, displayEl, lines){
   if(!viewportEl || !displayEl) return;
   const lineHeight = getLineHeight(displayEl);
   viewportEl.style.height = (lineHeight * lines) + 'px';
 }
 
-/* ── Scroll a display element so the target span stays within the last visible line ── */
 function scrollViewport(displayEl, targetSpan, lines){
   if(!displayEl || !targetSpan) return;
   const lineHeight = getLineHeight(displayEl);
@@ -817,7 +812,7 @@ function endGame(){
 }
 
 /* ═══════════════════════════════════════
-   INPUT HANDLING
+   INPUT HANDLING — BACKSPACE BUG FIXED
 ═══════════════════════════════════════ */
 function onKeyDown(e){
   if(!gameStarted) return;
@@ -828,17 +823,26 @@ function onKeyDown(e){
       const span=document.getElementById('c'+currentIndex);
       const prev=document.getElementById('c'+(currentIndex+1));
       if(prev) prev.className='char pending';
-      typedChars[currentIndex] = undefined;
 
+      // Clear this character's record
+      typedChars[currentIndex] = undefined;
+      charCorrect[currentIndex] = undefined;
+
+      // ── FIX: Re-scan the whole word to see if any errors remain ──
       const [wStart] = getWordBounds(currentIndex);
-      if(currentIndex===wStart){
-        // Backspaced to the start of this word — clear its error flag
+      let wordStillHasError = false;
+      for(let k = wStart; k < currentIndex; k++){
+        if(charCorrect[k] === false){
+          wordStillHasError = true;
+          break;
+        }
+      }
+      if(!wordStillHasError){
+        // No more errors in this word — clear the flag and re-colour as correct
         wordErrorWords.delete(wStart);
-      } else if(!wordErrorWords.has(wStart)){
-        // Word no longer flagged — restore based on actual correctness
-        for(let k=wStart;k<currentIndex;k++){
-          const s=document.getElementById('c'+k);
-          if(s) s.className='char '+(charCorrect[k]?'correct':'wrong');
+        for(let k = wStart; k < currentIndex; k++){
+          const s = document.getElementById('c'+k);
+          if(s) s.className = 'char correct';
         }
       }
 
@@ -883,7 +887,6 @@ function onInput(e){
     if(typed===' ') playSpace(); else playKeyClick(true);
   }
 
-  // If this word now has an error, mark the whole word (typed so far) as wrong
   if(wordErrorWords.has(wStart)){
     for(let k=wStart;k<=currentIndex;k++){
       const s=document.getElementById('c'+k);
@@ -916,7 +919,6 @@ function calcStats(){
   return{wpm,netWpm,acc,errors:errorCount,chars:totalTyped,correct:correctTyped};
 }
 
-/* ── Count how many words (touched so far) ended up correct vs wrong ── */
 function getTypedWordStats(){
   let wrong=0, correct=0;
   let i=0;
@@ -945,7 +947,7 @@ function toggleSound(){
 }
 
 /* ═══════════════════════════════════════
-   RESULT — shown only after time ends
+   RESULT
 ═══════════════════════════════════════ */
 function showResult(){
   const s=calcStats();
@@ -1054,7 +1056,6 @@ function launchConfetti(){
   setTimeout(()=>{cancelAnimationFrame(frame);ctx.clearRect(0,0,canvas.width,canvas.height);},4000);
 }
 
-/* ── Start ── */
 init();
 </script>
 </body>
