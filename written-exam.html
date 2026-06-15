@@ -154,6 +154,15 @@ const MOCK_BOOKS = {
     spine: "#0D3D27",
     emoji: "📗",
   },
+  "officer-paper": {
+    id: "officer-paper",
+    title: "Officer Written Paper",
+    subtitle: "अधिकृत लिखित पत्र",
+    color: "#1E3A6E",
+    accent: "#2563EB",
+    spine: "#0F1F3D",
+    emoji: "📘",
+  },
 };
 
 const MOCK_EXAMS = {
@@ -225,6 +234,15 @@ const MOCK_EXAMS = {
 <p><strong>प्र.१.</strong> नेपाल सरकारको संगठन संरचना बताउनुहोस्। <em>(१० अंक)</em></p>
 <p><strong>प्र.२.</strong> सूचना प्रविधिको प्रयोग कार्यालय व्यवस्थापनमा कसरी गर्न सकिन्छ? <em>(१० अंक)</em></p>
 <p><strong>प्र.३.</strong> सार्वजनिक सेवा प्रवाहमा सुधारका उपायहरू लेख्नुहोस्। <em>(१० अंक)</em></p>`,
+    },
+  ],
+  "officer-paper": [
+    {
+      id: "e7", title: "PYQ 2079", type: "PYQ", year: "2079",
+      pageOrder: 1, isPublished: true, isPremium: false,
+      content: `<h3>अधिकृत — लिखित परीक्षा वि.सं. २०७९</h3>
+<p><strong>प्र.१.</strong> सुशासनका आधारभूत तत्वहरू उल्लेख गर्नुहोस्। <em>(१० अंक)</em></p>
+<p><strong>प्र.२.</strong> नेपालमा लोकतन्त्रको विकासक्रम बताउनुहोस्। <em>(१० अंक)</em></p>`,
     },
   ],
 };
@@ -424,31 +442,50 @@ function App() {
         .dark .exam-content em { color: #94A3B8; }
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 4px; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .books-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0 48px; justify-items: center; }
+        @media (max-width: 900px) { .books-grid { grid-template-columns: repeat(2, 1fr); gap: 0 32px; } }
+        @media (max-width: 520px) { .books-grid { grid-template-columns: repeat(2, 1fr); gap: 0 20px; } }
       `}</style>
     </div>
   );
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// LIBRARY VIEW
+// LIBRARY VIEW — FULL WIDTH 4-COLUMN GRID
 // ═══════════════════════════════════════════════════════════════════════════
 function Library({ books, exams, onOpen, onAdmin, darkMode, onToggleDark, styles, lastPage, bookmarks, usingSheet, sheetLoading }) {
   const [opening, setOpening] = useState(null);
+  const [hovered, setHovered] = useState(null);
+  const dark = darkMode;
 
   const handleOpen = (bookId) => {
     setOpening(bookId);
-    setTimeout(() => { setOpening(null); onOpen(bookId); }, 650);
+    setTimeout(() => { setOpening(null); onOpen(bookId); }, 700);
   };
 
-  const dark = darkMode;
+  const bg = dark ? "#0F172A" : "#F4F1EA";
+  const card = dark ? "#1E293B" : "#FFFFFF";
+  const text = dark ? "#F1F5F9" : "#1F2937";
+  const muted = dark ? "#64748B" : "#6B7280";
+  const border = dark ? "#1E293B" : "#E5E7EB";
+
+  const bookList = Object.values(books);
 
   return (
-    <div style={styles.library} className={dark ? "dark" : ""}>
-      {/* Header */}
-      <div style={styles.libraryHeader}>
-        <div>
-          <div style={styles.libraryTitle}>Written Exam</div>
-          <div style={styles.librarySubtitle}>लिखित परीक्षा पुस्तकालय</div>
+    <div style={{ minHeight: "100vh", background: bg, color: text }} className={dark ? "dark" : ""}>
+      {/* Header — full width */}
+      <div style={{
+        display: "flex", justifyContent: "space-between", alignItems: "center",
+        padding: "16px 32px", background: card, borderBottom: `1px solid ${border}`,
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+          <span style={{ fontSize: 26 }}>📚</span>
+          <div>
+            <div style={{ fontSize: 20, fontWeight: 800, color: text, lineHeight: 1 }}>Written Exam</div>
+            <div style={{ fontSize: 11, color: muted, marginTop: 3 }}>लिखित परीक्षा पुस्तकालय · Shikshit Mitra</div>
+          </div>
         </div>
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
           {!sheetLoading && (
@@ -456,82 +493,95 @@ function Library({ books, exams, onOpen, onAdmin, darkMode, onToggleDark, styles
               fontSize: 10, fontWeight: 700,
               color: usingSheet ? "#10B981" : "#F59E0B",
               background: usingSheet ? "#D1FAE5" : "#FEF3C7",
-              padding: "3px 8px", borderRadius: 99,
+              padding: "4px 10px", borderRadius: 99,
               border: `1px solid ${usingSheet ? "#A7F3D0" : "#FDE68A"}`,
-            }}>{usingSheet ? "📊 Sheet" : "📦 Sample"}</div>
+            }}>{usingSheet ? "📊 Live Sheet" : "📦 Sample Data"}</div>
           )}
-          <button style={styles.iconBtn} onClick={onToggleDark} title="Toggle dark mode">
-            {dark ? "☀️" : "🌙"}
-          </button>
+          <button style={styles.iconBtn} onClick={onToggleDark} title="Toggle dark mode">{dark ? "☀️" : "🌙"}</button>
           <button style={styles.iconBtn} onClick={onAdmin} title="Admin">⚙️</button>
         </div>
       </div>
 
-      {/* Shelf */}
-      <div style={styles.shelfWrap}>
-        <div style={styles.shelfLabel}>📚 Your Books</div>
-        <div style={styles.shelf}>
-          {/* Shelf planks */}
-          <div style={styles.shelfPlank} />
-          <div style={styles.booksRow}>
-            {Object.values(books).map(book => {
+      {/* FULL-WIDTH WOODEN SHELF */}
+      <div style={{ padding: "32px 40px 0" }}>
+        <div style={{
+          fontSize: 11, fontWeight: 700, color: muted,
+          marginBottom: 24, textTransform: "uppercase", letterSpacing: 1.4,
+        }}>Your Library</div>
+
+        {/* Shelf backdrop */}
+        <div style={{
+          position: "relative",
+          background: dark
+            ? "linear-gradient(180deg, #1A0F06 0%, #2D1A0A 100%)"
+            : "linear-gradient(180deg, #8B6914 0%, #6B4F0F 100%)",
+          borderRadius: "12px 12px 0 0",
+          paddingTop: 36,
+          paddingLeft: 40,
+          paddingRight: 40,
+          boxShadow: dark
+            ? "0 8px 32px rgba(0,0,0,0.6), inset 0 2px 8px rgba(0,0,0,0.5)"
+            : "0 8px 32px rgba(0,0,0,0.22), inset 0 2px 8px rgba(0,0,0,0.12)",
+        }}>
+          {/* 4-column grid of books */}
+          <div className="books-grid">
+            {bookList.map(book => {
               const bookExams = (exams[book.id] || []).filter(e => e.isPublished);
               const bmCount = Object.keys(bookmarks).filter(k => k.startsWith(book.id)).length;
               return (
-                <BookCover
+                <BookCover3D
                   key={book.id}
                   book={book}
                   examCount={bookExams.length}
                   isOpening={opening === book.id}
+                  isHovered={hovered === book.id}
                   lastPage={lastPage[book.id] || 0}
                   bmCount={bmCount}
                   onClick={() => handleOpen(book.id)}
+                  onHover={(v) => setHovered(v ? book.id : null)}
                   dark={dark}
                 />
               );
             })}
           </div>
+
+          {/* Shelf plank */}
+          <div style={{
+            height: 26,
+            marginTop: 0,
+            background: dark
+              ? "linear-gradient(180deg, #3D2410 0%, #2A1808 100%)"
+              : "linear-gradient(180deg, #5C3D0A 0%, #3E2906 100%)",
+            borderRadius: "0 0 0 0",
+            boxShadow: "0 8px 0 rgba(0,0,0,0.35), inset 0 2px 0 rgba(255,255,255,0.07)",
+            position: "relative", overflow: "hidden",
+          }}>
+            {Array.from({ length: 40 }, (_, i) => i * 28 + 10).map(x => (
+              <div key={x} style={{
+                position: "absolute", top: 7, left: x,
+                width: 1, height: 12, background: "rgba(0,0,0,0.13)",
+              }} />
+            ))}
+          </div>
         </div>
+
+        {/* Shadow beneath shelf */}
+        <div style={{
+          height: 12,
+          background: "linear-gradient(180deg, rgba(0,0,0,0.18) 0%, transparent 100%)",
+          borderRadius: "0 0 8px 8px",
+          marginBottom: 32,
+        }} />
       </div>
 
-      {/* Info cards */}
-      <div style={styles.infoGrid}>
-        {Object.values(books).map(book => {
-          const bookExams = (exams[book.id] || []).filter(e => e.isPublished);
-          const types = [...new Set(bookExams.map(e => e.type))];
-          const premCount = bookExams.filter(e => e.isPremium).length;
-          return (
-            <div key={book.id} style={{ ...styles.infoCard, borderTop: `3px solid ${book.color}` }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
-                <span style={{ fontSize: 20 }}>{book.emoji}</span>
-                <span style={{ fontWeight: 700, fontSize: 13, color: book.color }}>
-                  {book.title.replace("Kharidar ", "")}
-                </span>
-              </div>
-              <div style={{ fontSize: 11, color: dark ? "#94A3B8" : "#6B7280", marginBottom: 4 }}>
-                {bookExams.length} pages · {premCount} premium
-              </div>
-              <div style={{ fontSize: 11, color: dark ? "#94A3B8" : "#6B7280", marginBottom: 12 }}>
-                {types.join(", ")}
-              </div>
-              <button
-                style={{ ...styles.openBtn, background: book.color }}
-                onClick={() => handleOpen(book.id)}
-              >
-                Open Book →
-              </button>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Bookmarks summary */}
+      {/* Bookmarks summary — only show if any */}
       {Object.keys(bookmarks).length > 0 && (
-        <div style={{ padding: "0 20px", marginTop: 16 }}>
+        <div style={{ padding: "0 40px 24px" }}>
           <div style={{
             background: dark ? "#1E293B" : "#FFF8E1",
             border: `1px solid ${dark ? "#334155" : "#FDE68A"}`,
-            borderRadius: 10, padding: "12px 16px",
+            borderRadius: 10, padding: "12px 18px", display: "inline-flex",
+            alignItems: "center", gap: 8,
             fontSize: 13, color: dark ? "#FCD34D" : "#92400E",
           }}>
             🔖 {Object.keys(bookmarks).length} bookmarked page{Object.keys(bookmarks).length > 1 ? "s" : ""} saved
@@ -539,137 +589,171 @@ function Library({ books, exams, onOpen, onAdmin, darkMode, onToggleDark, styles
         </div>
       )}
 
-      <div style={styles.footer}>
+      <div style={{
+        textAlign: "center", fontSize: 11, color: muted,
+        padding: "16px 40px 24px",
+        borderTop: `1px solid ${border}`,
+      }}>
         Shikshit Mitra · सफलताको साथी
-        {usingSheet && <span style={{ color: "#10B981", marginLeft: 6 }}>· Synced with Google Sheet</span>}
+        {usingSheet && <span style={{ color: "#10B981", marginLeft: 8 }}>· Synced with Google Sheet</span>}
       </div>
     </div>
   );
 }
 
-// ─── BOOK COVER ────────────────────────────────────────────────────────────
-function BookCover({ book, examCount, isOpening, lastPage, bmCount, onClick, dark }) {
-  return (
-    <div style={{ textAlign: "center" }}>
-      <div
-        onClick={onClick}
-        style={{
-          cursor: "pointer",
-          display: "inline-block",
-          transition: "transform 0.65s cubic-bezier(0.23, 1, 0.32, 1)",
-          transform: isOpening
-            ? "rotateY(-35deg) translateX(-8px) scale(1.04)"
-            : "rotateY(0deg) scale(1)",
-          transformOrigin: "left center",
-          perspective: 800,
-        }}
-      >
-        <div style={{ width: 150, height: 210, position: "relative" }}>
-          {/* Pages edge */}
-          <div style={{
-            position: "absolute", right: -7, top: 3,
-            width: 9, height: 206,
-            background: dark
-              ? "linear-gradient(to right, #2D3748, #4A5568, #2D3748)"
-              : "linear-gradient(to right, #E2D9C8, #F5EFE0, #E2D9C8)",
-            borderRadius: "0 2px 2px 0",
-          }} />
-          {/* Spine */}
-          <div style={{
-            position: "absolute", left: -9, top: 0,
-            width: 11, height: 210,
-            background: book.spine,
-            borderRadius: "2px 0 0 2px",
-          }} />
-          {/* Cover */}
-          <div style={{
-            width: 150, height: 210,
-            background: `linear-gradient(150deg, ${book.color} 0%, ${book.accent} 55%, ${book.color} 100%)`,
-            borderRadius: "0 3px 3px 0",
-            padding: "18px 12px",
-            display: "flex", flexDirection: "column",
-            justifyContent: "space-between",
-            position: "relative", overflow: "hidden",
-          }}>
-            {/* Decorative elements */}
-            <div style={{
-              position: "absolute", top: -25, right: -25,
-              width: 100, height: 100, borderRadius: "50%",
-              background: "rgba(255,255,255,0.07)",
-            }} />
-            <div style={{
-              position: "absolute", bottom: -15, left: -15,
-              width: 80, height: 80, borderRadius: "50%",
-              background: "rgba(255,255,255,0.05)",
-            }} />
-            {/* Decorative lines */}
-            <div style={{
-              position: "absolute", top: 0, left: 0, right: 0,
-              height: 3, background: "rgba(255,255,255,0.15)",
-            }} />
+// ─── 3D BOOK COVER ─────────────────────────────────────────────────────────
+function BookCover3D({ book, examCount, isOpening, isHovered, lastPage, bmCount, onClick, onHover, dark }) {
+  const BOOK_W = 160;
+  const BOOK_H = 230;
+  const SPINE_W = 18;
+  const PAGES_W = 12;
 
+  const lift = isHovered && !isOpening;
+
+  return (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        paddingBottom: 18,
+        cursor: "pointer",
+        userSelect: "none",
+        width: "100%",
+      }}
+      onClick={onClick}
+      onMouseEnter={() => onHover(true)}
+      onMouseLeave={() => onHover(false)}
+      onTouchStart={() => onHover(true)}
+      onTouchEnd={() => onHover(false)}
+    >
+      {/* 3D book wrapper */}
+      <div style={{
+        perspective: 1000,
+        perspectiveOrigin: "50% 50%",
+        marginBottom: 16,
+      }}>
+        <div style={{
+          position: "relative",
+          width: BOOK_W + SPINE_W + PAGES_W,
+          height: BOOK_H,
+          transformStyle: "preserve-3d",
+          transition: "transform 0.5s cubic-bezier(0.23, 1, 0.32, 1), filter 0.5s ease",
+          transform: isOpening
+            ? "rotateY(-45deg) translateX(-14px) scale(1.08)"
+            : lift
+              ? "rotateY(-22deg) translateY(-14px)"
+              : "rotateY(-10deg)",
+          filter: lift || isOpening
+            ? `drop-shadow(0 24px 32px rgba(0,0,0,0.5))`
+            : `drop-shadow(0 10px 18px rgba(0,0,0,0.32))`,
+        }}>
+          {/* SPINE */}
+          <div style={{
+            position: "absolute",
+            left: 0, top: 0,
+            width: SPINE_W,
+            height: BOOK_H,
+            background: `linear-gradient(to right, ${book.spine} 0%, ${book.color} 60%, ${book.spine} 100%)`,
+            borderRadius: "3px 0 0 3px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            overflow: "hidden",
+          }}>
+            <div style={{
+              writingMode: "vertical-rl",
+              textOrientation: "mixed",
+              transform: "rotate(180deg)",
+              fontSize: 9, fontWeight: 800, color: "rgba(255,255,255,0.85)",
+              letterSpacing: 1.2, textTransform: "uppercase",
+              maxHeight: BOOK_H - 20,
+              overflow: "hidden",
+              whiteSpace: "nowrap",
+            }}>
+              {book.title}
+            </div>
+          </div>
+
+          {/* COVER FACE */}
+          <div style={{
+            position: "absolute",
+            left: SPINE_W, top: 0,
+            width: BOOK_W,
+            height: BOOK_H,
+            background: `linear-gradient(150deg, ${book.color} 0%, ${book.accent} 55%, ${book.color} 100%)`,
+            borderRadius: "0 5px 5px 0",
+            overflow: "hidden",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "space-between",
+            padding: "20px 14px 14px",
+          }}>
+            {/* Decorative blobs */}
+            <div style={{ position: "absolute", top: -35, right: -35, width: 130, height: 130, borderRadius: "50%", background: "rgba(255,255,255,0.08)", pointerEvents: "none" }} />
+            <div style={{ position: "absolute", bottom: -25, left: -25, width: 110, height: 110, borderRadius: "50%", background: "rgba(255,255,255,0.05)", pointerEvents: "none" }} />
+            <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 4, background: "rgba(255,255,255,0.18)" }} />
+            <div style={{ position: "absolute", top: 62, left: 0, right: 0, height: 1, background: "rgba(255,255,255,0.1)" }} />
+
+            {/* Top: label + title */}
             <div style={{ position: "relative" }}>
-              <div style={{ fontSize: 26, marginBottom: 10 }}>{book.emoji}</div>
-              <div style={{
-                color: "rgba(255,255,255,0.7)", fontSize: 9,
-                fontWeight: 700, letterSpacing: 1.5,
-                textTransform: "uppercase", marginBottom: 4,
-              }}>
+              <div style={{ fontSize: 30, marginBottom: 10 }}>{book.emoji}</div>
+              <div style={{ color: "rgba(255,255,255,0.6)", fontSize: 8, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 4 }}>
                 लोक सेवा आयोग
               </div>
-              <div style={{
-                color: "#fff", fontWeight: 800, fontSize: 13, lineHeight: 1.3,
-              }}>
-                Kharidar
-              </div>
-              <div style={{
-                color: "#fff", fontWeight: 800, fontSize: 15, lineHeight: 1.3, marginTop: 2,
-              }}>
+              <div style={{ color: "#fff", fontWeight: 800, fontSize: 13, lineHeight: 1.3 }}>Kharidar</div>
+              <div style={{ color: "#fff", fontWeight: 800, fontSize: 16, lineHeight: 1.25, marginTop: 2 }}>
                 {book.title.replace("Kharidar ", "")}
               </div>
             </div>
 
+            {/* Bottom: page count + badges */}
             <div style={{ position: "relative" }}>
-              <div style={{ fontSize: 9, color: "rgba(255,255,255,0.55)", marginBottom: 6 }}>
-                {book.subtitle}
-              </div>
+              <div style={{ fontSize: 9, color: "rgba(255,255,255,0.5)", marginBottom: 6 }}>{book.subtitle}</div>
               <div style={{
-                color: "rgba(255,255,255,0.9)", fontSize: 10, fontWeight: 700,
-                background: "rgba(0,0,0,0.2)", borderRadius: 6,
-                padding: "4px 8px", display: "inline-block",
+                color: "rgba(255,255,255,0.95)", fontSize: 10, fontWeight: 700,
+                background: "rgba(0,0,0,0.25)", borderRadius: 6,
+                padding: "4px 9px", display: "inline-block", marginBottom: 6,
               }}>
                 {examCount} Pages
               </div>
-              <div style={{ marginTop: 5, display: "flex", gap: 4, flexWrap: "wrap" }}>
+              <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
                 {lastPage > 0 && (
-                  <span style={{
-                    fontSize: 9, color: "#fff",
-                    background: "rgba(255,255,255,0.2)",
-                    borderRadius: 99, padding: "2px 6px",
-                  }}>📖 p.{lastPage + 1}</span>
+                  <span style={{ fontSize: 9, color: "#fff", fontWeight: 700, background: "rgba(255,255,255,0.2)", borderRadius: 99, padding: "2px 7px" }}>📖 p.{lastPage + 1}</span>
                 )}
                 {bmCount > 0 && (
-                  <span style={{
-                    fontSize: 9, color: "#fff",
-                    background: "rgba(255,255,255,0.2)",
-                    borderRadius: 99, padding: "2px 6px",
-                  }}>🔖 {bmCount}</span>
+                  <span style={{ fontSize: 9, color: "#fff", fontWeight: 700, background: "rgba(255,255,255,0.2)", borderRadius: 99, padding: "2px 7px" }}>🔖 {bmCount}</span>
                 )}
               </div>
             </div>
           </div>
+
+          {/* PAGES EDGE */}
+          <div style={{
+            position: "absolute",
+            left: SPINE_W + BOOK_W, top: 2,
+            width: PAGES_W,
+            height: BOOK_H - 4,
+            background: dark
+              ? "repeating-linear-gradient(to bottom, #374151 0px, #4B5563 2px, #374151 4px)"
+              : "repeating-linear-gradient(to bottom, #F9F9F0 0px, #E8E2D0 2px, #F9F9F0 4px)",
+            borderRadius: "0 3px 3px 0",
+          }} />
         </div>
       </div>
+
+      {/* Label below */}
       <div style={{
-        marginTop: 10, fontSize: 11,
-        color: dark ? "#64748B" : "#9CA3AF",
-        fontWeight: 600,
+        fontSize: 11, color: dark ? "#64748B" : "#9CA3AF",
+        fontWeight: 600, letterSpacing: 0.3, textAlign: "center",
       }}>
-        Tap to open
+        {isOpening ? "Opening…" : "Tap to open"}
       </div>
     </div>
   );
 }
+
+
 
 // ═══════════════════════════════════════════════════════════════════════════
 // BOOK READER
@@ -1022,34 +1106,270 @@ function ExamPage({ exam, book, pageNum, dark, styles }) {
   );
 }
 
-// ─── PDF VIEWER ────────────────────────────────────────────────────────────
+// ─── PDF VIEWER (pdf.js, A4 ratio, zoom, no black) ──────────────────────
 function PdfViewer({ url, dark, accent }) {
-  return (
-    <div style={{ marginBottom: 18 }}>
-      <div style={{
-        width: "100%", height: "65vh", minHeight: 380,
-        borderRadius: 10, overflow: "hidden",
-        border: `1px solid ${dark ? "#334155" : "#E5E7EB"}`,
-        background: dark ? "#0F172A" : "#F3F4F6",
-      }}>
-        <iframe
-          src={url}
-          title="Exam PDF"
-          style={{ width: "100%", height: "100%", border: "none" }}
-          allow="autoplay"
+  const containerRef = useRef(null);
+  const canvasRef = useRef(null);
+  const [pdfDoc, setPdfDoc] = useState(null);
+  const [currentPdfPage, setCurrentPdfPage] = useState(1);
+  const [totalPdfPages, setTotalPdfPages] = useState(0);
+  const [zoom, setZoom] = useState(1.0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [pdfJsReady, setPdfJsReady] = useState(false);
+  const renderTaskRef = useRef(null);
+
+  // A4 ratio: 1:1.414 (width:height)
+  const A4_RATIO = 1.414;
+
+  // Inject pdf.js if not present
+  useEffect(() => {
+    if (window.pdfjsLib) { setPdfJsReady(true); return; }
+    const script = document.createElement("script");
+    script.src = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";
+    script.onload = () => {
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+        "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+      setPdfJsReady(true);
+    };
+    script.onerror = () => setError("Failed to load PDF engine.");
+    document.head.appendChild(script);
+  }, []);
+
+  // Extract Drive file ID and load via pdf.js
+  useEffect(() => {
+    if (!pdfJsReady || !url) return;
+    // url is already a /preview link — derive a /view link for direct download
+    const m = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+    const directUrl = m
+      ? `https://drive.google.com/uc?export=download&id=${m[1]}`
+      : url;
+
+    setLoading(true);
+    setError(null);
+    setPdfDoc(null);
+    setCurrentPdfPage(1);
+
+    window.pdfjsLib.getDocument({
+      url: directUrl,
+      withCredentials: false,
+    }).promise.then(doc => {
+      setPdfDoc(doc);
+      setTotalPdfPages(doc.numPages);
+      setLoading(false);
+    }).catch(() => {
+      // Fall back to iframe if CORS blocks pdf.js
+      setError("cors_fallback");
+      setLoading(false);
+    });
+  }, [pdfJsReady, url]);
+
+  // Render page on canvas
+  useEffect(() => {
+    if (!pdfDoc || !canvasRef.current || !containerRef.current) return;
+
+    const renderPage = async () => {
+      if (renderTaskRef.current) {
+        try { renderTaskRef.current.cancel(); } catch {}
+      }
+      setLoading(true);
+      try {
+        const page = await pdfDoc.getPage(currentPdfPage);
+        const containerWidth = containerRef.current ? containerRef.current.offsetWidth : 340;
+        // Scale to fit container width, then apply user zoom
+        const baseVP = page.getViewport({ scale: 1 });
+        const scale = (containerWidth / baseVP.width) * zoom;
+        const viewport = page.getViewport({ scale });
+
+        const canvas = canvasRef.current;
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        const ctx = canvas.getContext("2d");
+        ctx.fillStyle = "#FEFDF8";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        const task = page.render({ canvasContext: ctx, viewport });
+        renderTaskRef.current = task;
+        await task.promise;
+        setLoading(false);
+      } catch (e) {
+        if (e?.name !== "RenderingCancelledException") {
+          setLoading(false);
+        }
+      }
+    };
+
+    renderPage();
+  }, [pdfDoc, currentPdfPage, zoom]);
+
+  // Derive original Drive link for "open in new tab"
+  const m = url && url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+  const openLink = m ? `https://drive.google.com/file/d/${m[1]}/view` : url;
+
+  // Container width for A4 height calc
+  const containerWidth = containerRef.current ? containerRef.current.offsetWidth : 340;
+  const a4Height = Math.round(containerWidth * A4_RATIO);
+
+  // CORS fallback: use iframe but with better styling
+  if (error === "cors_fallback") {
+    return (
+      <div style={{ marginBottom: 18 }}>
+        <div style={{
+          width: "100%",
+          paddingTop: `${A4_RATIO * 100}%`,
+          position: "relative",
+          borderRadius: 6,
+          overflow: "hidden",
+          boxShadow: dark
+            ? "0 4px 24px rgba(0,0,0,0.55)"
+            : "2px 4px 18px rgba(0,0,0,0.18), -1px 0 0 #E5E0D5",
+          background: "#FEFDF8",
+        }}>
+          <iframe
+            src={url}
+            title="Exam PDF"
+            style={{
+              position: "absolute", inset: 0,
+              width: "100%", height: "100%",
+              border: "none", background: "#FEFDF8",
+            }}
+            allow="autoplay"
+          />
+        </div>
+        <PdfControls
+          current={currentPdfPage} total={totalPdfPages}
+          onPrev={() => setCurrentPdfPage(p => Math.max(1, p - 1))}
+          onNext={() => setCurrentPdfPage(p => Math.min(totalPdfPages, p + 1))}
+          zoom={zoom} onZoom={setZoom}
+          openLink={openLink} dark={dark} accent={accent}
+          showPageNav={false}
         />
       </div>
-      <a
-        href={url} target="_blank" rel="noopener noreferrer"
+    );
+  }
+
+  return (
+    <div style={{ marginBottom: 18 }}>
+      {/* Paper container — true A4 ratio */}
+      <div
+        ref={containerRef}
         style={{
-          display: "inline-flex", alignItems: "center", gap: 6,
-          marginTop: 10, padding: "8px 14px", borderRadius: 8,
-          background: `${accent}15`, color: accent,
-          border: `1px solid ${accent}33`,
-          fontSize: 12, fontWeight: 700, textDecoration: "none",
+          width: "100%",
+          background: dark ? "#1E293B" : "#E8E3D8",
+          borderRadius: 8,
+          padding: "12px",
+          boxSizing: "border-box",
         }}
       >
-        📄 Open PDF in new tab
+        <div style={{
+          position: "relative",
+          width: "100%",
+          background: "#FEFDF8",
+          borderRadius: 4,
+          overflow: "hidden",
+          boxShadow: dark
+            ? "0 4px 24px rgba(0,0,0,0.55)"
+            : "2px 4px 18px rgba(0,0,0,0.18), -1px 0 0 #E5E0D5",
+          minHeight: loading && !pdfDoc ? a4Height : undefined,
+        }}>
+          {/* Loading spinner */}
+          {loading && (
+            <div style={{
+              position: "absolute", inset: 0,
+              display: "flex", flexDirection: "column",
+              alignItems: "center", justifyContent: "center",
+              background: "#FEFDF8", zIndex: 2, gap: 12,
+              minHeight: a4Height,
+            }}>
+              <div style={{
+                width: 32, height: 32, borderRadius: "50%",
+                border: `3px solid ${accent}33`,
+                borderTopColor: accent,
+                animation: "sm-spin 0.7s linear infinite",
+              }} />
+              <div style={{ fontSize: 12, color: "#6B7280", fontWeight: 600 }}>
+                {pdfDoc ? "Rendering page…" : "Loading PDF…"}
+              </div>
+            </div>
+          )}
+
+          {/* PDF canvas */}
+          <canvas
+            ref={canvasRef}
+            style={{
+              display: "block",
+              width: "100%",
+              height: "auto",
+              opacity: loading ? 0 : 1,
+              transition: "opacity 0.25s ease",
+            }}
+          />
+
+          {/* No doc yet placeholder */}
+          {!pdfDoc && !loading && !error && (
+            <div style={{
+              minHeight: a4Height,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              color: "#9CA3AF", fontSize: 13,
+            }}>
+              No PDF loaded
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Controls */}
+      <PdfControls
+        current={currentPdfPage} total={totalPdfPages}
+        onPrev={() => setCurrentPdfPage(p => Math.max(1, p - 1))}
+        onNext={() => setCurrentPdfPage(p => Math.min(totalPdfPages, p + 1))}
+        zoom={zoom} onZoom={setZoom}
+        openLink={openLink} dark={dark} accent={accent}
+        showPageNav={totalPdfPages > 1}
+      />
+    </div>
+  );
+}
+
+function PdfControls({ current, total, onPrev, onNext, zoom, onZoom, openLink, dark, accent, showPageNav }) {
+  const btnStyle = {
+    padding: "6px 10px", borderRadius: 7, fontSize: 13, cursor: "pointer", fontWeight: 700,
+    border: `1px solid ${dark ? "#334155" : "#E5E7EB"}`,
+    background: dark ? "#1E293B" : "#F9FAFB",
+    color: dark ? "#E2E8F0" : "#374151",
+  };
+  return (
+    <div style={{ marginTop: 10, display: "flex", gap: 7, alignItems: "center", flexWrap: "wrap" }}>
+      {/* Zoom controls */}
+      <button style={btnStyle} onClick={() => onZoom(z => Math.max(0.5, z - 0.25))} title="Zoom out">−</button>
+      <span style={{ fontSize: 11, fontWeight: 700, color: dark ? "#94A3B8" : "#6B7280", minWidth: 36, textAlign: "center" }}>
+        {Math.round(zoom * 100)}%
+      </span>
+      <button style={btnStyle} onClick={() => onZoom(z => Math.min(3.0, z + 0.25))} title="Zoom in">+</button>
+      <button style={{ ...btnStyle, fontSize: 10 }} onClick={() => onZoom(1.0)} title="Reset zoom">Reset</button>
+
+      <div style={{ flex: 1 }} />
+
+      {/* Page navigation */}
+      {showPageNav && (
+        <>
+          <button style={{ ...btnStyle, opacity: current <= 1 ? 0.4 : 1 }} onClick={onPrev} disabled={current <= 1}>‹</button>
+          <span style={{ fontSize: 11, fontWeight: 700, color: dark ? "#94A3B8" : "#6B7280" }}>{current}/{total}</span>
+          <button style={{ ...btnStyle, opacity: current >= total ? 0.4 : 1 }} onClick={onNext} disabled={current >= total}>›</button>
+        </>
+      )}
+
+      {/* Open externally */}
+      <a href={openLink} target="_blank" rel="noopener noreferrer"
+        style={{
+          display: "inline-flex", alignItems: "center", gap: 5,
+          padding: "6px 10px", borderRadius: 7,
+          background: `${accent}12`, color: accent,
+          border: `1px solid ${accent}30`,
+          fontSize: 11, fontWeight: 700, textDecoration: "none",
+        }}
+      >
+        📄 Open
       </a>
     </div>
   );
@@ -1590,8 +1910,8 @@ function getStyles(dark) {
   return {
     app: {
       minHeight: "100vh", background: bg, color: text,
-      fontFamily: "'Segoe UI', system-ui, -apple-system, sans-serif",
-      maxWidth: 480, margin: "0 auto", position: "relative",
+      fontFamily: "'Plus Jakarta Sans', system-ui, -apple-system, sans-serif",
+      width: "100%", position: "relative",
     },
     library: { minHeight: "100vh", background: bg },
     libraryHeader: {
