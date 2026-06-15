@@ -1208,6 +1208,21 @@ nav{
       <!-- EXAM — tabs: 1st/2nd/3rd Paper -->
       <div class="section" id="pg-exam">
         <div class="exam-section">
+          <!-- WRITTEN EXAM BOOK CARD -->
+          <div onclick="openWrittenExamBook()" style="margin:0 14px 14px;padding:14px 16px;background:rgba(26,107,60,.07);border:1.5px solid rgba(26,107,60,.25);border-radius:14px;cursor:pointer;display:flex;align-items:center;gap:12px;transition:all .2s" onmouseover="this.style.background='rgba(26,107,60,.13)';this.style.borderColor='rgba(26,107,60,.5)'" onmouseout="this.style.background='rgba(26,107,60,.07)';this.style.borderColor='rgba(26,107,60,.25)'">
+            <div style="width:48px;height:48px;background:rgba(26,107,60,.12);border:1.5px solid rgba(26,107,60,.3);border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1a6b3c" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+            </div>
+            <div style="flex:1">
+              <div style="font-size:14px;font-weight:800;color:var(--text)">Written Exam Book</div>
+              <div style="font-size:10px;color:var(--text2);margin-top:3px;font-weight:600">PYQ &bull; Model Sets &bull; Practice &bull; Page-flip Reader</div>
+              <div style="display:flex;gap:5px;margin-top:7px">
+                <span style="font-size:9px;background:rgba(26,107,60,.12);color:#1a6b3c;padding:2px 8px;border-radius:99px;font-weight:800;border:1px solid rgba(26,107,60,.25)">2nd &amp; 3rd Paper</span>
+                <span style="font-size:9px;background:rgba(34,197,94,.15);color:#1a6b3c;padding:2px 8px;border-radius:99px;font-weight:800;border:1px solid rgba(34,197,94,.25)">Bookmarks</span>
+              </div>
+            </div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text2)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </div>
           <div class="paper-tabs">
             <button class="ptab active" id="etab-1" onclick="switchExamTab('1',this)">1st Paper</button>
             <button class="ptab" id="etab-2" onclick="switchExamTab('2',this)">2nd Paper</button>
@@ -4338,6 +4353,39 @@ function openTypingGame(){
 }
 function closeTypingGame(){
   document.getElementById('typing-game-panel').style.display = 'none';
+  document.body.style.overflow = '';
+}
+</script>
+
+<!-- ═══ WRITTEN EXAM BOOK FULLSCREEN PANEL ═══ -->
+<div id="written-exam-panel" style="display:none;position:fixed;inset:0;z-index:8000;background:#F4F1EA;flex-direction:column">
+  <!-- Top bar -->
+  <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:#fff;border-bottom:1px solid #E5E7EB;flex-shrink:0">
+    <button onclick="closeWrittenExamBook()" style="width:36px;height:36px;border-radius:50%;background:rgba(0,0,0,.05);border:1px solid rgba(0,0,0,.08);color:#1F2937;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <div>
+      <div style="font-size:14px;font-weight:800;color:#1F2937">Written Exam</div>
+      <div style="font-size:10px;color:#9CA3AF;font-weight:600">Shikshit Mitra &mdash; लिखित परीक्षा पुस्तकालय</div>
+    </div>
+  </div>
+  <!-- iframe loads written-exam.html -->
+  <iframe id="written-exam-iframe" src="" style="flex:1;width:100%;border:none;background:#F4F1EA" allowfullscreen></iframe>
+</div>
+
+<script>
+function openWrittenExamBook(){
+  var panel = document.getElementById('written-exam-panel');
+  var iframe = document.getElementById('written-exam-iframe');
+  panel.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+  // Load only once
+  if(!iframe.src || iframe.src === window.location.href){
+    iframe.src = 'written-exam.html';
+  }
+}
+function closeWrittenExamBook(){
+  document.getElementById('written-exam-panel').style.display = 'none';
   document.body.style.overflow = '';
 }
 </script>
