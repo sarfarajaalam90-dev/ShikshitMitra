@@ -7,10 +7,6 @@
 <meta name="theme-color" content="#1a6b3c">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-<!-- Firebase (compat / v8 style — same as main app) -->
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-
 <!-- React + Babel -->
 <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -48,101 +44,97 @@ window.addEventListener('load', function(){
 <script type="text/babel" data-presets="react">
 const { useState, useEffect, useRef, useCallback } = React;
 
-// ─── Firebase config (same project as Shikshit Mitra main app) ─────────────
-const FIREBASE_CONFIG = {
-  apiKey: "AIzaSyAaTyHTxmuktChm8AtJC15dfVejD66Gxvg",
-  authDomain: "digitalnepalapp.firebaseapp.com",
-  projectId: "digitalnepalapp",
-  storageBucket: "digitalnepalapp.firebasestorage.app",
-  messagingSenderId: "570701053036",
-  appId: "1:570701053036:web:0d074762777277e9d26c49",
-};
+// ─── DATA SOURCE: Google Sheet (published as CSV) ───────────────────────────
+// Expected header row (any order, case-insensitive):
+// Book | PageOrder | Title | Type | Year | Premium | Published | PdfUrl | Content
+//
+// Book      → "second-paper" or "third-paper"
+// PageOrder → 1, 2, 3 ... (controls page order inside the book)
+// Type      → PYQ / Model Set / Practice Set / Special Set
+// Premium   → yes/no
+// Published → yes/no
+// PdfUrl    → Google Drive share link to the exam PDF (optional)
+// Content   → optional HTML notes shown above/below the PDF
+const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vS5svv38RZ1MJ54P73voMTXWZYuNZZeU6Hy4uWsXS95Z0BcydyeRsQINcY8gzVyKYNCeQoM8u3gs7E_/pub?output=csv";
 
-// ─── Initialize Firebase ───────────────────────────────────────────────────
-let db = null;
-let firebaseReady = false;
-
-function initFirebase() {
-  try {
-    if (typeof window !== "undefined" && window.firebase) {
-      if (!window.firebase.apps?.length) {
-        window.firebase.initializeApp(FIREBASE_CONFIG);
-      }
-      db = window.firebase.firestore();
-      db.settings({ cacheSizeBytes: window.firebase.firestore.CACHE_SIZE_UNLIMITED });
-      db.enablePersistence({ synchronizeTabs: true }).catch(() => {});
-      firebaseReady = true;
-      return true;
+function parseCSV(csv) {
+  var lines = csv.replace(/\r/g, "").trim().split("\n");
+  if (lines.length < 2) return [];
+  var headers = lines[0].split(",").map(function (h) { return h.replace(/"/g, "").trim(); });
+  return lines.slice(1).map(function (line) {
+    var cols = [], cur = "", inQ = false;
+    for (var i = 0; i < line.length; i++) {
+      var ch = line[i];
+      if (ch === '"') { inQ = !inQ; }
+      else if (ch === "," && !inQ) { cols.push(cur.trim()); cur = ""; }
+      else { cur += ch; }
     }
-  } catch (e) {
-    console.warn("Firebase init failed, using mock data:", e);
-  }
-  return false;
+    cols.push(cur.trim());
+    var obj = {};
+    headers.forEach(function (h, i) { obj[h] = (cols[i] || "").replace(/^"|"$/g, "").trim(); });
+    return obj;
+  });
 }
 
-// ─── Firestore helpers ─────────────────────────────────────────────────────
-const FS = {
-  async getExams(bookId) {
-    if (!firebaseReady) return null;
-    try {
-      const snap = await db
-        .collection("books")
-        .doc(bookId)
-        .collection("exams")
-        .orderBy("pageOrder")
-        .get();
-      return snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    } catch (e) {
-      console.error("Firestore getExams:", e);
-      return null;
-    }
-  },
+// Turn a normal Google Drive "share" link into an embeddable preview link
+function driveToPreview(url) {
+  if (!url) return "";
+  var m = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+  if (m && m[1]) return "https://drive.google.com/file/d/" + m[1] + "/preview";
+  return url;
+}
 
-  async addExam(bookId, data) {
-    if (!firebaseReady) return null;
-    const now = new Date().toISOString();
-    const ref = await db
-      .collection("books")
-      .doc(bookId)
-      .collection("exams")
-      .add({ ...data, createdAt: now, updatedAt: now });
-    return ref.id;
-  },
+const TRUE_VALUES = ["yes", "true", "1", "y", "published", "premium"];
+function toBool(v, defaultTrue) {
+  if (v === undefined || v === null || String(v).trim() === "") return !!defaultTrue;
+  return TRUE_VALUES.indexOf(String(v).trim().toLowerCase()) !== -1;
+}
+function getField(row, names) {
+  for (var i = 0; i < names.length; i++) {
+    var key = Object.keys(row).find(function (k) { return k.trim().toLowerCase() === names[i].toLowerCase(); });
+    if (key !== undefined && row[key] !== undefined) return row[key];
+  }
+  return "";
+}
 
-  async updateExam(bookId, examId, data) {
-    if (!firebaseReady) return;
-    await db
-      .collection("books")
-      .doc(bookId)
-      .collection("exams")
-      .doc(examId)
-      .update({ ...data, updatedAt: new Date().toISOString() });
-  },
+async function loadExamsFromSheet() {
+  try {
+    const res = await fetch(SHEET_CSV_URL + (SHEET_CSV_URL.indexOf("?") > -1 ? "&" : "?") + "t=" + Date.now());
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const rows = parseCSV(await res.text());
+    if (!rows.length) return null;
 
-  async deleteExam(bookId, examId) {
-    if (!firebaseReady) return;
-    await db
-      .collection("books")
-      .doc(bookId)
-      .collection("exams")
-      .doc(examId)
-      .delete();
-  },
-
-  subscribeExams(bookId, callback) {
-    if (!firebaseReady) return () => {};
-    return db
-      .collection("books")
-      .doc(bookId)
-      .collection("exams")
-      .orderBy("pageOrder")
-      .onSnapshot(snap => {
-        callback(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    const grouped = {};
+    rows.forEach(function (r, idx) {
+      const book = getField(r, ["Book"]).trim();
+      const title = getField(r, ["Title"]).trim();
+      if (!book || !title) return;
+      if (!grouped[book]) grouped[book] = [];
+      const pageOrder = parseInt(getField(r, ["PageOrder", "Order"]), 10) || (grouped[book].length + 1);
+      grouped[book].push({
+        id: "sheet_" + book + "_" + idx,
+        title: title,
+        type: getField(r, ["Type"]).trim() || "Practice Set",
+        year: getField(r, ["Year"]).trim() || null,
+        pageOrder: pageOrder,
+        isPremium: toBool(getField(r, ["Premium"]), false),
+        isPublished: toBool(getField(r, ["Published"]), true),
+        pdfUrl: driveToPreview(getField(r, ["PdfUrl", "PDF", "PdfLink"]).trim()),
+        content: getField(r, ["Content"]).trim(),
       });
-  },
-};
+    });
 
-// ─── MOCK DATA (fallback when Firebase is not connected) ───────────────────
+    Object.keys(grouped).forEach(function (b) {
+      grouped[b].sort(function (a, b2) { return a.pageOrder - b2.pageOrder; });
+    });
+    return grouped;
+  } catch (e) {
+    console.warn("Sheet load failed, using mock data:", e);
+    return null;
+  }
+}
+
+// ─── SAMPLE DATA (fallback shown until/unless the Google Sheet loads) ──────
 const MOCK_BOOKS = {
   "second-paper": {
     id: "second-paper",
@@ -255,7 +247,8 @@ function App() {
   const [view, setView] = useState("library");
   const [selectedBook, setSelectedBook] = useState(null);
   const [exams, setExams] = useState(MOCK_EXAMS);
-  const [usingFirebase, setUsingFirebase] = useState(false);
+  const [usingSheet, setUsingSheet] = useState(false);
+  const [sheetLoading, setSheetLoading] = useState(true);
   const [bookmarks, setBookmarks] = useState(() => {
     try { return JSON.parse(localStorage.getItem("sm_bookmarks") || "{}"); } catch { return {}; }
   });
@@ -267,41 +260,26 @@ function App() {
     try { return localStorage.getItem("sm_dark") === "1"; } catch { return false; }
   });
   const [toast, setToast] = useState(null);
-  const unsubRefs = useRef({});
 
-  // Initialize Firebase on mount
-  useEffect(() => {
-    const ok = initFirebase();
-    if (ok) {
-      setUsingFirebase(true);
-      loadAllFromFirestore();
+  // Load exam pages from the published Google Sheet on mount
+  const loadFromSheet = useCallback(async () => {
+    setSheetLoading(true);
+    const sheetData = await loadExamsFromSheet();
+    if (sheetData && Object.keys(sheetData).length > 0) {
+      setExams(prev => ({ ...prev, ...sheetData }));
+      setUsingSheet(true);
+    } else {
+      setUsingSheet(false);
     }
+    setSheetLoading(false);
   }, []);
+
+  useEffect(() => { loadFromSheet(); }, [loadFromSheet]);
 
   const showToast = (msg, type = "success") => {
     setToast({ msg, type });
     setTimeout(() => setToast(null), 2500);
   };
-
-  const loadAllFromFirestore = async () => {
-    for (const bookId of Object.keys(MOCK_BOOKS)) {
-      const data = await FS.getExams(bookId);
-      if (data !== null) {
-        setExams(prev => ({ ...prev, [bookId]: data }));
-        // Subscribe to real-time updates
-        if (unsubRefs.current[bookId]) unsubRefs.current[bookId]();
-        unsubRefs.current[bookId] = FS.subscribeExams(bookId, (docs) => {
-          setExams(prev => ({ ...prev, [bookId]: docs }));
-        });
-      }
-    }
-  };
-
-  useEffect(() => {
-    return () => {
-      Object.values(unsubRefs.current).forEach(u => u && u());
-    };
-  }, []);
 
   const toggleDark = () => {
     setDarkMode(d => {
@@ -330,45 +308,31 @@ function App() {
     localStorage.setItem("sm_lastpage", JSON.stringify(next));
   };
 
-  // ── CRUD operations (Firebase + local state) ──
+  // ── Local-only CRUD (session preview; the Google Sheet is the source of truth) ──
   const addExam = async (bookId, exam) => {
-    const newExam = { ...exam, id: Date.now().toString() };
-    if (usingFirebase) {
-      const id = await FS.addExam(bookId, exam);
-      if (id) { showToast("Exam added to Firestore ✓"); return; }
-    }
+    const newExam = { ...exam, id: "local_" + Date.now().toString() };
     setExams(prev => ({
       ...prev,
       [bookId]: [...(prev[bookId] || []), newExam].sort((a, b) => a.pageOrder - b.pageOrder),
     }));
-    showToast("Exam added ✓");
+    showToast("Added (preview only — add a row in your Sheet to make it permanent) ✓");
   };
 
   const updateExam = async (bookId, examId, data) => {
-    if (usingFirebase) {
-      await FS.updateExam(bookId, examId, data);
-      showToast("Updated ✓");
-      return;
-    }
     setExams(prev => ({
       ...prev,
       [bookId]: prev[bookId].map(e => e.id === examId ? { ...e, ...data } : e)
         .sort((a, b) => a.pageOrder - b.pageOrder),
     }));
-    showToast("Updated ✓");
+    showToast("Updated (preview only — edit your Sheet to make it permanent) ✓");
   };
 
   const deleteExam = async (bookId, examId) => {
-    if (usingFirebase) {
-      await FS.deleteExam(bookId, examId);
-      showToast("Deleted", "danger");
-      return;
-    }
     setExams(prev => ({
       ...prev,
       [bookId]: prev[bookId].filter(e => e.id !== examId),
     }));
-    showToast("Deleted", "danger");
+    showToast("Removed from preview", "danger");
   };
 
   const styles = getStyles(darkMode);
@@ -384,6 +348,7 @@ function App() {
           fontSize: 13, fontWeight: 700, zIndex: 9999,
           boxShadow: "0 4px 20px rgba(0,0,0,0.2)",
           animation: "fadeInDown 0.3s ease",
+          textAlign: "center", maxWidth: "90%",
         }}>
           {toast.msg}
         </div>
@@ -400,7 +365,8 @@ function App() {
           styles={styles}
           lastPage={lastPage}
           bookmarks={bookmarks}
-          usingFirebase={usingFirebase}
+          usingSheet={usingSheet}
+          sheetLoading={sheetLoading}
         />
       )}
       {view === "book" && selectedBook && (
@@ -429,7 +395,8 @@ function App() {
           onDelete={deleteExam}
           styles={styles}
           darkMode={darkMode}
-          usingFirebase={usingFirebase}
+          usingSheet={usingSheet}
+          onRefresh={loadFromSheet}
         />
       )}
 
@@ -465,7 +432,7 @@ function App() {
 // ═══════════════════════════════════════════════════════════════════════════
 // LIBRARY VIEW
 // ═══════════════════════════════════════════════════════════════════════════
-function Library({ books, exams, onOpen, onAdmin, darkMode, onToggleDark, styles, lastPage, bookmarks, usingFirebase }) {
+function Library({ books, exams, onOpen, onAdmin, darkMode, onToggleDark, styles, lastPage, bookmarks, usingSheet, sheetLoading }) {
   const [opening, setOpening] = useState(null);
 
   const handleOpen = (bookId) => {
@@ -484,12 +451,14 @@ function Library({ books, exams, onOpen, onAdmin, darkMode, onToggleDark, styles
           <div style={styles.librarySubtitle}>लिखित परीक्षा पुस्तकालय</div>
         </div>
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          {usingFirebase && (
+          {!sheetLoading && (
             <div style={{
-              fontSize: 10, fontWeight: 700, color: "#10B981",
-              background: "#D1FAE5", padding: "3px 8px", borderRadius: 99,
-              border: "1px solid #A7F3D0",
-            }}>🔥 Live</div>
+              fontSize: 10, fontWeight: 700,
+              color: usingSheet ? "#10B981" : "#F59E0B",
+              background: usingSheet ? "#D1FAE5" : "#FEF3C7",
+              padding: "3px 8px", borderRadius: 99,
+              border: `1px solid ${usingSheet ? "#A7F3D0" : "#FDE68A"}`,
+            }}>{usingSheet ? "📊 Sheet" : "📦 Sample"}</div>
           )}
           <button style={styles.iconBtn} onClick={onToggleDark} title="Toggle dark mode">
             {dark ? "☀️" : "🌙"}
@@ -572,7 +541,7 @@ function Library({ books, exams, onOpen, onAdmin, darkMode, onToggleDark, styles
 
       <div style={styles.footer}>
         Shikshit Mitra · सफलताको साथी
-        {usingFirebase && <span style={{ color: "#10B981", marginLeft: 6 }}>· Firebase Connected</span>}
+        {usingSheet && <span style={{ color: "#10B981", marginLeft: 6 }}>· Synced with Google Sheet</span>}
       </div>
     </div>
   );
@@ -1024,15 +993,22 @@ function ExamPage({ exam, book, pageNum, dark, styles }) {
         {exam.title}
       </h2>
 
-      {/* Content */}
-      <div
-        className={`exam-content ${dark ? "dark" : ""}`}
-        style={{
-          fontSize: 14, lineHeight: 1.85,
-          color: dark ? "#CBD5E1" : "#1F2937",
-        }}
-        dangerouslySetInnerHTML={{ __html: exam.content }}
-      />
+      {/* PDF (if provided) */}
+      {exam.pdfUrl && (
+        <PdfViewer url={exam.pdfUrl} dark={dark} accent={book.color} />
+      )}
+
+      {/* Content (optional notes / typed questions) */}
+      {exam.content && exam.content.trim() && (
+        <div
+          className={`exam-content ${dark ? "dark" : ""}`}
+          style={{
+            fontSize: 14, lineHeight: 1.85,
+            color: dark ? "#CBD5E1" : "#1F2937",
+          }}
+          dangerouslySetInnerHTML={{ __html: exam.content }}
+        />
+      )}
 
       {/* Page number */}
       <div style={{
@@ -1042,6 +1018,39 @@ function ExamPage({ exam, book, pageNum, dark, styles }) {
       }}>
         — {pageNum} —
       </div>
+    </div>
+  );
+}
+
+// ─── PDF VIEWER ────────────────────────────────────────────────────────────
+function PdfViewer({ url, dark, accent }) {
+  return (
+    <div style={{ marginBottom: 18 }}>
+      <div style={{
+        width: "100%", height: "65vh", minHeight: 380,
+        borderRadius: 10, overflow: "hidden",
+        border: `1px solid ${dark ? "#334155" : "#E5E7EB"}`,
+        background: dark ? "#0F172A" : "#F3F4F6",
+      }}>
+        <iframe
+          src={url}
+          title="Exam PDF"
+          style={{ width: "100%", height: "100%", border: "none" }}
+          allow="autoplay"
+        />
+      </div>
+      <a
+        href={url} target="_blank" rel="noopener noreferrer"
+        style={{
+          display: "inline-flex", alignItems: "center", gap: 6,
+          marginTop: 10, padding: "8px 14px", borderRadius: 8,
+          background: `${accent}15`, color: accent,
+          border: `1px solid ${accent}33`,
+          fontSize: 12, fontWeight: 700, textDecoration: "none",
+        }}
+      >
+        📄 Open PDF in new tab
+      </a>
     </div>
   );
 }
@@ -1164,14 +1173,14 @@ function RichEditor({ value, onChange, dark }) {
 // ═══════════════════════════════════════════════════════════════════════════
 // ADMIN PANEL
 // ═══════════════════════════════════════════════════════════════════════════
-function AdminPanel({ isAdmin, onLogin, onBack, exams, books, onAdd, onUpdate, onDelete, styles, darkMode, usingFirebase }) {
+function AdminPanel({ isAdmin, onLogin, onBack, exams, books, onAdd, onUpdate, onDelete, styles, darkMode, usingSheet, onRefresh }) {
   const [pw, setPw] = useState("");
   const [err, setErr] = useState("");
   const [adminView, setAdminView] = useState("list");
   const [editingExam, setEditingExam] = useState(null);
   const [selectedBook, setSelectedBook] = useState("second-paper");
   const [form, setForm] = useState({
-    title: "", type: "Model Set", year: "", content: "",
+    title: "", type: "Model Set", year: "", content: "", pdfUrl: "",
     pageOrder: 1, isPremium: false, isPublished: true,
   });
   const [saving, setSaving] = useState(false);
@@ -1189,6 +1198,7 @@ function AdminPanel({ isAdmin, onLogin, onBack, exams, books, onAdd, onUpdate, o
     setForm({
       title: "", type: "Model Set", year: "",
       content: "<p><strong>प्र.१.</strong> Question here <em>(marks)</em></p>",
+      pdfUrl: "",
       pageOrder: bookExams.length + 1,
       isPremium: false, isPublished: true,
     });
@@ -1283,7 +1293,7 @@ function AdminPanel({ isAdmin, onLogin, onBack, exams, books, onAdd, onUpdate, o
             {editingExam ? "✏️ Edit Exam" : "➕ Add New Exam"}
           </div>
           <div style={{ fontSize: 10, color: dark ? "#64748B" : "#9CA3AF" }}>
-            {usingFirebase ? "🔥 Firebase" : "📦 Local"}
+            📝 Preview only
           </div>
         </div>
 
@@ -1329,14 +1339,27 @@ function AdminPanel({ isAdmin, onLogin, onBack, exams, books, onAdd, onUpdate, o
           </div>
 
           <div style={{ marginBottom: 14 }}>
-            <label style={labelStyle}>Content</label>
+            <label style={labelStyle}>PDF URL (optional)</label>
+            <input
+              style={inputStyle}
+              value={form.pdfUrl || ""}
+              onChange={e => setForm(f => ({ ...f, pdfUrl: e.target.value }))}
+              placeholder="Google Drive share link to the exam PDF"
+            />
+            <div style={{ fontSize: 10, color: dark ? "#475569" : "#9CA3AF", marginTop: 5 }}>
+              Paste a normal Google Drive "share" link — it'll be converted to an embeddable preview automatically.
+            </div>
+          </div>
+
+          <div style={{ marginBottom: 14 }}>
+            <label style={labelStyle}>Content (optional notes)</label>
             <RichEditor
               value={form.content}
               onChange={content => setForm(f => ({ ...f, content }))}
               dark={dark}
             />
             <div style={{ fontSize: 10, color: dark ? "#475569" : "#9CA3AF", marginTop: 5 }}>
-              Tip: Use H3 for sections, Bold for question numbers, Italic for marks
+              Tip: Use H3 for sections, Bold for question numbers, Italic for marks. Leave empty if you're only embedding a PDF.
             </div>
           </div>
 
@@ -1399,8 +1422,26 @@ function AdminPanel({ isAdmin, onLogin, onBack, exams, books, onAdd, onUpdate, o
       }}>
         <button style={styles.backBtn} onClick={onBack}>← Library</button>
         <div style={{ fontWeight: 700, color: dark ? "#F1F5F9" : "#1F2937" }}>📋 Admin</div>
-        <div style={{ fontSize: 10, color: usingFirebase ? "#10B981" : "#F59E0B", fontWeight: 700 }}>
-          {usingFirebase ? "🔥 Firebase" : "📦 Mock Data"}
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div style={{ fontSize: 10, color: usingSheet ? "#10B981" : "#F59E0B", fontWeight: 700 }}>
+            {usingSheet ? "📊 Sheet" : "📦 Sample Data"}
+          </div>
+          <button
+            onClick={onRefresh}
+            title="Reload from Google Sheet"
+            style={{ ...styles.iconBtn, width: 28, height: 28, fontSize: 12 }}
+          >🔄</button>
+        </div>
+      </div>
+
+      <div style={{ padding: "12px 16px 0" }}>
+        <div style={{
+          fontSize: 11, lineHeight: 1.6, padding: "10px 12px", borderRadius: 8,
+          background: dark ? "#1E293B" : "#FFF8E1",
+          border: `1px solid ${dark ? "#334155" : "#FDE68A"}`,
+          color: dark ? "#FCD34D" : "#92400E",
+        }}>
+          📊 Exam pages are loaded from your Google Sheet. Edits below are a <strong>local preview only</strong> — to make permanent changes, edit the Sheet and tap 🔄 Refresh.
         </div>
       </div>
 
