@@ -3,1060 +3,2021 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Shikshit Mitra — Typing Practice</title>
-<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;600;700;800&family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
+<title>Written Exam — Shikshit Mitra</title>
+<meta name="theme-color" content="#1a6b3c">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<!-- React + Babel -->
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
 <style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-
-:root{
-  --bg:#ffffff;
-  --surface:#f8fafc;
-  --surface2:#f1f5f9;
-  --border:#e2e8f0;
-  --text:#1e293b;
-  --text2:#64748b;
-  --text3:#94a3b8;
-  --primary:#16a34a;
-  --primary-dim:rgba(22,163,74,.10);
-  --red:#dc2626;
-  --red-dim:rgba(220,38,38,.10);
-  --yellow:#ca8a04;
-  --blue:#2563eb;
-  --radius:14px;
-  --radius-sm:9px;
-}
-
-html,body{
-  font-family:'Sora',sans-serif;
-  background:#ffffff;
-  color:var(--text);
-  min-height:100vh;
-  width:100%;
-  overflow-x:hidden;
-  -webkit-text-size-adjust:100%;
-}
-
-.wrap{
-  position:relative;z-index:1;
-  width:100%;
-  max-width:1500px;
-  margin:0 auto;
-  padding:20px 24px 32px;
-}
-
-@media (min-width:1200px){
-  .wrap{padding:28px 48px 44px;}
-}
-
-.header{
-  display:flex;align-items:center;justify-content:space-between;
-  margin-bottom:20px;
-  flex-wrap:nowrap;
-  gap:10px;
-}
-.brand{display:flex;align-items:center;gap:10px;flex-shrink:0;min-width:0;}
-.brand-icon{
-  width:38px;height:38px;border-radius:10px;flex-shrink:0;
-  background:linear-gradient(135deg,#166534,#22c55e);
-  display:flex;align-items:center;justify-content:center;
-  font-size:18px;
-}
-.brand-name{font-size:15px;font-weight:800;letter-spacing:-.3px;white-space:nowrap;}
-.brand-sub{font-size:10px;color:var(--text2);font-weight:400;margin-top:1px;white-space:nowrap;}
-
-.header-right{display:flex;align-items:center;gap:8px;flex-shrink:0;}
-
-#sound-toggle{
-  width:34px;height:34px;
-  background:var(--surface);border:1px solid var(--border);border-radius:50%;
-  cursor:pointer;display:flex;align-items:center;justify-content:center;
-  color:var(--text2);transition:all .2s;flex-shrink:0;
-}
-#sound-toggle.muted{color:var(--text3);border-color:var(--text3);}
-
-.lang-toggle{
-  display:flex;gap:4px;
-  background:var(--surface);
-  border:1px solid var(--border);
-  border-radius:99px;padding:4px;
-  flex-shrink:0;
-}
-.lang-btn{
-  padding:6px 14px;border-radius:99px;border:none;
-  font-family:'Sora',sans-serif;font-size:12px;font-weight:700;
-  cursor:pointer;transition:all .2s;
-  color:var(--text2);background:transparent;
-  white-space:nowrap;
-}
-.lang-btn.active{background:var(--primary);color:#000;}
-
-.timer-bar-track{
-  height:3px;background:var(--surface2);border-radius:99px;overflow:hidden;
-  margin-bottom:10px;
-}
-.timer-bar-fill{
-  height:100%;background:var(--primary);border-radius:99px;
-  transition:width .9s linear, background .3s;
-  width:100%;
-}
-.timer-bar-fill.warn{background:var(--yellow);}
-.timer-bar-fill.danger{background:var(--red);}
-
-.duration-row{
-  display:flex;align-items:center;justify-content:space-between;
-  gap:8px;
-  margin-bottom:16px;
-  flex-wrap:nowrap;
-}
-.duration-left{
-  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
-  min-width:0;
-}
-.duration-label{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;white-space:nowrap;}
-.dpill{
-  padding:4px 12px;border-radius:99px;
-  border:1px solid var(--border);
-  background:transparent;color:var(--text2);
-  font-family:'Sora',sans-serif;font-size:11px;font-weight:700;
-  cursor:pointer;transition:all .2s;white-space:nowrap;
-}
-.dpill.active{border-color:var(--primary);color:var(--primary);background:var(--primary-dim);}
-
-.timer-chip{
-  display:flex;align-items:center;gap:6px;
-  flex-shrink:0;
-}
-.timer-display{
-  font-family:'Space Mono',monospace;
-  font-size:14px;font-weight:700;
-  color:var(--primary);
-  line-height:1;
-  transition:color .3s;
-  letter-spacing:.5px;
-  min-width:36px;text-align:right;
-}
-.timer-display.warn{color:var(--yellow);}
-.timer-display.danger{color:var(--red);}
-
-.timer-dot{
-  width:7px;height:7px;border-radius:50%;
-  background:var(--primary);flex-shrink:0;
-  transition:background .3s;
-}
-.timer-dot.warn{background:var(--yellow);}
-.timer-dot.danger{background:var(--red);}
-.timer-dot.pulse{animation:dotPulse 1s ease-in-out infinite;}
-@keyframes dotPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}
-
-.section-label-sm{
-  font-size:11px;font-weight:700;color:var(--text3);
-  text-transform:uppercase;letter-spacing:.8px;
-  margin-bottom:8px;
-}
-
-/* ── Passage box — main text, more prominent ── */
-.passage-box{
-  background:#ffffff;
-  border:1.5px solid var(--border);
-  border-radius:var(--radius);padding:20px;
-  margin-bottom:14px;
-  position:relative;overflow:hidden;
-  cursor:text;
-  box-shadow:0 2px 12px rgba(0,0,0,0.07);
-}
-.passage-box::before{
-  content:'';position:absolute;top:0;left:0;right:0;height:3px;
-  background:linear-gradient(90deg,var(--primary),transparent);
-}
-
-/* ── "Your Typing" box — slightly dimmer to contrast with passage ── */
-.typed-box{
-  background:#f8fafc;
-  border:1.5px solid var(--border);
-  border-radius:var(--radius);padding:20px;
-  margin-bottom:14px;
-  position:relative;overflow:hidden;
-  cursor:text;
-  box-shadow:0 1px 6px rgba(0,0,0,0.04);
-  opacity:0.88;
-}
-.typed-box::before{
-  content:'';position:absolute;top:0;left:0;right:0;height:3px;
-  background:linear-gradient(90deg,var(--blue),transparent);
-}
-
-.passage-viewport{
-  overflow:hidden;
-  position:relative;
-  height:190px;
-}
-
-/* ── Main passage text — bolder, darker, more prominent ── */
-.passage-text{
-  font-size:20px;line-height:1.9;
-  font-family:'Sora',sans-serif;
-  font-weight:700;
-  word-break:normal;
-  overflow-wrap:normal;
-  user-select:none;
-  color:#0f172a;
-  letter-spacing:0.01em;
-  transition:transform .35s ease;
-  will-change:transform;
-}
-.passage-text.nepali{font-family:'Noto Sans Devanagari',sans-serif;font-size:19px;font-weight:700;}
-
-/* ── Typed echo text — slightly smaller & lighter than passage ── */
-.typed-text{
-  font-size:18px;line-height:1.9;
-  font-family:'Sora',sans-serif;
-  font-weight:600;
-  word-break:normal;
-  overflow-wrap:normal;
-  user-select:none;
-  color:#334155;
-  transition:transform .35s ease;
-  will-change:transform;
-}
-.typed-text.nepali{font-family:'Noto Sans Devanagari',sans-serif;font-size:17px;font-weight:600;}
-
-.char{position:relative;transition:background .08s;}
-.char.correct{color:#16a34a;}
-.char.wrong{color:#dc2626;background:rgba(220,38,38,.12);border-radius:2px;}
-.char.current{
-  background:#22c55e;color:#fff;border-radius:3px;
-  animation:blink .8s ease-in-out infinite;
-}
-/* ── Pending chars in passage — visible but clearly untyped ── */
-.char.pending{color:#64748b;}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
-
-.input-wrap{position:absolute;opacity:0;pointer-events:none;width:0;height:0;overflow:hidden;}
-#typing-input{
-  width:100%;padding:14px 18px;
-  background:var(--surface);border:1.5px solid var(--border);
-  border-radius:var(--radius);
-  font-family:'Sora',sans-serif;font-size:15px;color:var(--text);
-  outline:none;resize:none;
-  transition:border-color .2s;
-  min-height:56px;
-  caret-color:var(--primary);
-}
-#typing-input.nepali-input{font-family:'Noto Sans Devanagari',sans-serif;}
-
-.loading-text{
-  text-align:center;color:#64748b;font-size:14px;padding:20px 0;
-}
-
-.controls-row{
-  display:flex;gap:8px;flex-wrap:nowrap;
-}
-.btn{
-  flex:1;
-  padding:9px 10px;border-radius:var(--radius-sm);border:none;
-  font-family:'Sora',sans-serif;font-size:12px;font-weight:700;
-  cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:5px;
-  white-space:nowrap;
-}
-.btn svg{flex-shrink:0;width:13px;height:13px;}
-.btn-primary{background:var(--primary);color:#000;}
-.btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(34,197,94,.35);}
-.btn-secondary{background:var(--surface);color:var(--text2);border:1px solid var(--border);}
-.btn-secondary:hover{border-color:var(--text2);color:var(--text);}
-.btn:disabled{opacity:.4;cursor:not-allowed;transform:none!important;box-shadow:none!important;}
-
-#result-screen{display:none;}
-.result-card{
-  background:var(--surface);border:1px solid var(--border);
-  border-radius:18px;padding:32px 28px;text-align:center;
-  position:relative;overflow:hidden;
-}
-.result-card::before{
-  content:'';position:absolute;top:0;left:0;right:0;height:3px;
-  background:linear-gradient(90deg,var(--primary),var(--blue),var(--yellow));
-}
-.result-title{font-size:28px;font-weight:800;margin-bottom:6px;}
-.result-sub{font-size:13px;color:var(--text2);margin-bottom:28px;}
-.result-grid{
-  display:grid;grid-template-columns:repeat(4,1fr);gap:12px;
-  margin-bottom:28px;text-align:left;
-}
-.result-stat{
-  background:var(--surface2);border-radius:12px;padding:16px;
-}
-.result-stat-val{font-family:'Space Mono',monospace;font-size:30px;font-weight:700;line-height:1;}
-.result-stat-label{font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-top:6px;}
-.result-grade{
-  display:inline-block;font-size:56px;margin-bottom:12px;
-  animation:pop .4s cubic-bezier(.34,1.56,.64,1) both;
-}
-@keyframes pop{from{transform:scale(0)}to{transform:scale(1)}}
-.perf-bar-wrap{margin-bottom:16px;text-align:left;}
-.perf-bar-label{display:flex;justify-content:space-between;font-size:11px;font-weight:600;color:var(--text2);margin-bottom:6px;}
-.perf-bar-track{height:8px;background:var(--surface2);border-radius:99px;overflow:hidden;}
-.perf-bar-fill{height:100%;border-radius:99px;transition:width 1s ease .3s;}
-
-.error-banner{
-  background:rgba(248,81,73,.1);border:1px solid rgba(248,81,73,.3);
-  border-radius:var(--radius-sm);padding:12px 16px;
-  font-size:12px;color:var(--red);
-  margin-bottom:14px;text-align:center;display:none;
-}
-
-#confetti-canvas{position:fixed;inset:0;pointer-events:none;z-index:999;}
-
-@keyframes pulseGreen{0%{box-shadow:0 0 0 0 rgba(34,197,94,.4)}70%{box-shadow:0 0 0 10px transparent}100%{box-shadow:0 0 0 0 transparent}}
-.passage-box.active{animation:pulseGreen 1s ease 1;}
-
-@media (max-width:480px){
-  .wrap{padding:14px 12px 24px;}
-  .brand-name{font-size:14px;}
-  .brand-sub{font-size:9px;}
-  .header{gap:6px;margin-bottom:14px;}
-  .brand-icon{width:34px;height:34px;}
-  .lang-btn{padding:6px 10px;font-size:11px;}
-  #sound-toggle{width:30px;height:30px;}
-  .passage-box{padding:14px;}
-  .typed-box{padding:14px;}
-  .passage-text{font-size:17px;line-height:1.85;}
-  .passage-text.nepali{font-size:15px;}
-  .typed-text{font-size:15px;line-height:1.85;}
-  .typed-text.nepali{font-size:14px;}
-  .result-grid{grid-template-columns:repeat(2,1fr);}
-  .btn{font-size:11px;padding:9px 6px;}
-  .duration-label{display:none;}
-}
-
-@media (max-width:360px){
-  .header-right{gap:6px;}
-  .lang-btn{padding:5px 8px;font-size:10px;}
-}
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif; }
+  #root { min-height: 100vh; }
+  #boot-loader {
+    position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    background: #F4F1EA; gap: 12px; z-index: 9999;
+  }
+  #boot-loader .spin {
+    width: 34px; height: 34px; border-radius: 50%;
+    border: 3px solid #E5E7EB; border-top-color: #1a6b3c;
+    animation: sm-spin .8s linear infinite;
+  }
+  #boot-loader span { font-size: 12px; font-weight: 700; color: #6B7280; letter-spacing: .5px; }
+  @keyframes sm-spin { to { transform: rotate(360deg); } }
 </style>
 </head>
 <body>
-<canvas id="confetti-canvas"></canvas>
 
-<div class="wrap">
+<div id="boot-loader"><div class="spin"></div><span>Loading Written Exam…</span></div>
+<div id="root"></div>
 
-  <!-- Header -->
-  <div class="header">
-    <div class="brand">
-      <div class="brand-icon">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="2" y="3" width="20" height="14" rx="2"/>
-          <line x1="8" y1="21" x2="16" y2="21"/>
-          <line x1="12" y1="17" x2="12" y2="21"/>
-        </svg>
-      </div>
-      <div>
-        <div class="brand-name">Shikshit Mitra</div>
-        <div class="brand-sub">Typing Practice</div>
-      </div>
-    </div>
-    <div class="header-right">
-      <button id="sound-toggle" onclick="toggleSound()" title="Toggle sound">
-        <svg id="sound-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
-          <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
-          <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
-        </svg>
-      </button>
-      <div class="lang-toggle">
-        <button class="lang-btn active" onclick="setLang('en')" id="btn-en">English</button>
-        <button class="lang-btn" onclick="setLang('np')" id="btn-np">नेपाली</button>
-      </div>
-    </div>
-  </div>
+<script type="text/babel" data-presets="react">
+window.addEventListener('load', function(){
+  var loader = document.getElementById('boot-loader');
+  if (loader) loader.style.display = 'none';
+});
+</script>
 
-  <!-- Game screen -->
-  <div id="game-screen">
+<script type="text/babel" data-presets="react">
+const { useState, useEffect, useRef, useCallback } = React;
 
-    <div class="timer-bar-track"><div class="timer-bar-fill" id="timer-bar"></div></div>
+// ─── DATA SOURCE: Google Sheet (published as CSV) ───────────────────────────
+// Expected header row (any order, case-insensitive):
+// Book | PageOrder | Title | Type | Year | Premium | Published | PdfUrl | Content
+//
+// Book      → "second-paper" or "third-paper"
+// PageOrder → 1, 2, 3 ... (controls page order inside the book)
+// Type      → PYQ / Model Set / Practice Set / Special Set
+// Premium   → yes/no
+// Published → yes/no
+// PdfUrl    → Google Drive share link to the exam PDF (optional)
+// Content   → optional HTML notes shown above/below the PDF
+const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vS5svv38RZ1MJ54P73voMTXWZYuNZZeU6Hy4uWsXS95Z0BcydyeRsQINcY8gzVyKYNCeQoM8u3gs7E_/pub?output=csv";
 
-    <div class="duration-row">
-      <div class="duration-left">
-        <span class="duration-label">Duration:</span>
-        <button class="dpill active" onclick="setDuration(60)" id="d60">1 min</button>
-        <button class="dpill" onclick="setDuration(300)" id="d300">5 min</button>
-        <button class="dpill" onclick="setDuration(600)" id="d600">10 min</button>
-      </div>
-      <div class="timer-chip">
-        <div class="timer-dot" id="timer-dot"></div>
-        <div class="timer-display" id="timer-display">1:00</div>
-      </div>
-    </div>
-
-    <div class="error-banner" id="error-banner">
-      ⚠️ Could not load passages from Google Sheets. Check your internet connection and try again.
-    </div>
-
-    <!-- Main passage box — more prominent -->
-    <div class="passage-box" id="passage-box" tabindex="0" onclick="focusInput()">
-      <div class="passage-viewport" id="passage-viewport">
-        <div class="passage-text" id="passage-display">
-          <div class="loading-text">Loading passages…</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Your Typing box — slightly dimmer -->
-    <div class="section-label-sm">Your Typing</div>
-    <div class="typed-box" id="typed-box" tabindex="0" onclick="focusInput()">
-      <div class="passage-viewport" id="typed-viewport">
-        <div class="typed-text" id="typed-display">
-          <span class="char pending">तपाईंले टाइप गरेको यहाँ देखिनेछ… / Your typing will appear here…</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="input-wrap">
-      <textarea id="typing-input" rows="1" tabindex="-1" aria-hidden="true"></textarea>
-    </div>
-
-    <div class="controls-row">
-      <button class="btn btn-primary" id="btn-start" onclick="startGame()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-        Start
-      </button>
-      <button class="btn btn-secondary" id="btn-restart" onclick="restartGame()" disabled>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg>
-        Restart
-      </button>
-      <button class="btn btn-secondary" onclick="newPassage()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-        New Passage
-      </button>
-    </div>
-
-  </div><!-- /game-screen -->
-
-  <!-- Result screen -->
-  <div id="result-screen">
-    <div class="result-card">
-      <div class="result-grade" id="result-grade">🎉</div>
-      <div class="result-title" id="result-title">Great Job!</div>
-      <div class="result-sub" id="result-sub">Here's how you did</div>
-
-      <div class="result-grid">
-        <div class="result-stat">
-          <div class="result-stat-val" style="color:var(--primary)" id="r-wpm">0</div>
-          <div class="result-stat-label">WPM</div>
-        </div>
-        <div class="result-stat">
-          <div class="result-stat-val" style="color:var(--blue)" id="r-net">0</div>
-          <div class="result-stat-label">Net WPM</div>
-        </div>
-        <div class="result-stat">
-          <div class="result-stat-val" style="color:var(--yellow)" id="r-acc">0%</div>
-          <div class="result-stat-label">Accuracy</div>
-        </div>
-        <div class="result-stat">
-          <div class="result-stat-val" style="color:var(--red)" id="r-wrongwords">0</div>
-          <div class="result-stat-label">Wrong Words</div>
-        </div>
-        <div class="result-stat">
-          <div class="result-stat-val" style="color:var(--primary)" id="r-correctwords">0</div>
-          <div class="result-stat-label">Correct Words</div>
-        </div>
-        <div class="result-stat">
-          <div class="result-stat-val" style="color:var(--text)" id="r-time">0s</div>
-          <div class="result-stat-label">Time Used</div>
-        </div>
-        <div class="result-stat">
-          <div class="result-stat-val" style="color:var(--yellow)" id="r-best">0</div>
-          <div class="result-stat-label">Best Score</div>
-        </div>
-        <div class="result-stat">
-          <div class="result-stat-val" style="color:var(--text)" id="r-backspace">0</div>
-          <div class="result-stat-label">Backspaces</div>
-        </div>
-      </div>
-
-      <div class="perf-bar-wrap">
-        <div class="perf-bar-label"><span>Speed</span><span id="pb-speed-val">0 WPM</span></div>
-        <div class="perf-bar-track"><div class="perf-bar-fill" id="pb-speed" style="background:var(--primary);width:0%"></div></div>
-      </div>
-      <div class="perf-bar-wrap">
-        <div class="perf-bar-label"><span>Accuracy</span><span id="pb-acc-val">0%</span></div>
-        <div class="perf-bar-track"><div class="perf-bar-fill" id="pb-acc" style="background:var(--blue);width:0%"></div></div>
-      </div>
-
-      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:8px;">
-        <button class="btn btn-primary" onclick="playAgain()" style="flex:none;">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg>
-          Play Again
-        </button>
-        <button class="btn btn-secondary" onclick="newPassageResult()" style="flex:none;">New Passage</button>
-      </div>
-    </div>
-  </div>
-
-</div><!-- /wrap -->
-
-<script>
-const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSCjPD_E5TAQIl90ANdWSqGVYfuFv_TNnWPgp-1mUQ9KCWQHu8cmQVMwvQWxLxjZ_Q1jcVWnIVuhYLs/pub?output=csv';
-
-let lang = 'en';
-let duration = 60;
-let timeLeft = 60;
-let timerInterval = null;
-let gameStarted = false;
-let gameOver = false;
-let currentPassage = '';
-let currentIndex = 0;
-let totalTyped = 0;
-let correctTyped = 0;
-let errorCount = 0;
-let startTime = null;
-let passageIndex = 0;
-let passagesLoaded = false;
-let charCorrect = [];
-let wordErrorWords = new Set();
-let typedChars = [];
-let backspaceCount = 0;
-
-const passages = { en: [], np: [] };
-
-async function fetchPassages() {
-  try {
-    const res = await fetch(SHEET_CSV_URL);
-    if (!res.ok) throw new Error('Network error');
-    const csv = await res.text();
-    const rows = parseCSV(csv);
-    passages.en = [];
-    passages.np = [];
-    for (let i = 1; i < rows.length; i++) {
-      const row = rows[i];
-      if (!row || row.length < 2) continue;
-      const langCol = (row[0] || '').trim().toLowerCase();
-      const text = (row[1] || '').trim();
-      if (!text) continue;
-      if (langCol === 'en' || langCol === 'english') passages.en.push(text);
-      else if (langCol === 'np' || langCol === 'nepali' || langCol === 'ne') passages.np.push(text);
-    }
-    if (passages.en.length === 0) passages.en = ['No English passages found. Please add passages to your Google Sheet with language column "en".'];
-    if (passages.np.length === 0) passages.np = ['कुनै नेपाली अनुच्छेद फेला परेन। कृपया Google Sheet मा "np" भाषा स्तम्भ सहित अनुच्छेदहरू थप्नुहोस्।'];
-    passagesLoaded = true;
-    document.getElementById('error-banner').style.display = 'none';
-    loadPassage();
-  } catch (err) {
-    console.error('Failed to load passages:', err);
-    document.getElementById('error-banner').style.display = 'block';
-    document.getElementById('passage-display').innerHTML = '<div class="loading-text" style="color:#f85149;">Failed to load passages. Check internet connection.</div>';
-  }
-}
-
-function parseCSV(text) {
-  const rows = [];
-  const lines = text.split('\n');
-  for (const line of lines) {
-    if (!line.trim()) continue;
-    const cols = [];
-    let inQuote = false;
-    let cur = '';
-    for (let i = 0; i < line.length; i++) {
-      const ch = line[i];
-      if (ch === '"') { inQuote = !inQuote; }
-      else if (ch === ',' && !inQuote) { cols.push(cur); cur = ''; }
+function parseCSV(csv) {
+  var lines = csv.replace(/\r/g, "").trim().split("\n");
+  if (lines.length < 2) return [];
+  var headers = lines[0].split(",").map(function (h) { return h.replace(/"/g, "").trim(); });
+  return lines.slice(1).map(function (line) {
+    var cols = [], cur = "", inQ = false;
+    for (var i = 0; i < line.length; i++) {
+      var ch = line[i];
+      if (ch === '"') { inQ = !inQ; }
+      else if (ch === "," && !inQ) { cols.push(cur.trim()); cur = ""; }
       else { cur += ch; }
     }
-    cols.push(cur);
-    rows.push(cols);
-  }
-  return rows;
-}
-
-/* ═══════════════════════════════════════
-   SOUND ENGINE
-═══════════════════════════════════════ */
-let audioCtx = null;
-let soundEnabled = true;
-
-function getAudioCtx(){
-  if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  if(audioCtx.state === 'suspended') audioCtx.resume();
-  return audioCtx;
-}
-
-function playKeyClick(correct){
-  if(!soundEnabled) return;
-  try{
-    const ctx = getAudioCtx();
-    const now = ctx.currentTime;
-    const bufLen = ctx.sampleRate * 0.045;
-    const buf = ctx.createBuffer(1, bufLen, ctx.sampleRate);
-    const data = buf.getChannelData(0);
-    for(let i=0;i<bufLen;i++) data[i]=(Math.random()*2-1)*Math.pow(1-i/bufLen,2.5);
-    const noise = ctx.createBufferSource(); noise.buffer = buf;
-    const bp = ctx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=correct?1800:1100; bp.Q.value=0.8;
-    const hs = ctx.createBiquadFilter(); hs.type='highshelf'; hs.frequency.value=4000; hs.gain.value=correct?6:2;
-    const ng = ctx.createGain(); ng.gain.setValueAtTime(correct?.28:.22,now); ng.gain.exponentialRampToValueAtTime(0.001,now+0.042);
-    noise.connect(bp);bp.connect(hs);hs.connect(ng);ng.connect(ctx.destination);
-    noise.start(now);noise.stop(now+0.05);
-    const osc=ctx.createOscillator();osc.type='sine';osc.frequency.setValueAtTime(correct?680:420,now);osc.frequency.exponentialRampToValueAtTime(correct?320:200,now+0.03);
-    const og=ctx.createGain();og.gain.setValueAtTime(correct?.09:.07,now);og.gain.exponentialRampToValueAtTime(0.001,now+0.035);
-    osc.connect(og);og.connect(ctx.destination);osc.start(now);osc.stop(now+0.04);
-  }catch(e){}
-}
-
-function playBackspace(){
-  if(!soundEnabled) return;
-  try{
-    const ctx=getAudioCtx();const now=ctx.currentTime;
-    const bufLen=ctx.sampleRate*0.035;const buf=ctx.createBuffer(1,bufLen,ctx.sampleRate);const d=buf.getChannelData(0);
-    for(let i=0;i<bufLen;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/bufLen,3);
-    const noise=ctx.createBufferSource();noise.buffer=buf;
-    const lp=ctx.createBiquadFilter();lp.type='lowpass';lp.frequency.value=600;
-    const g=ctx.createGain();g.gain.setValueAtTime(0.15,now);g.gain.exponentialRampToValueAtTime(0.001,now+0.032);
-    noise.connect(lp);lp.connect(g);g.connect(ctx.destination);noise.start(now);noise.stop(now+0.04);
-  }catch(e){}
-}
-
-function playSpace(){
-  if(!soundEnabled) return;
-  try{
-    const ctx=getAudioCtx();const now=ctx.currentTime;
-    const bufLen=ctx.sampleRate*0.06;const buf=ctx.createBuffer(1,bufLen,ctx.sampleRate);const d=buf.getChannelData(0);
-    for(let i=0;i<bufLen;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/bufLen,2);
-    const noise=ctx.createBufferSource();noise.buffer=buf;
-    const bp=ctx.createBiquadFilter();bp.type='bandpass';bp.frequency.value=900;bp.Q.value=0.6;
-    const g=ctx.createGain();g.gain.setValueAtTime(0.32,now);g.gain.exponentialRampToValueAtTime(0.001,now+0.055);
-    noise.connect(bp);bp.connect(g);g.connect(ctx.destination);noise.start(now);noise.stop(now+0.065);
-    const osc=ctx.createOscillator();osc.type='sine';osc.frequency.setValueAtTime(280,now);osc.frequency.exponentialRampToValueAtTime(130,now+0.05);
-    const og=ctx.createGain();og.gain.setValueAtTime(0.12,now);og.gain.exponentialRampToValueAtTime(0.001,now+0.05);
-    osc.connect(og);og.connect(ctx.destination);osc.start(now);osc.stop(now+0.06);
-  }catch(e){}
-}
-
-/* ═══════════════════════════════════════
-   INIT
-═══════════════════════════════════════ */
-function init(){
-  fetchPassages();
-  updateTimerDisplay();
-  document.getElementById('typing-input').addEventListener('input', onInput);
-  document.getElementById('typing-input').addEventListener('keydown', onKeyDown);
-  document.addEventListener('keydown', function(e){
-    if(e.key==='Tab'){e.preventDefault();restartGame();}
-    if(e.key==='Enter' && !gameStarted && !gameOver && passagesLoaded){e.preventDefault();startGame();}
-  });
-  window.addEventListener('resize', ()=>{
-    if(!passagesLoaded) return;
-    updateViewportHeight(document.getElementById('passage-viewport'), document.getElementById('passage-display'), 5);
-    updateViewportHeight(document.getElementById('typed-viewport'), document.getElementById('typed-display'), 3);
+    cols.push(cur.trim());
+    var obj = {};
+    headers.forEach(function (h, i) { obj[h] = (cols[i] || "").replace(/^"|"$/g, "").trim(); });
+    return obj;
   });
 }
 
-function loadPassage(){
-  if(!passagesLoaded) return;
-  const pool = passages[lang];
-  let newIndex;
-  do { newIndex = Math.floor(Math.random() * pool.length); }
-  while(pool.length > 1 && newIndex === passageIndex);
-  passageIndex = newIndex;
-  currentPassage = pool[passageIndex];
-  currentIndex = 0; totalTyped = 0; correctTyped = 0; errorCount = 0;
-  charCorrect = [];
-  wordErrorWords = new Set();
-  typedChars = [];
-  backspaceCount = 0;
-  renderPassage();
-  renderTypedDisplay();
+// Turn a normal Google Drive "share" link into an embeddable preview link
+function driveToPreview(url) {
+  if (!url) return "";
+  var m = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+  if (m && m[1]) return "https://drive.google.com/file/d/" + m[1] + "/preview";
+  return url;
 }
 
-function renderPassage(){
-  const el = document.getElementById('passage-display');
-  el.className = 'passage-text' + (lang==='np'?' nepali':'');
-  el.style.transform = 'translateY(0px)';
-  el.innerHTML = currentPassage.split('').map((ch,i)=>{
-    let cls = 'pending';
-    if(i<currentIndex) cls='correct';
-    if(i===currentIndex) cls='current';
-    const safe = ch.replace(/</g,'&lt;').replace(/>/g,'&gt;');
-    return `<span class="char ${cls}" id="c${i}">${safe}</span>`;
-  }).join('');
-  updateViewportHeight(document.getElementById('passage-viewport'), el, 5);
-  scrollViewport(el, document.getElementById('c'+currentIndex), 5);
+const TRUE_VALUES = ["yes", "true", "1", "y", "published", "premium"];
+function toBool(v, defaultTrue) {
+  if (v === undefined || v === null || String(v).trim() === "") return !!defaultTrue;
+  return TRUE_VALUES.indexOf(String(v).trim().toLowerCase()) !== -1;
 }
-
-function getWordBounds(idx){
-  let start = idx;
-  while(start>0 && currentPassage[start-1] !== ' ') start--;
-  let end = idx;
-  while(end<currentPassage.length && currentPassage[end] !== ' ') end++;
-  return [start,end];
-}
-
-function renderTypedDisplay(){
-  const el = document.getElementById('typed-display');
-  if(!el) return;
-  if(currentIndex === 0){
-    el.className = 'typed-text' + (lang==='np'?' nepali':'');
-    el.style.transform = 'translateY(0px)';
-    el.innerHTML = '<span class="char pending">तपाईंले टाइप गरेको यहाँ देखिनेछ… / Your typing will appear here…</span>';
-    updateViewportHeight(document.getElementById('typed-viewport'), el, 3);
-    return;
+function getField(row, names) {
+  for (var i = 0; i < names.length; i++) {
+    var key = Object.keys(row).find(function (k) { return k.trim().toLowerCase() === names[i].toLowerCase(); });
+    if (key !== undefined && row[key] !== undefined) return row[key];
   }
-  let html = '';
-  for(let k=0;k<currentIndex;k++){
-    const [wStart] = getWordBounds(k);
-    const wrong = wordErrorWords.has(wStart);
-    let ch = typedChars[k];
-    if(ch === undefined) ch = currentPassage[k];
-    const safe = ch.replace(/</g,'&lt;').replace(/>/g,'&gt;');
-    html += `<span class="char ${wrong?'wrong':'correct'}">${safe}</span>`;
-  }
-  html += `<span class="char current" id="typed-cursor"> </span>`;
-  el.innerHTML = html;
-  el.className = 'typed-text' + (lang==='np'?' nepali':'');
-  updateViewportHeight(document.getElementById('typed-viewport'), el, 3);
-  scrollViewport(el, document.getElementById('typed-cursor'), 3);
+  return "";
 }
 
-function getLineHeight(el){
-  const lh = parseFloat(getComputedStyle(el).lineHeight);
-  if(!isNaN(lh) && lh > 0) return lh;
-  return lang==='np' ? 34 : 36;
-}
+async function loadExamsFromSheet() {
+  try {
+    const res = await fetch(SHEET_CSV_URL + (SHEET_CSV_URL.indexOf("?") > -1 ? "&" : "?") + "t=" + Date.now());
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const rows = parseCSV(await res.text());
+    if (!rows.length) return null;
 
-function updateViewportHeight(viewportEl, displayEl, lines){
-  if(!viewportEl || !displayEl) return;
-  const lineHeight = getLineHeight(displayEl);
-  viewportEl.style.height = (lineHeight * lines) + 'px';
-}
-
-function scrollViewport(displayEl, targetSpan, lines){
-  if(!displayEl || !targetSpan) return;
-  const lineHeight = getLineHeight(displayEl);
-  const lineIndex = Math.round(targetSpan.offsetTop / lineHeight);
-  const maxScrollLine = Math.max(0, lineIndex - (lines - 1));
-  displayEl.style.transform = `translateY(-${maxScrollLine * lineHeight}px)`;
-}
-
-/* ═══════════════════════════════════════
-   GAME CONTROLS
-═══════════════════════════════════════ */
-function focusInput(){
-  const inp = document.getElementById('typing-input');
-  if(!inp.disabled) inp.focus();
-  else if(!gameStarted && !gameOver && passagesLoaded) startGame();
-}
-
-function startGame(){
-  if(gameStarted || !passagesLoaded) return;
-  gameStarted=true;gameOver=false;
-  startTime=Date.now();
-  timeLeft=duration;
-  updateTimerDisplay();
-  document.getElementById('typing-input').disabled=false;
-  document.getElementById('typing-input').focus();
-  document.getElementById('btn-start').disabled=true;
-  document.getElementById('btn-restart').disabled=false;
-  document.getElementById('passage-box').classList.add('active');
-  timerInterval=setInterval(tick,1000);
-  renderPassage();
-}
-
-function tick(){
-  timeLeft--;
-  updateTimerDisplay();
-  if(timeLeft<=0) endGame();
-}
-
-function updateTimerDisplay(){
-  const el=document.getElementById('timer-display');
-  const dot=document.getElementById('timer-dot');
-  const bar=document.getElementById('timer-bar');
-  const m=Math.floor(timeLeft/60);
-  const s=timeLeft%60;
-  el.textContent=m+':'+(s<10?'0':'')+s;
-  const pct=(timeLeft/duration)*100;
-  bar.style.width=pct+'%';
-  const warn=timeLeft<=duration*0.4;
-  const danger=timeLeft<=duration*0.15;
-  el.className='timer-display'+(danger?' danger':warn?' warn':'');
-  dot.className='timer-dot'+(danger?' danger pulse':warn?' warn':'');
-  bar.className='timer-bar-fill'+(danger?' danger':warn?' warn':'');
-}
-
-function restartGame(){
-  clearInterval(timerInterval);
-  gameStarted=false;gameOver=false;
-  timeLeft=duration;
-  currentIndex=0;totalTyped=0;correctTyped=0;errorCount=0;
-  charCorrect=[];
-  wordErrorWords=new Set();
-  typedChars=[];
-  backspaceCount=0;
-  document.getElementById('typing-input').value='';
-  document.getElementById('typing-input').disabled=true;
-  document.getElementById('btn-start').disabled=false;
-  document.getElementById('btn-restart').disabled=true;
-  document.getElementById('game-screen').style.display='';
-  document.getElementById('result-screen').style.display='none';
-  updateTimerDisplay();
-  if(passagesLoaded) renderPassage();
-  renderTypedDisplay();
-}
-
-function newPassage(){
-  restartGame();
-  if(passagesLoaded) loadPassage();
-}
-
-function endGame(){
-  clearInterval(timerInterval);
-  gameStarted=false;gameOver=true;
-  document.getElementById('typing-input').disabled=true;
-  showResult();
-}
-
-/* ═══════════════════════════════════════
-   INPUT HANDLING — BACKSPACE BUG FIXED
-═══════════════════════════════════════ */
-function onKeyDown(e){
-  if(!gameStarted) return;
-  if(e.key==='Backspace'){
-    if(currentIndex>0){
-      backspaceCount++;
-      currentIndex--;
-      const span=document.getElementById('c'+currentIndex);
-      const prev=document.getElementById('c'+(currentIndex+1));
-      if(prev) prev.className='char pending';
-
-      // Clear this character's record
-      typedChars[currentIndex] = undefined;
-      charCorrect[currentIndex] = undefined;
-
-      // ── FIX: Re-scan the whole word to see if any errors remain ──
-      const [wStart] = getWordBounds(currentIndex);
-      let wordStillHasError = false;
-      for(let k = wStart; k < currentIndex; k++){
-        if(charCorrect[k] === false){
-          wordStillHasError = true;
-          break;
-        }
-      }
-      if(!wordStillHasError){
-        // No more errors in this word — clear the flag and re-colour as correct
-        wordErrorWords.delete(wStart);
-        for(let k = wStart; k < currentIndex; k++){
-          const s = document.getElementById('c'+k);
-          if(s) s.className = 'char correct';
-        }
-      }
-
-      if(span) span.className='char current';
-      playBackspace();
-      scrollViewport(document.getElementById('passage-display'), span, 5);
-      renderTypedDisplay();
-    }
-    e.preventDefault();
-    const inp=document.getElementById('typing-input');
-    inp.value=inp.value.slice(0,-1);
-  }
-}
-
-function onInput(e){
-  if(!gameStarted||gameOver) return;
-  const inp=document.getElementById('typing-input');
-  const val=inp.value;
-  if(!val.length) return;
-  const typed=val[val.length-1];
-  inp.value='';
-
-  if(currentIndex>=currentPassage.length){
-    loadPassage();return;
-  }
-
-  const expected=currentPassage[currentIndex];
-  const span=document.getElementById('c'+currentIndex);
-  totalTyped++;
-
-  const [wStart] = getWordBounds(currentIndex);
-  const isError = typed !== expected;
-  charCorrect[currentIndex] = !isError;
-  typedChars[currentIndex] = typed;
-
-  if(isError){
-    errorCount++;
-    wordErrorWords.add(wStart);
-    if(typed===' ') playSpace(); else playKeyClick(false);
-  } else {
-    correctTyped++;
-    if(typed===' ') playSpace(); else playKeyClick(true);
-  }
-
-  if(wordErrorWords.has(wStart)){
-    for(let k=wStart;k<=currentIndex;k++){
-      const s=document.getElementById('c'+k);
-      if(s) s.className='char wrong';
-    }
-  } else if(span){
-    span.className='char correct';
-  }
-
-  currentIndex++;
-
-  const next=document.getElementById('c'+currentIndex);
-  if(next) next.className='char current';
-  scrollViewport(document.getElementById('passage-display'), document.getElementById('c'+currentIndex), 5);
-  renderTypedDisplay();
-
-  if(currentIndex>=currentPassage.length) loadPassage();
-}
-
-/* ═══════════════════════════════════════
-   STATS
-═══════════════════════════════════════ */
-function calcStats(){
-  const elapsed=gameStarted?(Date.now()-startTime)/60000:(duration/60);
-  const minutes=Math.max(elapsed,0.01);
-  const wpm=Math.round(correctTyped/5/minutes);
-  const errPerMin=errorCount/Math.max((Date.now()-(startTime||Date.now()))/60000,0.01);
-  const netWpm=Math.max(0,Math.round(wpm-errPerMin));
-  const acc=totalTyped>0?Math.round((correctTyped/totalTyped)*100):100;
-  return{wpm,netWpm,acc,errors:errorCount,chars:totalTyped,correct:correctTyped};
-}
-
-function getTypedWordStats(){
-  let wrong=0, correct=0;
-  let i=0;
-  while(i < currentPassage.length){
-    if(currentPassage[i] === ' '){ i++; continue; }
-    const start = i;
-    while(i < currentPassage.length && currentPassage[i] !== ' ') i++;
-    if(start < currentIndex){
-      if(wordErrorWords.has(start)) wrong++; else correct++;
-    }
-  }
-  return {wrong, correct};
-}
-
-function toggleSound(){
-  soundEnabled=!soundEnabled;
-  const icon=document.getElementById('sound-icon');
-  const btn=document.getElementById('sound-toggle');
-  if(soundEnabled){
-    btn.classList.remove('muted');
-    icon.innerHTML=`<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>`;
-  } else {
-    btn.classList.add('muted');
-    icon.innerHTML=`<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/>`;
-  }
-}
-
-/* ═══════════════════════════════════════
-   RESULT
-═══════════════════════════════════════ */
-function showResult(){
-  const s=calcStats();
-  const timeUsed=duration-timeLeft;
-  const bestKey='sm-best-wpm-'+lang;
-  const prev=parseInt(localStorage.getItem(bestKey)||'0');
-  const best=Math.max(prev,s.wpm);
-  localStorage.setItem(bestKey,best);
-
-  let grade='😐';let title='Keep Practicing!';
-  if(s.acc>=95&&s.wpm>=50){grade='🏆';title='Outstanding!';}
-  else if(s.acc>=90&&s.wpm>=35){grade='🎉';title='Excellent Work!';}
-  else if(s.acc>=85&&s.wpm>=25){grade='👍';title='Good Job!';}
-  else if(s.acc>=70){grade='📈';title='Getting Better!';}
-
-  document.getElementById('result-grade').textContent=grade;
-  document.getElementById('result-title').textContent=title;
-  document.getElementById('result-sub').textContent=lang==='np'?'तपाईंको टाइपिङ परिणाम':'Your typing session results';
-  const wordStats = getTypedWordStats();
-  document.getElementById('r-wpm').textContent=s.wpm;
-  document.getElementById('r-net').textContent=s.netWpm;
-  document.getElementById('r-acc').textContent=s.acc+'%';
-  document.getElementById('r-wrongwords').textContent=wordStats.wrong;
-  document.getElementById('r-correctwords').textContent=wordStats.correct;
-  document.getElementById('r-time').textContent=timeUsed+'s';
-  document.getElementById('r-best').textContent=best;
-  document.getElementById('r-backspace').textContent=backspaceCount;
-
-  setTimeout(()=>{
-    const speedPct=Math.min(100,(s.wpm/80)*100);
-    document.getElementById('pb-speed').style.width=speedPct+'%';
-    document.getElementById('pb-speed-val').textContent=s.wpm+' WPM';
-    document.getElementById('pb-acc').style.width=s.acc+'%';
-    document.getElementById('pb-acc-val').textContent=s.acc+'%';
-  },100);
-
-  document.getElementById('game-screen').style.display='none';
-  document.getElementById('result-screen').style.display='block';
-  window.scrollTo(0,0);
-
-  if(s.wpm>=35&&s.acc>=85) launchConfetti();
-}
-
-function playAgain(){
-  document.getElementById('result-screen').style.display='none';
-  document.getElementById('game-screen').style.display='';
-  restartGame();
-}
-function newPassageResult(){
-  document.getElementById('result-screen').style.display='none';
-  document.getElementById('game-screen').style.display='';
-  newPassage();
-}
-
-/* ═══════════════════════════════════════
-   LANGUAGE / DURATION
-═══════════════════════════════════════ */
-function setLang(l){
-  lang=l;
-  document.getElementById('btn-en').classList.toggle('active',l==='en');
-  document.getElementById('btn-np').classList.toggle('active',l==='np');
-  const inp=document.getElementById('typing-input');
-  inp.className=l==='np'?'nepali-input':'';
-  restartGame();
-  if(passagesLoaded) loadPassage();
-}
-
-function setDuration(sec){
-  duration=sec;timeLeft=sec;
-  [60,300,600].forEach(x=>document.getElementById('d'+x).classList.toggle('active',x===sec));
-  restartGame();
-}
-
-/* ═══════════════════════════════════════
-   CONFETTI
-═══════════════════════════════════════ */
-function launchConfetti(){
-  const canvas=document.getElementById('confetti-canvas');
-  const ctx=canvas.getContext('2d');
-  canvas.width=window.innerWidth;canvas.height=window.innerHeight;
-  const pieces=Array.from({length:120},()=>({
-    x:Math.random()*canvas.width,y:-20,
-    w:6+Math.random()*8,h:10+Math.random()*6,
-    color:['#22c55e','#58a6ff','#e3b341','#f85149','#c084fc'][Math.floor(Math.random()*5)],
-    vx:(Math.random()-.5)*4,vy:2+Math.random()*4,
-    rot:Math.random()*360,vr:(Math.random()-.5)*8,alpha:1
-  }));
-  let frame;
-  function draw(){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    let alive=0;
-    pieces.forEach(p=>{
-      p.x+=p.vx;p.y+=p.vy;p.rot+=p.vr;
-      if(p.y>canvas.height*.6) p.alpha-=0.02;
-      if(p.alpha>0){alive++;
-        ctx.save();ctx.globalAlpha=p.alpha;
-        ctx.translate(p.x,p.y);ctx.rotate(p.rot*Math.PI/180);
-        ctx.fillStyle=p.color;ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);
-        ctx.restore();
-      }
+    const grouped = {};
+    rows.forEach(function (r, idx) {
+      const book = getField(r, ["Book"]).trim();
+      const title = getField(r, ["Title"]).trim();
+      if (!book || !title) return;
+      if (!grouped[book]) grouped[book] = [];
+      const pageOrder = parseInt(getField(r, ["PageOrder", "Order"]), 10) || (grouped[book].length + 1);
+      grouped[book].push({
+        id: "sheet_" + book + "_" + idx,
+        title: title,
+        type: getField(r, ["Type"]).trim() || "Practice Set",
+        year: getField(r, ["Year"]).trim() || null,
+        pageOrder: pageOrder,
+        isPremium: toBool(getField(r, ["Premium"]), false),
+        isPublished: toBool(getField(r, ["Published"]), true),
+        pdfUrl: driveToPreview(getField(r, ["PdfUrl", "PDF", "PdfLink"]).trim()),
+        content: getField(r, ["Content"]).trim(),
+      });
     });
-    if(alive>0) frame=requestAnimationFrame(draw);
-    else ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    Object.keys(grouped).forEach(function (b) {
+      grouped[b].sort(function (a, b2) { return a.pageOrder - b2.pageOrder; });
+    });
+    return grouped;
+  } catch (e) {
+    console.warn("Sheet load failed, using mock data:", e);
+    return null;
   }
-  draw();
-  setTimeout(()=>{cancelAnimationFrame(frame);ctx.clearRect(0,0,canvas.width,canvas.height);},4000);
 }
 
-init();
+// ─── SAMPLE DATA (fallback shown until/unless the Google Sheet loads) ──────
+const MOCK_BOOKS = {
+  "second-paper": {
+    id: "second-paper",
+    title: "Kharidar Second Paper",
+    subtitle: "खरिदार द्वितीय पत्र",
+    color: "#7C2D52",
+    accent: "#B5446E",
+    spine: "#5A1F3B",
+    emoji: "📕",
+  },
+  "third-paper": {
+    id: "third-paper",
+    title: "Kharidar Third Paper",
+    subtitle: "खरिदार तृतीय पत्र",
+    color: "#155C3A",
+    accent: "#1E8A57",
+    spine: "#0D3D27",
+    emoji: "📗",
+  },
+  "officer-paper": {
+    id: "officer-paper",
+    title: "Officer Written Paper",
+    subtitle: "अधिकृत लिखित पत्र",
+    color: "#1E3A6E",
+    accent: "#2563EB",
+    spine: "#0F1F3D",
+    emoji: "📘",
+  },
+};
+
+const MOCK_EXAMS = {
+  "second-paper": [
+    {
+      id: "e1", title: "Model Set 1", type: "Model Set", year: "2079",
+      pageOrder: 1, isPublished: true, isPremium: false,
+      content: `<h3>खण्ड-क: सामान्य ज्ञान</h3>
+<p><strong>प्र.१.</strong> नेपालको संविधान कहिले जारी भयो? <em>(२ अंक)</em></p>
+<p><strong>प्र.२.</strong> नेपालको राष्ट्रिय पशु के हो? <em>(१ अंक)</em></p>
+<p><strong>प्र.३.</strong> हालको नेपालको प्रधानमन्त्री को हुनुहुन्छ? <em>(१ अंक)</em></p>
+<hr/>
+<h3>खण्ड-ख: बौद्धिक परीक्षण</h3>
+<p><strong>प्र.४.</strong> यदि A = 1, B = 2, C = 3 भए MANGO को संख्यात्मक मान कति हुन्छ? <em>(२ अंक)</em></p>
+<p><strong>प्र.५.</strong> श्रृंखला पूरा गर्नुहोस्: 2, 4, 8, 16, ___? <em>(२ अंक)</em></p>
+<p><strong>प्र.६.</strong> एउटा काममा A ले ६ दिनमा र B ले ८ दिनमा सक्छ भने दुवै मिलेर कति दिनमा सक्छन्? <em>(३ अंक)</em></p>`,
+    },
+    {
+      id: "e2", title: "PYQ 2078", type: "PYQ", year: "2078",
+      pageOrder: 2, isPublished: true, isPremium: false,
+      content: `<h3>लोक सेवा आयोग — वि.सं. २०७८</h3>
+<p><strong>प्र.१.</strong> नेपालको सर्वोच्च अदालत कहाँ छ? <em>(१ अंक)</em></p>
+<p><strong>प्र.२.</strong> नेपालमा कति वटा प्रदेश छन्? <em>(१ अंक)</em></p>
+<p><strong>प्र.३.</strong> नेपालको राष्ट्रिय चरा के हो? <em>(१ अंक)</em></p>
+<p><strong>प्र.४.</strong> नेपालको सबैभन्दा अग्लो हिमाल कुन हो? <em>(१ अंक)</em></p>
+<hr/>
+<h3>बौद्धिक परीक्षण</h3>
+<p><strong>प्र.५.</strong> Odd one out: Apple, Mango, Carrot, Banana <em>(२ अंक)</em></p>
+<p><strong>प्र.६.</strong> 15 को 40% कति हो? <em>(२ अंक)</em></p>`,
+    },
+    {
+      id: "e3", title: "Special Set — Sarfaraz Sir", type: "Special Set", year: "2080",
+      pageOrder: 3, isPublished: true, isPremium: true,
+      content: `<h3>विशेष अभ्यास सेट — सरफराज सर</h3>
+<p><strong>प्र.१.</strong> लोक सेवा आयोगको स्थापना कहिले भयो? <em>(२ अंक)</em></p>
+<p><strong>प्र.२.</strong> नेपालको संघीय संसदमा कुल कति सदस्य छन्? <em>(२ अंक)</em></p>
+<p><strong>प्र.३.</strong> नेपालमा पहिलो आम निर्वाचन कहिले भयो? <em>(२ अंक)</em></p>
+<hr/>
+<p><strong>प्र.४.</strong> तार्किक श्रृंखला: A, C, E, G, ___? <em>(१ अंक)</em></p>
+<p><strong>प्र.५.</strong> यदि एउटा संख्याको दोब्बर ३० भए सो संख्या कति? <em>(१ अंक)</em></p>`,
+    },
+    {
+      id: "e4", title: "Practice Set 1", type: "Practice Set", year: null,
+      pageOrder: 4, isPublished: true, isPremium: false,
+      content: `<h3>अभ्यास सेट — १</h3>
+<p><strong>प्र.१.</strong> नेपालको राष्ट्रिय फूल के हो? <em>(१ अंक)</em></p>
+<p><strong>प्र.२.</strong> नेपालको सबैभन्दा लामो नदी कुन हो? <em>(१ अंक)</em></p>
+<p><strong>प्र.३.</strong> नेपालको मुद्रा के हो? <em>(१ अंक)</em></p>
+<p><strong>प्र.४.</strong> नेपालमा कति जिल्ला छन्? <em>(१ अंक)</em></p>
+<hr/>
+<h3>गणित</h3>
+<p><strong>प्र.५.</strong> ३ × ४ + ५ − २ = ? <em>(१ अंक)</em></p>
+<p><strong>प्र.६.</strong> एउटा आयतको लम्बाइ ८ र चौडाइ ५ भए क्षेत्रफल कति? <em>(२ अंक)</em></p>`,
+    },
+  ],
+  "third-paper": [
+    {
+      id: "e5", title: "PYQ 2079", type: "PYQ", year: "2079",
+      pageOrder: 1, isPublished: true, isPremium: false,
+      content: `<h3>लोक सेवा — तृतीय पत्र वि.सं. २०७९</h3>
+<p><strong>प्र.१.</strong> कार्यालय व्यवस्थापन भनेको के हो? <em>(५ अंक)</em></p>
+<p><strong>प्र.२.</strong> पत्राचारका प्रकारहरू उल्लेख गर्नुहोस्। <em>(५ अंक)</em></p>
+<p><strong>प्र.३.</strong> कम्प्युटरका आधारभूत भागहरू के-के हुन्? <em>(५ अंक)</em></p>`,
+    },
+    {
+      id: "e6", title: "Model Set 1", type: "Model Set", year: "2080",
+      pageOrder: 2, isPublished: true, isPremium: false,
+      content: `<h3>मोडल सेट — १ (तृतीय पत्र)</h3>
+<p><strong>प्र.१.</strong> नेपाल सरकारको संगठन संरचना बताउनुहोस्। <em>(१० अंक)</em></p>
+<p><strong>प्र.२.</strong> सूचना प्रविधिको प्रयोग कार्यालय व्यवस्थापनमा कसरी गर्न सकिन्छ? <em>(१० अंक)</em></p>
+<p><strong>प्र.३.</strong> सार्वजनिक सेवा प्रवाहमा सुधारका उपायहरू लेख्नुहोस्। <em>(१० अंक)</em></p>`,
+    },
+  ],
+  "officer-paper": [
+    {
+      id: "e7", title: "PYQ 2079", type: "PYQ", year: "2079",
+      pageOrder: 1, isPublished: true, isPremium: false,
+      content: `<h3>अधिकृत — लिखित परीक्षा वि.सं. २०७९</h3>
+<p><strong>प्र.१.</strong> सुशासनका आधारभूत तत्वहरू उल्लेख गर्नुहोस्। <em>(१० अंक)</em></p>
+<p><strong>प्र.२.</strong> नेपालमा लोकतन्त्रको विकासक्रम बताउनुहोस्। <em>(१० अंक)</em></p>`,
+    },
+  ],
+};
+
+// ─── TYPE BADGE CONFIG ─────────────────────────────────────────────────────
+const TYPE_CONFIG = {
+  "PYQ":          { bg: "#FEF3C7", text: "#92400E", border: "#FDE68A", dot: "#F59E0B" },
+  "Model Set":    { bg: "#DBEAFE", text: "#1E40AF", border: "#BFDBFE", dot: "#3B82F6" },
+  "Practice Set": { bg: "#D1FAE5", text: "#065F46", border: "#A7F3D0", dot: "#10B981" },
+  "Special Set":  { bg: "#EDE9FE", text: "#5B21B6", border: "#DDD6FE", dot: "#8B5CF6" },
+};
+
+// ─── ADMIN PASSWORD ────────────────────────────────────────────────────────
+const ADMIN_PASSWORD = "shikshitmitra2024";
+
+// ═══════════════════════════════════════════════════════════════════════════
+// MAIN APP
+// ═══════════════════════════════════════════════════════════════════════════
+function App() {
+  const [view, setView] = useState("library");
+  const [selectedBook, setSelectedBook] = useState(null);
+  const [exams, setExams] = useState(MOCK_EXAMS);
+  const [usingSheet, setUsingSheet] = useState(false);
+  const [sheetLoading, setSheetLoading] = useState(true);
+  const [bookmarks, setBookmarks] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("sm_bookmarks") || "{}"); } catch { return {}; }
+  });
+  const [lastPage, setLastPage] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("sm_lastpage") || "{}"); } catch { return {}; }
+  });
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [darkMode, setDarkMode] = useState(() => {
+    try { return localStorage.getItem("sm_dark") === "1"; } catch { return false; }
+  });
+  const [toast, setToast] = useState(null);
+
+  // Load exam pages from the published Google Sheet on mount
+  const loadFromSheet = useCallback(async () => {
+    setSheetLoading(true);
+    const sheetData = await loadExamsFromSheet();
+    if (sheetData && Object.keys(sheetData).length > 0) {
+      setExams(prev => ({ ...prev, ...sheetData }));
+      setUsingSheet(true);
+    } else {
+      setUsingSheet(false);
+    }
+    setSheetLoading(false);
+  }, []);
+
+  useEffect(() => { loadFromSheet(); }, [loadFromSheet]);
+
+  const showToast = (msg, type = "success") => {
+    setToast({ msg, type });
+    setTimeout(() => setToast(null), 2500);
+  };
+
+  const toggleDark = () => {
+    setDarkMode(d => {
+      const next = !d;
+      localStorage.setItem("sm_dark", next ? "1" : "0");
+      return next;
+    });
+  };
+
+  const saveBookmark = (bookId, pageIdx) => {
+    const next = { ...bookmarks, [`${bookId}_${pageIdx}`]: true };
+    setBookmarks(next);
+    localStorage.setItem("sm_bookmarks", JSON.stringify(next));
+  };
+
+  const removeBookmark = (bookId, pageIdx) => {
+    const next = { ...bookmarks };
+    delete next[`${bookId}_${pageIdx}`];
+    setBookmarks(next);
+    localStorage.setItem("sm_bookmarks", JSON.stringify(next));
+  };
+
+  const saveLastPage = (bookId, pageIdx) => {
+    const next = { ...lastPage, [bookId]: pageIdx };
+    setLastPage(next);
+    localStorage.setItem("sm_lastpage", JSON.stringify(next));
+  };
+
+  // ── Local-only CRUD (session preview; the Google Sheet is the source of truth) ──
+  const addExam = async (bookId, exam) => {
+    const newExam = { ...exam, id: "local_" + Date.now().toString() };
+    setExams(prev => ({
+      ...prev,
+      [bookId]: [...(prev[bookId] || []), newExam].sort((a, b) => a.pageOrder - b.pageOrder),
+    }));
+    showToast("Added (preview only — add a row in your Sheet to make it permanent) ✓");
+  };
+
+  const updateExam = async (bookId, examId, data) => {
+    setExams(prev => ({
+      ...prev,
+      [bookId]: prev[bookId].map(e => e.id === examId ? { ...e, ...data } : e)
+        .sort((a, b) => a.pageOrder - b.pageOrder),
+    }));
+    showToast("Updated (preview only — edit your Sheet to make it permanent) ✓");
+  };
+
+  const deleteExam = async (bookId, examId) => {
+    setExams(prev => ({
+      ...prev,
+      [bookId]: prev[bookId].filter(e => e.id !== examId),
+    }));
+    showToast("Removed from preview", "danger");
+  };
+
+  const styles = getStyles(darkMode);
+
+  return (
+    <div style={styles.app}>
+      {/* Toast */}
+      {toast && (
+        <div style={{
+          position: "fixed", top: 16, left: "50%", transform: "translateX(-50%)",
+          background: toast.type === "danger" ? "#EF4444" : "#10B981",
+          color: "#fff", padding: "10px 20px", borderRadius: 10,
+          fontSize: 13, fontWeight: 700, zIndex: 9999,
+          boxShadow: "0 4px 20px rgba(0,0,0,0.2)",
+          animation: "fadeInDown 0.3s ease",
+          textAlign: "center", maxWidth: "90%",
+        }}>
+          {toast.msg}
+        </div>
+      )}
+
+      {view === "library" && (
+        <Library
+          books={MOCK_BOOKS}
+          exams={exams}
+          onOpen={(id) => { setSelectedBook(id); setView("book"); }}
+          onAdmin={() => setView("admin")}
+          darkMode={darkMode}
+          onToggleDark={toggleDark}
+          styles={styles}
+          lastPage={lastPage}
+          bookmarks={bookmarks}
+          usingSheet={usingSheet}
+          sheetLoading={sheetLoading}
+        />
+      )}
+      {view === "book" && selectedBook && (
+        <BookReader
+          book={MOCK_BOOKS[selectedBook]}
+          exams={(exams[selectedBook] || []).filter(e => e.isPublished)}
+          onClose={() => setView("library")}
+          darkMode={darkMode}
+          styles={styles}
+          lastPage={lastPage[selectedBook] || 0}
+          onPageChange={(p) => saveLastPage(selectedBook, p)}
+          bookmarks={bookmarks}
+          onBookmark={(p) => saveBookmark(selectedBook, p)}
+          onUnbookmark={(p) => removeBookmark(selectedBook, p)}
+        />
+      )}
+      {view === "admin" && (
+        <AdminPanel
+          isAdmin={isAdmin}
+          onLogin={() => setIsAdmin(true)}
+          onBack={() => setView("library")}
+          exams={exams}
+          books={MOCK_BOOKS}
+          onAdd={addExam}
+          onUpdate={updateExam}
+          onDelete={deleteExam}
+          styles={styles}
+          darkMode={darkMode}
+          usingSheet={usingSheet}
+          onRefresh={loadFromSheet}
+        />
+      )}
+
+      <style>{`
+        @keyframes fadeInDown {
+          from { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+          to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+        @keyframes pageFlip {
+          0%   { transform: rotateY(0deg); }
+          50%  { transform: rotateY(-20deg) scale(0.96); }
+          100% { transform: rotateY(0deg); }
+        }
+        * { box-sizing: border-box; }
+        html, body { margin: 0; padding: 0; }
+        .exam-content h3 { font-size: 15px; font-weight: 700; color: #374151; margin: 0 0 12px; padding-bottom: 8px; border-bottom: 1px dashed #E5E7EB; }
+        .exam-content p  { margin: 8px 0; line-height: 1.9; }
+        .exam-content hr { border: none; border-top: 1px solid #E5E7EB; margin: 16px 0; }
+        .exam-content strong { font-weight: 700; }
+        .exam-content em { color: #6B7280; font-style: italic; }
+        .exam-content ul { padding-left: 20px; }
+        .exam-content li { margin: 6px 0; line-height: 1.7; }
+        .dark .exam-content h3 { color: #E2E8F0; border-color: #334155; }
+        .dark .exam-content hr { border-color: #334155; }
+        .dark .exam-content em { color: #94A3B8; }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 4px; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .books-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0 48px; justify-items: center; }
+        @media (max-width: 900px) { .books-grid { grid-template-columns: repeat(2, 1fr); gap: 0 32px; } }
+        @media (max-width: 520px) { .books-grid { grid-template-columns: repeat(2, 1fr); gap: 0 20px; } }
+      `}</style>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// LIBRARY VIEW — FULL WIDTH 4-COLUMN GRID
+// ═══════════════════════════════════════════════════════════════════════════
+function Library({ books, exams, onOpen, onAdmin, darkMode, onToggleDark, styles, lastPage, bookmarks, usingSheet, sheetLoading }) {
+  const [opening, setOpening] = useState(null);
+  const [hovered, setHovered] = useState(null);
+  const dark = darkMode;
+
+  const handleOpen = (bookId) => {
+    setOpening(bookId);
+    setTimeout(() => { setOpening(null); onOpen(bookId); }, 700);
+  };
+
+  const bg = dark ? "#0F172A" : "#F4F1EA";
+  const card = dark ? "#1E293B" : "#FFFFFF";
+  const text = dark ? "#F1F5F9" : "#1F2937";
+  const muted = dark ? "#64748B" : "#6B7280";
+  const border = dark ? "#1E293B" : "#E5E7EB";
+
+  const bookList = Object.values(books);
+
+  return (
+    <div style={{ minHeight: "100vh", background: bg, color: text }} className={dark ? "dark" : ""}>
+      {/* Header — full width */}
+      <div style={{
+        display: "flex", justifyContent: "space-between", alignItems: "center",
+        padding: "16px 32px", background: card, borderBottom: `1px solid ${border}`,
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+          <span style={{ fontSize: 26 }}>📚</span>
+          <div>
+            <div style={{ fontSize: 20, fontWeight: 800, color: text, lineHeight: 1 }}>Written Exam</div>
+            <div style={{ fontSize: 11, color: muted, marginTop: 3 }}>लिखित परीक्षा पुस्तकालय · Shikshit Mitra</div>
+          </div>
+        </div>
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          {!sheetLoading && (
+            <div style={{
+              fontSize: 10, fontWeight: 700,
+              color: usingSheet ? "#10B981" : "#F59E0B",
+              background: usingSheet ? "#D1FAE5" : "#FEF3C7",
+              padding: "4px 10px", borderRadius: 99,
+              border: `1px solid ${usingSheet ? "#A7F3D0" : "#FDE68A"}`,
+            }}>{usingSheet ? "📊 Live Sheet" : "📦 Sample Data"}</div>
+          )}
+          <button style={styles.iconBtn} onClick={onToggleDark} title="Toggle dark mode">{dark ? "☀️" : "🌙"}</button>
+          <button style={styles.iconBtn} onClick={onAdmin} title="Admin">⚙️</button>
+        </div>
+      </div>
+
+      {/* FULL-WIDTH WOODEN SHELF */}
+      <div style={{ padding: "32px 40px 0" }}>
+        <div style={{
+          fontSize: 11, fontWeight: 700, color: muted,
+          marginBottom: 24, textTransform: "uppercase", letterSpacing: 1.4,
+        }}>Your Library</div>
+
+        {/* Shelf backdrop */}
+        <div style={{
+          position: "relative",
+          background: dark
+            ? "linear-gradient(180deg, #1A0F06 0%, #2D1A0A 100%)"
+            : "linear-gradient(180deg, #8B6914 0%, #6B4F0F 100%)",
+          borderRadius: "12px 12px 0 0",
+          paddingTop: 36,
+          paddingLeft: 40,
+          paddingRight: 40,
+          boxShadow: dark
+            ? "0 8px 32px rgba(0,0,0,0.6), inset 0 2px 8px rgba(0,0,0,0.5)"
+            : "0 8px 32px rgba(0,0,0,0.22), inset 0 2px 8px rgba(0,0,0,0.12)",
+        }}>
+          {/* 4-column grid of books */}
+          <div className="books-grid">
+            {bookList.map(book => {
+              const bookExams = (exams[book.id] || []).filter(e => e.isPublished);
+              const bmCount = Object.keys(bookmarks).filter(k => k.startsWith(book.id)).length;
+              return (
+                <BookCover3D
+                  key={book.id}
+                  book={book}
+                  examCount={bookExams.length}
+                  isOpening={opening === book.id}
+                  isHovered={hovered === book.id}
+                  lastPage={lastPage[book.id] || 0}
+                  bmCount={bmCount}
+                  onClick={() => handleOpen(book.id)}
+                  onHover={(v) => setHovered(v ? book.id : null)}
+                  dark={dark}
+                />
+              );
+            })}
+          </div>
+
+          {/* Shelf plank */}
+          <div style={{
+            height: 26,
+            marginTop: 0,
+            background: dark
+              ? "linear-gradient(180deg, #3D2410 0%, #2A1808 100%)"
+              : "linear-gradient(180deg, #5C3D0A 0%, #3E2906 100%)",
+            borderRadius: "0 0 0 0",
+            boxShadow: "0 8px 0 rgba(0,0,0,0.35), inset 0 2px 0 rgba(255,255,255,0.07)",
+            position: "relative", overflow: "hidden",
+          }}>
+            {Array.from({ length: 40 }, (_, i) => i * 28 + 10).map(x => (
+              <div key={x} style={{
+                position: "absolute", top: 7, left: x,
+                width: 1, height: 12, background: "rgba(0,0,0,0.13)",
+              }} />
+            ))}
+          </div>
+        </div>
+
+        {/* Shadow beneath shelf */}
+        <div style={{
+          height: 12,
+          background: "linear-gradient(180deg, rgba(0,0,0,0.18) 0%, transparent 100%)",
+          borderRadius: "0 0 8px 8px",
+          marginBottom: 32,
+        }} />
+      </div>
+
+      {/* Bookmarks summary — only show if any */}
+      {Object.keys(bookmarks).length > 0 && (
+        <div style={{ padding: "0 40px 24px" }}>
+          <div style={{
+            background: dark ? "#1E293B" : "#FFF8E1",
+            border: `1px solid ${dark ? "#334155" : "#FDE68A"}`,
+            borderRadius: 10, padding: "12px 18px", display: "inline-flex",
+            alignItems: "center", gap: 8,
+            fontSize: 13, color: dark ? "#FCD34D" : "#92400E",
+          }}>
+            🔖 {Object.keys(bookmarks).length} bookmarked page{Object.keys(bookmarks).length > 1 ? "s" : ""} saved
+          </div>
+        </div>
+      )}
+
+      <div style={{
+        textAlign: "center", fontSize: 11, color: muted,
+        padding: "16px 40px 24px",
+        borderTop: `1px solid ${border}`,
+      }}>
+        Shikshit Mitra · सफलताको साथी
+        {usingSheet && <span style={{ color: "#10B981", marginLeft: 8 }}>· Synced with Google Sheet</span>}
+      </div>
+    </div>
+  );
+}
+
+// ─── 3D BOOK COVER ─────────────────────────────────────────────────────────
+function BookCover3D({ book, examCount, isOpening, isHovered, lastPage, bmCount, onClick, onHover, dark }) {
+  const BOOK_W = 160;
+  const BOOK_H = 230;
+  const SPINE_W = 18;
+  const PAGES_W = 12;
+
+  const lift = isHovered && !isOpening;
+
+  return (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        paddingBottom: 18,
+        cursor: "pointer",
+        userSelect: "none",
+        width: "100%",
+      }}
+      onClick={onClick}
+      onMouseEnter={() => onHover(true)}
+      onMouseLeave={() => onHover(false)}
+      onTouchStart={() => onHover(true)}
+      onTouchEnd={() => onHover(false)}
+    >
+      {/* 3D book wrapper */}
+      <div style={{
+        perspective: 1000,
+        perspectiveOrigin: "50% 50%",
+        marginBottom: 16,
+      }}>
+        <div style={{
+          position: "relative",
+          width: BOOK_W + SPINE_W + PAGES_W,
+          height: BOOK_H,
+          transformStyle: "preserve-3d",
+          transition: "transform 0.5s cubic-bezier(0.23, 1, 0.32, 1), filter 0.5s ease",
+          transform: isOpening
+            ? "rotateY(-45deg) translateX(-14px) scale(1.08)"
+            : lift
+              ? "rotateY(-22deg) translateY(-14px)"
+              : "rotateY(-10deg)",
+          filter: lift || isOpening
+            ? `drop-shadow(0 24px 32px rgba(0,0,0,0.5))`
+            : `drop-shadow(0 10px 18px rgba(0,0,0,0.32))`,
+        }}>
+          {/* SPINE */}
+          <div style={{
+            position: "absolute",
+            left: 0, top: 0,
+            width: SPINE_W,
+            height: BOOK_H,
+            background: `linear-gradient(to right, ${book.spine} 0%, ${book.color} 60%, ${book.spine} 100%)`,
+            borderRadius: "3px 0 0 3px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            overflow: "hidden",
+          }}>
+            <div style={{
+              writingMode: "vertical-rl",
+              textOrientation: "mixed",
+              transform: "rotate(180deg)",
+              fontSize: 9, fontWeight: 800, color: "rgba(255,255,255,0.85)",
+              letterSpacing: 1.2, textTransform: "uppercase",
+              maxHeight: BOOK_H - 20,
+              overflow: "hidden",
+              whiteSpace: "nowrap",
+            }}>
+              {book.title}
+            </div>
+          </div>
+
+          {/* COVER FACE */}
+          <div style={{
+            position: "absolute",
+            left: SPINE_W, top: 0,
+            width: BOOK_W,
+            height: BOOK_H,
+            background: `linear-gradient(150deg, ${book.color} 0%, ${book.accent} 55%, ${book.color} 100%)`,
+            borderRadius: "0 5px 5px 0",
+            overflow: "hidden",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "space-between",
+            padding: "20px 14px 14px",
+          }}>
+            {/* Decorative blobs */}
+            <div style={{ position: "absolute", top: -35, right: -35, width: 130, height: 130, borderRadius: "50%", background: "rgba(255,255,255,0.08)", pointerEvents: "none" }} />
+            <div style={{ position: "absolute", bottom: -25, left: -25, width: 110, height: 110, borderRadius: "50%", background: "rgba(255,255,255,0.05)", pointerEvents: "none" }} />
+            <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 4, background: "rgba(255,255,255,0.18)" }} />
+            <div style={{ position: "absolute", top: 62, left: 0, right: 0, height: 1, background: "rgba(255,255,255,0.1)" }} />
+
+            {/* Top: label + title */}
+            <div style={{ position: "relative" }}>
+              <div style={{ fontSize: 30, marginBottom: 10 }}>{book.emoji}</div>
+              <div style={{ color: "rgba(255,255,255,0.6)", fontSize: 8, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 4 }}>
+                लोक सेवा आयोग
+              </div>
+              <div style={{ color: "#fff", fontWeight: 800, fontSize: 13, lineHeight: 1.3 }}>Kharidar</div>
+              <div style={{ color: "#fff", fontWeight: 800, fontSize: 16, lineHeight: 1.25, marginTop: 2 }}>
+                {book.title.replace("Kharidar ", "")}
+              </div>
+            </div>
+
+            {/* Bottom: page count + badges */}
+            <div style={{ position: "relative" }}>
+              <div style={{ fontSize: 9, color: "rgba(255,255,255,0.5)", marginBottom: 6 }}>{book.subtitle}</div>
+              <div style={{
+                color: "rgba(255,255,255,0.95)", fontSize: 10, fontWeight: 700,
+                background: "rgba(0,0,0,0.25)", borderRadius: 6,
+                padding: "4px 9px", display: "inline-block", marginBottom: 6,
+              }}>
+                {examCount} Pages
+              </div>
+              <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
+                {lastPage > 0 && (
+                  <span style={{ fontSize: 9, color: "#fff", fontWeight: 700, background: "rgba(255,255,255,0.2)", borderRadius: 99, padding: "2px 7px" }}>📖 p.{lastPage + 1}</span>
+                )}
+                {bmCount > 0 && (
+                  <span style={{ fontSize: 9, color: "#fff", fontWeight: 700, background: "rgba(255,255,255,0.2)", borderRadius: 99, padding: "2px 7px" }}>🔖 {bmCount}</span>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* PAGES EDGE */}
+          <div style={{
+            position: "absolute",
+            left: SPINE_W + BOOK_W, top: 2,
+            width: PAGES_W,
+            height: BOOK_H - 4,
+            background: dark
+              ? "repeating-linear-gradient(to bottom, #374151 0px, #4B5563 2px, #374151 4px)"
+              : "repeating-linear-gradient(to bottom, #F9F9F0 0px, #E8E2D0 2px, #F9F9F0 4px)",
+            borderRadius: "0 3px 3px 0",
+          }} />
+        </div>
+      </div>
+
+      {/* Label below */}
+      <div style={{
+        fontSize: 11, color: dark ? "#64748B" : "#9CA3AF",
+        fontWeight: 600, letterSpacing: 0.3, textAlign: "center",
+      }}>
+        {isOpening ? "Opening…" : "Tap to open"}
+      </div>
+    </div>
+  );
+}
+
+
+
+// ═══════════════════════════════════════════════════════════════════════════
+// BOOK READER
+// ═══════════════════════════════════════════════════════════════════════════
+function BookReader({ book, exams, onClose, darkMode, styles, lastPage, onPageChange, bookmarks, onBookmark, onUnbookmark }) {
+  const [currentPage, setCurrentPage] = useState(lastPage);
+  const [turning, setTurning] = useState(null);
+  const [showTOC, setShowTOC] = useState(false);
+  const touchStart = useRef(null);
+  const dark = darkMode;
+
+  const totalPages = exams.length + 1;
+
+  const goTo = useCallback((dir) => {
+    if (dir === "next" && currentPage < totalPages - 1) {
+      setTurning("next");
+      setTimeout(() => {
+        const next = currentPage + 1;
+        setCurrentPage(next);
+        onPageChange(next);
+        setTurning(null);
+      }, 320);
+    } else if (dir === "prev" && currentPage > 0) {
+      setTurning("prev");
+      setTimeout(() => {
+        const next = currentPage - 1;
+        setCurrentPage(next);
+        onPageChange(next);
+        setTurning(null);
+      }, 320);
+    }
+  }, [currentPage, totalPages, onPageChange]);
+
+  const jumpTo = (page) => {
+    setCurrentPage(page);
+    onPageChange(page);
+    setShowTOC(false);
+  };
+
+  useEffect(() => {
+    const handleKey = (e) => {
+      if (e.key === "ArrowRight") goTo("next");
+      if (e.key === "ArrowLeft") goTo("prev");
+      if (e.key === "Escape") setShowTOC(false);
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [goTo]);
+
+  const onTouchStart = (e) => { touchStart.current = e.touches[0].clientX; };
+  const onTouchEnd = (e) => {
+    if (touchStart.current === null) return;
+    const diff = touchStart.current - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 45) goTo(diff > 0 ? "next" : "prev");
+    touchStart.current = null;
+  };
+
+  const currentExam = currentPage === 0 ? null : exams[currentPage - 1];
+  const isBookmarked = bookmarks[`${book.id}_${currentPage}`];
+  const progressPct = totalPages > 1 ? Math.round((currentPage / (totalPages - 1)) * 100) : 0;
+
+  const pageStyle = {
+    transition: "transform 0.32s cubic-bezier(0.4,0,0.2,1), opacity 0.32s ease",
+    transform: turning === "next"
+      ? "rotateY(-18deg) scale(0.96)"
+      : turning === "prev"
+        ? "rotateY(18deg) scale(0.96)"
+        : "rotateY(0deg) scale(1)",
+    opacity: turning ? 0.55 : 1,
+  };
+
+  return (
+    <div style={styles.readerWrap} className={dark ? "dark" : ""}>
+      {/* Top bar */}
+      <div style={styles.readerBar}>
+        <button style={styles.backBtn} onClick={onClose}>← Library</button>
+        <div style={{ textAlign: "center", flex: 1 }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: book.color }}>{book.title}</div>
+          <div style={{ fontSize: 10, color: dark ? "#64748B" : "#9CA3AF" }}>
+            {currentPage === 0 ? "Cover" : `Page ${currentPage} of ${totalPages - 1}`}
+          </div>
+        </div>
+        <div style={{ display: "flex", gap: 5 }}>
+          <button style={styles.iconBtn} onClick={() => setShowTOC(t => !t)} title="Table of Contents">
+            📋
+          </button>
+          {currentPage > 0 && (
+            <button
+              style={{ ...styles.iconBtn, color: isBookmarked ? "#F59E0B" : (dark ? "#475569" : "#CBD5E1") }}
+              onClick={() => isBookmarked ? onUnbookmark(currentPage) : onBookmark(currentPage)}
+              title={isBookmarked ? "Remove bookmark" : "Bookmark this page"}
+            >
+              🔖
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Progress bar */}
+      <div style={{ height: 3, background: dark ? "#1E293B" : "#F3F4F6", flexShrink: 0 }}>
+        <div style={{
+          height: "100%", width: `${progressPct}%`,
+          background: book.color, transition: "width 0.4s ease",
+        }} />
+      </div>
+
+      {/* Table of Contents overlay */}
+      {showTOC && (
+        <div style={{
+          position: "absolute", top: 56, left: 0, right: 0, zIndex: 50,
+          background: dark ? "#0F172A" : "#fff",
+          borderBottom: `1px solid ${dark ? "#1E293B" : "#E5E7EB"}`,
+          maxHeight: "60vh", overflowY: "auto",
+          boxShadow: "0 8px 24px rgba(0,0,0,0.15)",
+        }}>
+          <div style={{ padding: "12px 16px" }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: dark ? "#64748B" : "#9CA3AF", marginBottom: 10, textTransform: "uppercase", letterSpacing: 1 }}>
+              Table of Contents
+            </div>
+            {/* Cover */}
+            <button
+              onClick={() => jumpTo(0)}
+              style={{
+                display: "flex", alignItems: "center", gap: 10, width: "100%",
+                padding: "10px 12px", borderRadius: 8, border: "none", cursor: "pointer", textAlign: "left",
+                background: currentPage === 0
+                  ? `${book.color}18`
+                  : dark ? "#1E293B" : "#F9FAFB",
+                color: dark ? "#E2E8F0" : "#1F2937",
+                marginBottom: 4,
+              }}
+            >
+              <span style={{ fontSize: 12, fontWeight: 700, color: book.color, minWidth: 28 }}>C</span>
+              <span style={{ fontSize: 13, fontWeight: 600 }}>Cover Page</span>
+            </button>
+            {/* Exams */}
+            {exams.map((exam, i) => {
+              const tc = TYPE_CONFIG[exam.type] || {};
+              const bm = bookmarks[`${book.id}_${i + 1}`];
+              return (
+                <button
+                  key={exam.id}
+                  onClick={() => jumpTo(i + 1)}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 10, width: "100%",
+                    padding: "10px 12px", borderRadius: 8, border: "none", cursor: "pointer", textAlign: "left",
+                    background: currentPage === i + 1
+                      ? `${book.color}18`
+                      : dark ? "#1E293B" : "#F9FAFB",
+                    color: dark ? "#E2E8F0" : "#1F2937",
+                    marginBottom: 4,
+                  }}
+                >
+                  <span style={{ fontSize: 11, fontWeight: 700, color: book.color, minWidth: 28 }}>{i + 1}</span>
+                  <span style={{ flex: 1, fontSize: 13, fontWeight: 600 }}>{exam.title}</span>
+                  {bm && <span style={{ fontSize: 10 }}>🔖</span>}
+                  <span style={{
+                    fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 5,
+                    background: tc.bg || "#F3F4F6", color: tc.text || "#374151",
+                    border: `1px solid ${tc.border || "#E5E7EB"}`,
+                  }}>{exam.type}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Page */}
+      <div
+        style={styles.pageContainer}
+        onTouchStart={onTouchStart}
+        onTouchEnd={onTouchEnd}
+      >
+        <div style={{ ...styles.page, ...pageStyle }}>
+          {/* Page corner fold */}
+          <div style={{
+            position: "absolute", bottom: 0, right: 0,
+            width: 0, height: 0, borderStyle: "solid",
+            borderWidth: "0 0 28px 28px",
+            borderColor: `transparent transparent ${dark ? "#1E293B" : "#E5E7EB"} transparent`,
+          }} />
+
+          {currentPage === 0 ? (
+            <CoverPage book={book} exams={exams} dark={dark} />
+          ) : currentExam ? (
+            <ExamPage
+              exam={currentExam}
+              book={book}
+              pageNum={currentPage}
+              dark={dark}
+              styles={styles}
+            />
+          ) : null}
+        </div>
+      </div>
+
+      {/* Navigation */}
+      <div style={styles.navBar}>
+        <button
+          style={{ ...styles.navBtn, opacity: currentPage === 0 ? 0.3 : 1 }}
+          onClick={() => goTo("prev")}
+          disabled={currentPage === 0 || !!turning}
+        >
+          ← Prev
+        </button>
+        <div style={{ textAlign: "center" }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: dark ? "#E2E8F0" : "#1F2937" }}>
+            {currentPage} / {totalPages - 1}
+          </div>
+          <div style={{ fontSize: 10, color: dark ? "#64748B" : "#9CA3AF" }}>swipe or tap</div>
+        </div>
+        <button
+          style={{
+            ...styles.navBtn,
+            opacity: currentPage === totalPages - 1 ? 0.3 : 1,
+            background: book.color, color: "#fff", border: "none",
+          }}
+          onClick={() => goTo("next")}
+          disabled={currentPage === totalPages - 1 || !!turning}
+        >
+          Next →
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function CoverPage({ book, exams, dark }) {
+  const types = [...new Set(exams.map(e => e.type))];
+  return (
+    <div style={{ padding: "28px 20px 40px" }}>
+      <div style={{
+        background: `linear-gradient(150deg, ${book.color} 0%, ${book.accent} 60%, ${book.color} 100%)`,
+        borderRadius: 14, padding: "36px 24px", color: "#fff", textAlign: "center", marginBottom: 22,
+      }}>
+        <div style={{ fontSize: 52, marginBottom: 14 }}>{book.emoji}</div>
+        <div style={{ fontSize: 11, opacity: 0.7, letterSpacing: 2, textTransform: "uppercase", marginBottom: 6 }}>
+          लोक सेवा आयोग · Nepal
+        </div>
+        <div style={{ fontSize: 22, fontWeight: 800, marginBottom: 6, letterSpacing: 0.3 }}>{book.title}</div>
+        <div style={{ fontSize: 14, opacity: 0.7 }}>{book.subtitle}</div>
+        <div style={{
+          marginTop: 18, background: "rgba(0,0,0,0.2)",
+          borderRadius: 8, padding: "8px 16px", display: "inline-block",
+          fontSize: 12, fontWeight: 700,
+        }}>
+          {exams.length} Exam Pages Inside
+        </div>
+      </div>
+      <div style={{ display: "flex", gap: 7, flexWrap: "wrap", justifyContent: "center", marginBottom: 18 }}>
+        {types.map(t => {
+          const tc = TYPE_CONFIG[t] || {};
+          return (
+            <span key={t} style={{
+              fontSize: 11, fontWeight: 700, padding: "4px 10px", borderRadius: 7,
+              background: tc.bg || "#F3F4F6", color: tc.text || "#374151",
+              border: `1px solid ${tc.border || "#E5E7EB"}`,
+            }}>{t}</span>
+          );
+        })}
+      </div>
+      <div style={{
+        background: dark ? "#1E293B" : "#F8F7F2",
+        borderRadius: 10, padding: "12px 16px", fontSize: 12,
+        color: dark ? "#94A3B8" : "#6B7280", lineHeight: 1.7,
+      }}>
+        👆 Swipe right to turn pages &nbsp;·&nbsp; Use buttons below &nbsp;·&nbsp; 📋 TOC in top bar
+      </div>
+      <div style={{
+        textAlign: "center", fontSize: 11,
+        color: dark ? "#475569" : "#9CA3AF", marginTop: 20,
+      }}>
+        Shikshit Mitra · सफलताको साथी
+      </div>
+    </div>
+  );
+}
+
+function ExamPage({ exam, book, pageNum, dark, styles }) {
+  const tc = TYPE_CONFIG[exam.type] || {};
+  return (
+    <div style={{ padding: "24px 20px 44px" }}>
+      {/* Header row */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 14 }}>
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+          <span style={{
+            fontSize: 10, fontWeight: 700, padding: "3px 9px", borderRadius: 6,
+            background: tc.bg || "#F3F4F6", color: tc.text || "#374151",
+            border: `1px solid ${tc.border || "#E5E7EB"}`,
+          }}>{exam.type}</span>
+          {exam.year && (
+            <span style={{
+              fontSize: 10, fontWeight: 700, padding: "3px 9px", borderRadius: 6,
+              background: dark ? "#1E293B" : "#F3F4F6",
+              color: dark ? "#94A3B8" : "#6B7280",
+              border: `1px solid ${dark ? "#334155" : "#E5E7EB"}`,
+            }}>{exam.year}</span>
+          )}
+          {exam.isPremium && (
+            <span style={{
+              fontSize: 10, fontWeight: 700, padding: "3px 9px", borderRadius: 6,
+              background: "#FEF9C3", color: "#A16207", border: "1px solid #FDE047",
+            }}>⭐ Premium</span>
+          )}
+        </div>
+        <span style={{
+          fontSize: 10, fontWeight: 700,
+          color: dark ? "#475569" : "#9CA3AF",
+        }}>p.{pageNum}</span>
+      </div>
+
+      {/* Title */}
+      <h2 style={{
+        fontSize: 17, fontWeight: 800,
+        color: book.color,
+        margin: "0 0 18px",
+        paddingBottom: 12,
+        borderBottom: `2px solid ${book.color}22`,
+      }}>
+        {exam.title}
+      </h2>
+
+      {/* PDF (if provided) */}
+      {exam.pdfUrl && (
+        <PdfViewer url={exam.pdfUrl} dark={dark} accent={book.color} />
+      )}
+
+      {/* Content (optional notes / typed questions) */}
+      {exam.content && exam.content.trim() && (
+        <div
+          className={`exam-content ${dark ? "dark" : ""}`}
+          style={{
+            fontSize: 14, lineHeight: 1.85,
+            color: dark ? "#CBD5E1" : "#1F2937",
+          }}
+          dangerouslySetInnerHTML={{ __html: exam.content }}
+        />
+      )}
+
+      {/* Page number */}
+      <div style={{
+        textAlign: "center", color: dark ? "#334155" : "#D1D5DB",
+        fontSize: 12, marginTop: 30, paddingTop: 14,
+        borderTop: `1px solid ${dark ? "#1E293B" : "#F3F4F6"}`,
+      }}>
+        — {pageNum} —
+      </div>
+    </div>
+  );
+}
+
+// ─── PDF VIEWER (pdf.js, A4 ratio, zoom, no black) ──────────────────────
+function PdfViewer({ url, dark, accent }) {
+  const containerRef = useRef(null);
+  const canvasRef = useRef(null);
+  const [pdfDoc, setPdfDoc] = useState(null);
+  const [currentPdfPage, setCurrentPdfPage] = useState(1);
+  const [totalPdfPages, setTotalPdfPages] = useState(0);
+  const [zoom, setZoom] = useState(1.0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [pdfJsReady, setPdfJsReady] = useState(false);
+  const renderTaskRef = useRef(null);
+
+  // A4 ratio: 1:1.414 (width:height)
+  const A4_RATIO = 1.414;
+
+  // Inject pdf.js if not present
+  useEffect(() => {
+    if (window.pdfjsLib) { setPdfJsReady(true); return; }
+    const script = document.createElement("script");
+    script.src = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";
+    script.onload = () => {
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+        "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+      setPdfJsReady(true);
+    };
+    script.onerror = () => setError("Failed to load PDF engine.");
+    document.head.appendChild(script);
+  }, []);
+
+  // Extract Drive file ID and load via pdf.js
+  useEffect(() => {
+    if (!pdfJsReady || !url) return;
+    // url is already a /preview link — derive a /view link for direct download
+    const m = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+    const directUrl = m
+      ? `https://drive.google.com/uc?export=download&id=${m[1]}`
+      : url;
+
+    setLoading(true);
+    setError(null);
+    setPdfDoc(null);
+    setCurrentPdfPage(1);
+
+    window.pdfjsLib.getDocument({
+      url: directUrl,
+      withCredentials: false,
+    }).promise.then(doc => {
+      setPdfDoc(doc);
+      setTotalPdfPages(doc.numPages);
+      setLoading(false);
+    }).catch(() => {
+      // Fall back to iframe if CORS blocks pdf.js
+      setError("cors_fallback");
+      setLoading(false);
+    });
+  }, [pdfJsReady, url]);
+
+  // Render page on canvas
+  useEffect(() => {
+    if (!pdfDoc || !canvasRef.current || !containerRef.current) return;
+
+    const renderPage = async () => {
+      if (renderTaskRef.current) {
+        try { renderTaskRef.current.cancel(); } catch {}
+      }
+      setLoading(true);
+      try {
+        const page = await pdfDoc.getPage(currentPdfPage);
+        const containerWidth = containerRef.current ? containerRef.current.offsetWidth : 340;
+        // Scale to fit container width, then apply user zoom
+        const baseVP = page.getViewport({ scale: 1 });
+        const scale = (containerWidth / baseVP.width) * zoom;
+        const viewport = page.getViewport({ scale });
+
+        const canvas = canvasRef.current;
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        const ctx = canvas.getContext("2d");
+        ctx.fillStyle = "#FEFDF8";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        const task = page.render({ canvasContext: ctx, viewport });
+        renderTaskRef.current = task;
+        await task.promise;
+        setLoading(false);
+      } catch (e) {
+        if (e?.name !== "RenderingCancelledException") {
+          setLoading(false);
+        }
+      }
+    };
+
+    renderPage();
+  }, [pdfDoc, currentPdfPage, zoom]);
+
+  // Derive original Drive link for "open in new tab"
+  const m = url && url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+  const openLink = m ? `https://drive.google.com/file/d/${m[1]}/view` : url;
+
+  // Container width for A4 height calc
+  const containerWidth = containerRef.current ? containerRef.current.offsetWidth : 340;
+  const a4Height = Math.round(containerWidth * A4_RATIO);
+
+  // CORS fallback: use iframe but with better styling
+  if (error === "cors_fallback") {
+    return (
+      <div style={{ marginBottom: 18 }}>
+        <div style={{
+          width: "100%",
+          paddingTop: `${A4_RATIO * 100}%`,
+          position: "relative",
+          borderRadius: 6,
+          overflow: "hidden",
+          boxShadow: dark
+            ? "0 4px 24px rgba(0,0,0,0.55)"
+            : "2px 4px 18px rgba(0,0,0,0.18), -1px 0 0 #E5E0D5",
+          background: "#FEFDF8",
+        }}>
+          <iframe
+            src={url}
+            title="Exam PDF"
+            style={{
+              position: "absolute", inset: 0,
+              width: "100%", height: "100%",
+              border: "none", background: "#FEFDF8",
+            }}
+            allow="autoplay"
+          />
+        </div>
+        <PdfControls
+          current={currentPdfPage} total={totalPdfPages}
+          onPrev={() => setCurrentPdfPage(p => Math.max(1, p - 1))}
+          onNext={() => setCurrentPdfPage(p => Math.min(totalPdfPages, p + 1))}
+          zoom={zoom} onZoom={setZoom}
+          openLink={openLink} dark={dark} accent={accent}
+          showPageNav={false}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ marginBottom: 18 }}>
+      {/* Paper container — true A4 ratio */}
+      <div
+        ref={containerRef}
+        style={{
+          width: "100%",
+          background: dark ? "#1E293B" : "#E8E3D8",
+          borderRadius: 8,
+          padding: "12px",
+          boxSizing: "border-box",
+        }}
+      >
+        <div style={{
+          position: "relative",
+          width: "100%",
+          background: "#FEFDF8",
+          borderRadius: 4,
+          overflow: "hidden",
+          boxShadow: dark
+            ? "0 4px 24px rgba(0,0,0,0.55)"
+            : "2px 4px 18px rgba(0,0,0,0.18), -1px 0 0 #E5E0D5",
+          minHeight: loading && !pdfDoc ? a4Height : undefined,
+        }}>
+          {/* Loading spinner */}
+          {loading && (
+            <div style={{
+              position: "absolute", inset: 0,
+              display: "flex", flexDirection: "column",
+              alignItems: "center", justifyContent: "center",
+              background: "#FEFDF8", zIndex: 2, gap: 12,
+              minHeight: a4Height,
+            }}>
+              <div style={{
+                width: 32, height: 32, borderRadius: "50%",
+                border: `3px solid ${accent}33`,
+                borderTopColor: accent,
+                animation: "sm-spin 0.7s linear infinite",
+              }} />
+              <div style={{ fontSize: 12, color: "#6B7280", fontWeight: 600 }}>
+                {pdfDoc ? "Rendering page…" : "Loading PDF…"}
+              </div>
+            </div>
+          )}
+
+          {/* PDF canvas */}
+          <canvas
+            ref={canvasRef}
+            style={{
+              display: "block",
+              width: "100%",
+              height: "auto",
+              opacity: loading ? 0 : 1,
+              transition: "opacity 0.25s ease",
+            }}
+          />
+
+          {/* No doc yet placeholder */}
+          {!pdfDoc && !loading && !error && (
+            <div style={{
+              minHeight: a4Height,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              color: "#9CA3AF", fontSize: 13,
+            }}>
+              No PDF loaded
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Controls */}
+      <PdfControls
+        current={currentPdfPage} total={totalPdfPages}
+        onPrev={() => setCurrentPdfPage(p => Math.max(1, p - 1))}
+        onNext={() => setCurrentPdfPage(p => Math.min(totalPdfPages, p + 1))}
+        zoom={zoom} onZoom={setZoom}
+        openLink={openLink} dark={dark} accent={accent}
+        showPageNav={totalPdfPages > 1}
+      />
+    </div>
+  );
+}
+
+function PdfControls({ current, total, onPrev, onNext, zoom, onZoom, openLink, dark, accent, showPageNav }) {
+  const btnStyle = {
+    padding: "6px 10px", borderRadius: 7, fontSize: 13, cursor: "pointer", fontWeight: 700,
+    border: `1px solid ${dark ? "#334155" : "#E5E7EB"}`,
+    background: dark ? "#1E293B" : "#F9FAFB",
+    color: dark ? "#E2E8F0" : "#374151",
+  };
+  return (
+    <div style={{ marginTop: 10, display: "flex", gap: 7, alignItems: "center", flexWrap: "wrap" }}>
+      {/* Zoom controls */}
+      <button style={btnStyle} onClick={() => onZoom(z => Math.max(0.5, z - 0.25))} title="Zoom out">−</button>
+      <span style={{ fontSize: 11, fontWeight: 700, color: dark ? "#94A3B8" : "#6B7280", minWidth: 36, textAlign: "center" }}>
+        {Math.round(zoom * 100)}%
+      </span>
+      <button style={btnStyle} onClick={() => onZoom(z => Math.min(3.0, z + 0.25))} title="Zoom in">+</button>
+      <button style={{ ...btnStyle, fontSize: 10 }} onClick={() => onZoom(1.0)} title="Reset zoom">Reset</button>
+
+      <div style={{ flex: 1 }} />
+
+      {/* Page navigation */}
+      {showPageNav && (
+        <>
+          <button style={{ ...btnStyle, opacity: current <= 1 ? 0.4 : 1 }} onClick={onPrev} disabled={current <= 1}>‹</button>
+          <span style={{ fontSize: 11, fontWeight: 700, color: dark ? "#94A3B8" : "#6B7280" }}>{current}/{total}</span>
+          <button style={{ ...btnStyle, opacity: current >= total ? 0.4 : 1 }} onClick={onNext} disabled={current >= total}>›</button>
+        </>
+      )}
+
+      {/* Open externally */}
+      <a href={openLink} target="_blank" rel="noopener noreferrer"
+        style={{
+          display: "inline-flex", alignItems: "center", gap: 5,
+          padding: "6px 10px", borderRadius: 7,
+          background: `${accent}12`, color: accent,
+          border: `1px solid ${accent}30`,
+          fontSize: 11, fontWeight: 700, textDecoration: "none",
+        }}
+      >
+        📄 Open
+      </a>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// RICH TEXT EDITOR
+// ═══════════════════════════════════════════════════════════════════════════
+function RichEditor({ value, onChange, dark }) {
+  const editorRef = useRef(null);
+  const [mode, setMode] = useState("visual"); // visual | html
+
+  const exec = (cmd, val = null) => {
+    editorRef.current?.focus();
+    document.execCommand(cmd, false, val);
+    syncFromEditor();
+  };
+
+  const syncFromEditor = () => {
+    if (editorRef.current) onChange(editorRef.current.innerHTML);
+  };
+
+  useEffect(() => {
+    if (editorRef.current && mode === "visual") {
+      if (editorRef.current.innerHTML !== value) {
+        editorRef.current.innerHTML = value || "";
+      }
+    }
+  }, [mode]);
+
+  const toolbarBtnStyle = (active) => ({
+    padding: "4px 8px", fontSize: 12, borderRadius: 5, cursor: "pointer",
+    border: `1px solid ${dark ? "#334155" : "#E5E7EB"}`,
+    background: active ? (dark ? "#334155" : "#E5E7EB") : "transparent",
+    color: dark ? "#E2E8F0" : "#374151",
+    fontWeight: 600,
+  });
+
+  return (
+    <div style={{ border: `1px solid ${dark ? "#334155" : "#E5E7EB"}`, borderRadius: 8, overflow: "hidden" }}>
+      {/* Toolbar */}
+      <div style={{
+        display: "flex", gap: 4, padding: "8px 10px", flexWrap: "wrap",
+        background: dark ? "#1E293B" : "#F9FAFB",
+        borderBottom: `1px solid ${dark ? "#334155" : "#E5E7EB"}`,
+        alignItems: "center",
+      }}>
+        <button style={toolbarBtnStyle(false)} onMouseDown={e => { e.preventDefault(); exec("bold"); }} title="Bold"><strong>B</strong></button>
+        <button style={toolbarBtnStyle(false)} onMouseDown={e => { e.preventDefault(); exec("italic"); }} title="Italic"><em>I</em></button>
+        <button style={toolbarBtnStyle(false)} onMouseDown={e => { e.preventDefault(); exec("underline"); }} title="Underline"><u>U</u></button>
+        <div style={{ width: 1, height: 20, background: dark ? "#334155" : "#E5E7EB", margin: "0 2px" }} />
+        <button style={toolbarBtnStyle(false)} onMouseDown={e => { e.preventDefault(); exec("formatBlock", "h3"); }} title="Heading">H3</button>
+        <button style={toolbarBtnStyle(false)} onMouseDown={e => { e.preventDefault(); exec("formatBlock", "p"); }} title="Paragraph">¶</button>
+        <div style={{ width: 1, height: 20, background: dark ? "#334155" : "#E5E7EB", margin: "0 2px" }} />
+        <button style={toolbarBtnStyle(false)} onMouseDown={e => { e.preventDefault(); exec("insertUnorderedList"); }} title="List">• List</button>
+        <button style={toolbarBtnStyle(false)} onMouseDown={e => { e.preventDefault(); exec("insertHorizontalRule"); }} title="Divider">─</button>
+        <div style={{ flex: 1 }} />
+        <button
+          style={{ ...toolbarBtnStyle(mode === "html"), fontSize: 10 }}
+          onClick={() => {
+            if (mode === "visual") {
+              setMode("html");
+            } else {
+              setMode("visual");
+            }
+          }}
+        >
+          {mode === "visual" ? "</> HTML" : "Visual"}
+        </button>
+      </div>
+
+      {/* Editor area */}
+      {mode === "visual" ? (
+        <div
+          ref={editorRef}
+          contentEditable
+          suppressContentEditableWarning
+          onInput={syncFromEditor}
+          style={{
+            minHeight: 200, padding: "14px", outline: "none",
+            fontSize: 14, lineHeight: 1.8,
+            color: dark ? "#E2E8F0" : "#1F2937",
+            background: dark ? "#0F172A" : "#fff",
+          }}
+        />
+      ) : (
+        <textarea
+          value={value}
+          onChange={e => onChange(e.target.value)}
+          style={{
+            width: "100%", minHeight: 200, padding: "14px",
+            border: "none", outline: "none", resize: "vertical",
+            fontFamily: "monospace", fontSize: 12, lineHeight: 1.6,
+            color: dark ? "#E2E8F0" : "#374151",
+            background: dark ? "#0F172A" : "#fff",
+          }}
+        />
+      )}
+
+      {/* Preview */}
+      {value && (
+        <div style={{
+          borderTop: `1px solid ${dark ? "#1E293B" : "#F3F4F6"}`,
+          padding: "10px 14px",
+          background: dark ? "#0F172A" : "#FEFDF8",
+        }}>
+          <div style={{ fontSize: 10, fontWeight: 700, color: dark ? "#475569" : "#9CA3AF", marginBottom: 8, textTransform: "uppercase", letterSpacing: 1 }}>
+            Preview
+          </div>
+          <div
+            className={`exam-content ${dark ? "dark" : ""}`}
+            style={{ fontSize: 13, lineHeight: 1.8, color: dark ? "#CBD5E1" : "#374151" }}
+            dangerouslySetInnerHTML={{ __html: value }}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ADMIN PANEL
+// ═══════════════════════════════════════════════════════════════════════════
+function AdminPanel({ isAdmin, onLogin, onBack, exams, books, onAdd, onUpdate, onDelete, styles, darkMode, usingSheet, onRefresh }) {
+  const [pw, setPw] = useState("");
+  const [err, setErr] = useState("");
+  const [adminView, setAdminView] = useState("list");
+  const [editingExam, setEditingExam] = useState(null);
+  const [selectedBook, setSelectedBook] = useState("second-paper");
+  const [form, setForm] = useState({
+    title: "", type: "Model Set", year: "", content: "", pdfUrl: "",
+    pageOrder: 1, isPremium: false, isPublished: true,
+  });
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const dark = darkMode;
+
+  const handleLogin = () => {
+    if (pw === ADMIN_PASSWORD) { onLogin(); setErr(""); }
+    else setErr("Incorrect password. Try again.");
+  };
+
+  const openAdd = () => {
+    const bookExams = exams[selectedBook] || [];
+    setForm({
+      title: "", type: "Model Set", year: "",
+      content: "<p><strong>प्र.१.</strong> Question here <em>(marks)</em></p>",
+      pdfUrl: "",
+      pageOrder: bookExams.length + 1,
+      isPremium: false, isPublished: true,
+    });
+    setEditingExam(null);
+    setAdminView("form");
+  };
+
+  const openEdit = (exam) => {
+    setForm({ ...exam });
+    setEditingExam(exam.id);
+    setAdminView("form");
+  };
+
+  const handleSave = async () => {
+    if (!form.title.trim()) return;
+    setSaving(true);
+    if (editingExam) await onUpdate(selectedBook, editingExam, form);
+    else await onAdd(selectedBook, form);
+    setSaving(false);
+    setSaved(true);
+    setTimeout(() => { setSaved(false); setAdminView("list"); }, 900);
+  };
+
+  const handleDelete = async (examId) => {
+    await onDelete(selectedBook, examId);
+    setDeleteConfirm(null);
+  };
+
+  const inputStyle = {
+    width: "100%", padding: "10px 12px", borderRadius: 8,
+    border: `1px solid ${dark ? "#334155" : "#E5E7EB"}`,
+    background: dark ? "#1E293B" : "#fff",
+    color: dark ? "#E2E8F0" : "#1F2937",
+    fontSize: 14, outline: "none",
+  };
+  const selectStyle = { ...inputStyle };
+  const labelStyle = {
+    display: "block", fontSize: 11, fontWeight: 700,
+    color: dark ? "#64748B" : "#9CA3AF",
+    marginBottom: 5, textTransform: "uppercase", letterSpacing: 0.5,
+  };
+
+  if (!isAdmin) {
+    return (
+      <div style={{ minHeight: "100vh", background: dark ? "#0F172A" : "#F8F7F2", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{
+          width: 320, background: dark ? "#1E293B" : "#fff",
+          borderRadius: 16, padding: "36px 28px", textAlign: "center",
+          boxShadow: "0 8px 32px rgba(0,0,0,0.12)",
+          border: `1px solid ${dark ? "#334155" : "#E5E7EB"}`,
+        }}>
+          <div style={{ fontSize: 36, marginBottom: 12 }}>🔐</div>
+          <div style={{ fontSize: 20, fontWeight: 800, color: dark ? "#F1F5F9" : "#1F2937", marginBottom: 6 }}>Admin Access</div>
+          <div style={{ fontSize: 13, color: dark ? "#64748B" : "#9CA3AF", marginBottom: 24 }}>
+            Enter admin password to manage books
+          </div>
+          <input
+            type="password"
+            value={pw}
+            onChange={e => setPw(e.target.value)}
+            onKeyDown={e => e.key === "Enter" && handleLogin()}
+            placeholder="Admin password"
+            style={{ ...inputStyle, marginBottom: 8 }}
+          />
+          {err && <div style={{ color: "#EF4444", fontSize: 13, marginBottom: 10 }}>{err}</div>}
+          <button
+            style={{ width: "100%", padding: "12px", borderRadius: 8, border: "none", background: "#1A6B3C", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", marginTop: 4 }}
+            onClick={handleLogin}
+          >Login →</button>
+          <button
+            style={{ width: "100%", padding: "10px", borderRadius: 8, border: `1px solid ${dark ? "#334155" : "#E5E7EB"}`, background: "transparent", color: dark ? "#94A3B8" : "#6B7280", fontSize: 13, cursor: "pointer", marginTop: 8 }}
+            onClick={onBack}
+          >← Back to Library</button>
+        </div>
+      </div>
+    );
+  }
+
+  // Form view
+  if (adminView === "form") {
+    return (
+      <div style={{ minHeight: "100vh", background: dark ? "#0F172A" : "#F8F7F2" }} className={dark ? "dark" : ""}>
+        {/* Header */}
+        <div style={{
+          display: "flex", justifyContent: "space-between", alignItems: "center",
+          padding: "14px 16px", background: dark ? "#1E293B" : "#fff",
+          borderBottom: `1px solid ${dark ? "#334155" : "#E5E7EB"}`,
+          position: "sticky", top: 0, zIndex: 10,
+        }}>
+          <button style={styles.backBtn} onClick={() => setAdminView("list")}>← Back</button>
+          <div style={{ fontWeight: 700, color: dark ? "#F1F5F9" : "#1F2937" }}>
+            {editingExam ? "✏️ Edit Exam" : "➕ Add New Exam"}
+          </div>
+          <div style={{ fontSize: 10, color: dark ? "#64748B" : "#9CA3AF" }}>
+            📝 Preview only
+          </div>
+        </div>
+
+        <div style={{ padding: "16px", maxWidth: 480 }}>
+          {/* Book selector */}
+          <div style={{ marginBottom: 14 }}>
+            <label style={labelStyle}>Book</label>
+            <select style={selectStyle} value={selectedBook} onChange={e => setSelectedBook(e.target.value)}>
+              <option value="second-paper">📕 Kharidar Second Paper</option>
+              <option value="third-paper">📗 Kharidar Third Paper</option>
+            </select>
+          </div>
+
+          <div style={{ marginBottom: 14 }}>
+            <label style={labelStyle}>Exam Title</label>
+            <input
+              style={inputStyle}
+              value={form.title}
+              onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
+              placeholder="e.g. Model Set 15 or PYQ 2080"
+            />
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 14 }}>
+            <div>
+              <label style={labelStyle}>Type</label>
+              <select style={selectStyle} value={form.type} onChange={e => setForm(f => ({ ...f, type: e.target.value }))}>
+                <option>PYQ</option>
+                <option>Model Set</option>
+                <option>Practice Set</option>
+                <option>Special Set</option>
+              </select>
+            </div>
+            <div>
+              <label style={labelStyle}>Year (optional)</label>
+              <input
+                style={inputStyle}
+                value={form.year || ""}
+                onChange={e => setForm(f => ({ ...f, year: e.target.value }))}
+                placeholder="e.g. 2079"
+              />
+            </div>
+          </div>
+
+          <div style={{ marginBottom: 14 }}>
+            <label style={labelStyle}>PDF URL (optional)</label>
+            <input
+              style={inputStyle}
+              value={form.pdfUrl || ""}
+              onChange={e => setForm(f => ({ ...f, pdfUrl: e.target.value }))}
+              placeholder="Google Drive share link to the exam PDF"
+            />
+            <div style={{ fontSize: 10, color: dark ? "#475569" : "#9CA3AF", marginTop: 5 }}>
+              Paste a normal Google Drive "share" link — it'll be converted to an embeddable preview automatically.
+            </div>
+          </div>
+
+          <div style={{ marginBottom: 14 }}>
+            <label style={labelStyle}>Content (optional notes)</label>
+            <RichEditor
+              value={form.content}
+              onChange={content => setForm(f => ({ ...f, content }))}
+              dark={dark}
+            />
+            <div style={{ fontSize: 10, color: dark ? "#475569" : "#9CA3AF", marginTop: 5 }}>
+              Tip: Use H3 for sections, Bold for question numbers, Italic for marks. Leave empty if you're only embedding a PDF.
+            </div>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginBottom: 20 }}>
+            <div>
+              <label style={labelStyle}>Page Order</label>
+              <input
+                type="number"
+                style={inputStyle}
+                value={form.pageOrder}
+                onChange={e => setForm(f => ({ ...f, pageOrder: parseInt(e.target.value) || 1 }))}
+              />
+            </div>
+            <div>
+              <label style={labelStyle}>Premium</label>
+              <select style={selectStyle} value={form.isPremium ? "yes" : "no"} onChange={e => setForm(f => ({ ...f, isPremium: e.target.value === "yes" }))}>
+                <option value="no">Free</option>
+                <option value="yes">⭐ Premium</option>
+              </select>
+            </div>
+            <div>
+              <label style={labelStyle}>Status</label>
+              <select style={selectStyle} value={form.isPublished ? "pub" : "draft"} onChange={e => setForm(f => ({ ...f, isPublished: e.target.value === "pub" }))}>
+                <option value="pub">✅ Published</option>
+                <option value="draft">📝 Draft</option>
+              </select>
+            </div>
+          </div>
+
+          <button
+            style={{
+              width: "100%", padding: "13px", borderRadius: 8, border: "none",
+              background: saved ? "#10B981" : "#1A6B3C",
+              color: "#fff", fontSize: 14, fontWeight: 700,
+              cursor: saving || saved ? "default" : "pointer",
+              transition: "background 0.3s",
+            }}
+            onClick={handleSave}
+            disabled={saving || saved}
+          >
+            {saving ? "Saving to Firestore..." : saved ? "✅ Saved!" : editingExam ? "Update Exam" : "Save New Exam"}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // List view
+  const bookExams = exams[selectedBook] || [];
+  const book = books[selectedBook];
+
+  return (
+    <div style={{ minHeight: "100vh", background: dark ? "#0F172A" : "#F8F7F2" }} className={dark ? "dark" : ""}>
+      {/* Header */}
+      <div style={{
+        display: "flex", justifyContent: "space-between", alignItems: "center",
+        padding: "14px 16px", background: dark ? "#1E293B" : "#fff",
+        borderBottom: `1px solid ${dark ? "#334155" : "#E5E7EB"}`,
+        position: "sticky", top: 0, zIndex: 10,
+      }}>
+        <button style={styles.backBtn} onClick={onBack}>← Library</button>
+        <div style={{ fontWeight: 700, color: dark ? "#F1F5F9" : "#1F2937" }}>📋 Admin</div>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div style={{ fontSize: 10, color: usingSheet ? "#10B981" : "#F59E0B", fontWeight: 700 }}>
+            {usingSheet ? "📊 Sheet" : "📦 Sample Data"}
+          </div>
+          <button
+            onClick={onRefresh}
+            title="Reload from Google Sheet"
+            style={{ ...styles.iconBtn, width: 28, height: 28, fontSize: 12 }}
+          >🔄</button>
+        </div>
+      </div>
+
+      <div style={{ padding: "12px 16px 0" }}>
+        <div style={{
+          fontSize: 11, lineHeight: 1.6, padding: "10px 12px", borderRadius: 8,
+          background: dark ? "#1E293B" : "#FFF8E1",
+          border: `1px solid ${dark ? "#334155" : "#FDE68A"}`,
+          color: dark ? "#FCD34D" : "#92400E",
+        }}>
+          📊 Exam pages are loaded from your Google Sheet. Edits below are a <strong>local preview only</strong> — to make permanent changes, edit the Sheet and tap 🔄 Refresh.
+        </div>
+      </div>
+
+      <div style={{ padding: "16px 16px 0" }}>
+        {/* Book tabs */}
+        <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+          {Object.values(books).map(b => (
+            <button key={b.id} onClick={() => setSelectedBook(b.id)} style={{
+              flex: 1, padding: "9px 10px", borderRadius: 8, cursor: "pointer",
+              border: `2px solid ${selectedBook === b.id ? b.color : (dark ? "#334155" : "#E5E7EB")}`,
+              background: selectedBook === b.id ? `${b.color}15` : (dark ? "#1E293B" : "#F9FAFB"),
+              color: selectedBook === b.id ? b.color : (dark ? "#94A3B8" : "#6B7280"),
+              fontSize: 11, fontWeight: 700,
+            }}>
+              {b.emoji} {b.title.replace("Kharidar ", "")}
+            </button>
+          ))}
+        </div>
+
+        {/* Stats row */}
+        <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
+          {[
+            { label: "Total", val: bookExams.length, color: book.color },
+            { label: "Published", val: bookExams.filter(e => e.isPublished).length, color: "#10B981" },
+            { label: "Premium", val: bookExams.filter(e => e.isPremium).length, color: "#F59E0B" },
+            { label: "Draft", val: bookExams.filter(e => !e.isPublished).length, color: "#6B7280" },
+          ].map(s => (
+            <div key={s.label} style={{
+              flex: 1, textAlign: "center", padding: "8px 4px",
+              background: dark ? "#1E293B" : "#fff",
+              borderRadius: 8, border: `1px solid ${dark ? "#334155" : "#E5E7EB"}`,
+            }}>
+              <div style={{ fontSize: 18, fontWeight: 800, color: s.color }}>{s.val}</div>
+              <div style={{ fontSize: 9, color: dark ? "#64748B" : "#9CA3AF", fontWeight: 600 }}>{s.label}</div>
+            </div>
+          ))}
+        </div>
+
+        <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 12 }}>
+          <button
+            style={{
+              padding: "9px 16px", borderRadius: 8, border: "none",
+              background: book.color, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer",
+            }}
+            onClick={openAdd}
+          >
+            + Add New Exam Page
+          </button>
+        </div>
+      </div>
+
+      {/* Exam list */}
+      <div style={{ padding: "0 16px 80px" }}>
+        {bookExams.length === 0 ? (
+          <div style={{ textAlign: "center", padding: 48, color: dark ? "#475569" : "#9CA3AF" }}>
+            <div style={{ fontSize: 36, marginBottom: 12 }}>📄</div>
+            <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 6 }}>No exam pages yet</div>
+            <div style={{ fontSize: 13 }}>Add your first exam page above</div>
+          </div>
+        ) : bookExams.map(exam => {
+          const tc = TYPE_CONFIG[exam.type] || {};
+          return (
+            <div key={exam.id} style={{
+              background: dark ? "#1E293B" : "#fff",
+              border: `1px solid ${dark ? "#334155" : "#E5E7EB"}`,
+              borderRadius: 10, padding: "12px", marginBottom: 10,
+              borderLeft: `3px solid ${tc.dot || book.color}`,
+            }}>
+              {/* Delete confirm */}
+              {deleteConfirm === exam.id ? (
+                <div style={{ textAlign: "center", padding: "8px 0" }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: "#EF4444", marginBottom: 10 }}>
+                    Delete "{exam.title}"?
+                  </div>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <button style={{ flex: 1, padding: "8px", borderRadius: 7, border: "none", background: "#EF4444", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer" }} onClick={() => handleDelete(exam.id)}>
+                      Yes, Delete
+                    </button>
+                    <button style={{ flex: 1, padding: "8px", borderRadius: 7, border: `1px solid ${dark ? "#334155" : "#E5E7EB"}`, background: "transparent", color: dark ? "#94A3B8" : "#6B7280", fontSize: 13, cursor: "pointer" }} onClick={() => setDeleteConfirm(null)}>
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+                    <div style={{
+                      width: 30, height: 30, borderRadius: 7, flexShrink: 0,
+                      background: `${book.color}20`, color: book.color,
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      fontWeight: 800, fontSize: 12,
+                    }}>{exam.pageOrder}</div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontWeight: 700, fontSize: 14, color: dark ? "#F1F5F9" : "#1F2937", marginBottom: 5 }}>
+                        {exam.title}
+                      </div>
+                      <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
+                        <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 5, background: tc.bg || "#F3F4F6", color: tc.text || "#374151", border: `1px solid ${tc.border || "#E5E7EB"}` }}>{exam.type}</span>
+                        {exam.year && <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 5, background: dark ? "#0F172A" : "#F3F4F6", color: dark ? "#94A3B8" : "#6B7280", border: `1px solid ${dark ? "#1E293B" : "#E5E7EB"}` }}>{exam.year}</span>}
+                        <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 5, background: exam.isPublished ? "#D1FAE5" : "#FEF3C7", color: exam.isPublished ? "#065F46" : "#92400E", border: `1px solid ${exam.isPublished ? "#A7F3D0" : "#FDE68A"}` }}>
+                          {exam.isPublished ? "✅ Published" : "📝 Draft"}
+                        </span>
+                        {exam.isPremium && <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 5, background: "#FEF9C3", color: "#A16207", border: "1px solid #FDE047" }}>⭐ Premium</span>}
+                      </div>
+                    </div>
+                  </div>
+                  <div style={{ display: "flex", gap: 6, marginTop: 10 }}>
+                    <button style={{ flex: 1, padding: "7px 6px", borderRadius: 7, border: `1px solid ${dark ? "#334155" : "#E5E7EB"}`, background: "transparent", color: dark ? "#94A3B8" : "#6B7280", fontSize: 11, cursor: "pointer", fontWeight: 600 }}
+                      onClick={() => onUpdate(selectedBook, exam.id, { isPublished: !exam.isPublished })}>
+                      {exam.isPublished ? "Unpublish" : "Publish"}
+                    </button>
+                    <button style={{ flex: 1, padding: "7px 6px", borderRadius: 7, border: `1px solid ${dark ? "#334155" : "#E5E7EB"}`, background: "transparent", color: dark ? "#94A3B8" : "#6B7280", fontSize: 11, cursor: "pointer", fontWeight: 600 }}
+                      onClick={() => onUpdate(selectedBook, exam.id, { isPremium: !exam.isPremium })}>
+                      {exam.isPremium ? "Make Free" : "★ Premium"}
+                    </button>
+                    <button style={{ flex: 1, padding: "7px 6px", borderRadius: 7, border: `1px solid ${dark ? "#334155" : "#E5E7EB"}`, background: "transparent", color: "#2563EB", fontSize: 11, cursor: "pointer", fontWeight: 700 }}
+                      onClick={() => openEdit(exam)}>
+                      Edit
+                    </button>
+                    <button style={{ padding: "7px 10px", borderRadius: 7, border: `1px solid ${dark ? "#334155" : "#E5E7EB"}`, background: "transparent", color: "#EF4444", fontSize: 13, cursor: "pointer" }}
+                      onClick={() => setDeleteConfirm(exam.id)}>
+                      🗑
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// STYLES
+// ═══════════════════════════════════════════════════════════════════════════
+function getStyles(dark) {
+  const bg = dark ? "#0F172A" : "#F4F1EA";
+  const card = dark ? "#1E293B" : "#FFFFFF";
+  const text = dark ? "#F1F5F9" : "#1F2937";
+  const muted = dark ? "#64748B" : "#6B7280";
+  const border = dark ? "#1E293B" : "#E5E7EB";
+  const pageBg = dark ? "#111827" : "#FEFDF8";
+
+  return {
+    app: {
+      minHeight: "100vh", background: bg, color: text,
+      fontFamily: "'Plus Jakarta Sans', system-ui, -apple-system, sans-serif",
+      width: "100%", position: "relative",
+    },
+    library: { minHeight: "100vh", background: bg },
+    libraryHeader: {
+      display: "flex", justifyContent: "space-between", alignItems: "center",
+      padding: "18px 20px 14px",
+      background: card, borderBottom: `1px solid ${border}`,
+    },
+    libraryTitle: { fontSize: 19, fontWeight: 800, color: text },
+    librarySubtitle: { fontSize: 11, color: muted, marginTop: 2 },
+    shelfWrap: { padding: "24px 20px 20px" },
+    shelfLabel: {
+      fontSize: 11, fontWeight: 700, color: muted,
+      marginBottom: 18, textTransform: "uppercase", letterSpacing: 1.2,
+    },
+    shelf: {
+      background: dark ? "#1A0F08" : "#7A5C20",
+      borderRadius: 14, padding: "28px 24px 0", minHeight: 270,
+      position: "relative",
+      boxShadow: dark
+        ? "inset 0 2px 8px rgba(0,0,0,0.5)"
+        : "inset 0 2px 8px rgba(0,0,0,0.2), 0 4px 16px rgba(0,0,0,0.15)",
+    },
+    shelfPlank: {
+      position: "absolute", bottom: 0, left: 0, right: 0, height: 20,
+      background: dark ? "#2D1A0A" : "#5C4010",
+      borderRadius: "0 0 14px 14px",
+      boxShadow: "0 4px 0 rgba(0,0,0,0.3)",
+    },
+    booksRow: {
+      display: "flex", gap: 22, justifyContent: "center", flexWrap: "wrap",
+    },
+    infoGrid: {
+      display: "grid", gridTemplateColumns: "1fr 1fr",
+      gap: 12, padding: "0 20px", marginTop: 4,
+    },
+    infoCard: {
+      background: card, border: `1px solid ${border}`,
+      borderRadius: 12, padding: "14px",
+    },
+    openBtn: {
+      width: "100%", padding: "8px 0", borderRadius: 8,
+      border: "none", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer",
+    },
+    footer: {
+      textAlign: "center", fontSize: 11, color: muted,
+      marginTop: 20, padding: "14px 20px",
+      borderTop: `1px solid ${border}`,
+    },
+    readerWrap: {
+      minHeight: "100vh", background: bg,
+      display: "flex", flexDirection: "column", position: "relative",
+    },
+    readerBar: {
+      display: "flex", justifyContent: "space-between", alignItems: "center",
+      padding: "11px 14px", background: card,
+      borderBottom: `1px solid ${border}`,
+      position: "sticky", top: 0, zIndex: 20, flexShrink: 0,
+    },
+    pageContainer: {
+      flex: 1, display: "flex", alignItems: "flex-start",
+      justifyContent: "center", padding: "16px",
+      overflowY: "auto", perspective: "1000px",
+    },
+    page: {
+      width: "100%", maxWidth: 440,
+      background: pageBg, borderRadius: 3,
+      minHeight: 520, position: "relative",
+      borderLeft: `4px solid ${dark ? "#334155" : "#DDD6C0"}`,
+      boxShadow: dark
+        ? "6px 6px 24px rgba(0,0,0,0.5), inset 0 0 0 0.5px rgba(255,255,255,0.04)"
+        : "4px 4px 20px rgba(0,0,0,0.1), 8px 0 16px rgba(0,0,0,0.04)",
+    },
+    navBar: {
+      display: "flex", justifyContent: "space-between", alignItems: "center",
+      padding: "12px 16px", background: card,
+      borderTop: `1px solid ${border}`,
+      position: "sticky", bottom: 0, flexShrink: 0,
+    },
+    navBtn: {
+      padding: "10px 16px", borderRadius: 8,
+      border: `1px solid ${border}`,
+      background: card, color: text,
+      fontSize: 13, fontWeight: 700, cursor: "pointer",
+    },
+    backBtn: {
+      padding: "6px 12px", borderRadius: 7,
+      border: `1px solid ${border}`,
+      background: "transparent", color: text,
+      fontSize: 12, cursor: "pointer", fontWeight: 600,
+    },
+    iconBtn: {
+      width: 34, height: 34, borderRadius: 8,
+      border: `1px solid ${border}`, background: "transparent",
+      cursor: "pointer", fontSize: 15,
+      display: "flex", alignItems: "center", justifyContent: "center",
+    },
+  };
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// MOUNT
+// ═══════════════════════════════════════════════════════════════════════════
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(<App />);
+
 </script>
+
 </body>
 </html>
