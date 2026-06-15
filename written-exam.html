@@ -1,0 +1,1662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Written Exam — Shikshit Mitra</title>
+<meta name="theme-color" content="#1a6b3c">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<!-- Firebase (compat / v8 style — same as main app) -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+<!-- React + Babel -->
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif; }
+  #root { min-height: 100vh; }
+  #boot-loader {
+    position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    background: #F4F1EA; gap: 12px; z-index: 9999;
+  }
+  #boot-loader .spin {
+    width: 34px; height: 34px; border-radius: 50%;
+    border: 3px solid #E5E7EB; border-top-color: #1a6b3c;
+    animation: sm-spin .8s linear infinite;
+  }
+  #boot-loader span { font-size: 12px; font-weight: 700; color: #6B7280; letter-spacing: .5px; }
+  @keyframes sm-spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<div id="boot-loader"><div class="spin"></div><span>Loading Written Exam…</span></div>
+<div id="root"></div>
+
+<script type="text/babel" data-presets="react">
+window.addEventListener('load', function(){
+  var loader = document.getElementById('boot-loader');
+  if (loader) loader.style.display = 'none';
+});
+</script>
+
+<script type="text/babel" data-presets="react">
+const { useState, useEffect, useRef, useCallback } = React;
+
+// ─── Firebase config (same project as Shikshit Mitra main app) ─────────────
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyAaTyHTxmuktChm8AtJC15dfVejD66Gxvg",
+  authDomain: "digitalnepalapp.firebaseapp.com",
+  projectId: "digitalnepalapp",
+  storageBucket: "digitalnepalapp.firebasestorage.app",
+  messagingSenderId: "570701053036",
+  appId: "1:570701053036:web:0d074762777277e9d26c49",
+};
+
+// ─── Initialize Firebase ───────────────────────────────────────────────────
+let db = null;
+let firebaseReady = false;
+
+function initFirebase() {
+  try {
+    if (typeof window !== "undefined" && window.firebase) {
+      if (!window.firebase.apps?.length) {
+        window.firebase.initializeApp(FIREBASE_CONFIG);
+      }
+      db = window.firebase.firestore();
+      db.settings({ cacheSizeBytes: window.firebase.firestore.CACHE_SIZE_UNLIMITED });
+      db.enablePersistence({ synchronizeTabs: true }).catch(() => {});
+      firebaseReady = true;
+      return true;
+    }
+  } catch (e) {
+    console.warn("Firebase init failed, using mock data:", e);
+  }
+  return false;
+}
+
+// ─── Firestore helpers ─────────────────────────────────────────────────────
+const FS = {
+  async getExams(bookId) {
+    if (!firebaseReady) return null;
+    try {
+      const snap = await db
+        .collection("books")
+        .doc(bookId)
+        .collection("exams")
+        .orderBy("pageOrder")
+        .get();
+      return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    } catch (e) {
+      console.error("Firestore getExams:", e);
+      return null;
+    }
+  },
+
+  async addExam(bookId, data) {
+    if (!firebaseReady) return null;
+    const now = new Date().toISOString();
+    const ref = await db
+      .collection("books")
+      .doc(bookId)
+      .collection("exams")
+      .add({ ...data, createdAt: now, updatedAt: now });
+    return ref.id;
+  },
+
+  async updateExam(bookId, examId, data) {
+    if (!firebaseReady) return;
+    await db
+      .collection("books")
+      .doc(bookId)
+      .collection("exams")
+      .doc(examId)
+      .update({ ...data, updatedAt: new Date().toISOString() });
+  },
+
+  async deleteExam(bookId, examId) {
+    if (!firebaseReady) return;
+    await db
+      .collection("books")
+      .doc(bookId)
+      .collection("exams")
+      .doc(examId)
+      .delete();
+  },
+
+  subscribeExams(bookId, callback) {
+    if (!firebaseReady) return () => {};
+    return db
+      .collection("books")
+      .doc(bookId)
+      .collection("exams")
+      .orderBy("pageOrder")
+      .onSnapshot(snap => {
+        callback(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      });
+  },
+};
+
+// ─── MOCK DATA (fallback when Firebase is not connected) ───────────────────
+const MOCK_BOOKS = {
+  "second-paper": {
+    id: "second-paper",
+    title: "Kharidar Second Paper",
+    subtitle: "खरिदार द्वितीय पत्र",
+    color: "#7C2D52",
+    accent: "#B5446E",
+    spine: "#5A1F3B",
+    emoji: "📕",
+  },
+  "third-paper": {
+    id: "third-paper",
+    title: "Kharidar Third Paper",
+    subtitle: "खरिदार तृतीय पत्र",
+    color: "#155C3A",
+    accent: "#1E8A57",
+    spine: "#0D3D27",
+    emoji: "📗",
+  },
+};
+
+const MOCK_EXAMS = {
+  "second-paper": [
+    {
+      id: "e1", title: "Model Set 1", type: "Model Set", year: "2079",
+      pageOrder: 1, isPublished: true, isPremium: false,
+      content: `<h3>खण्ड-क: सामान्य ज्ञान</h3>
+<p><strong>प्र.१.</strong> नेपालको संविधान कहिले जारी भयो? <em>(२ अंक)</em></p>
+<p><strong>प्र.२.</strong> नेपालको राष्ट्रिय पशु के हो? <em>(१ अंक)</em></p>
+<p><strong>प्र.३.</strong> हालको नेपालको प्रधानमन्त्री को हुनुहुन्छ? <em>(१ अंक)</em></p>
+<hr/>
+<h3>खण्ड-ख: बौद्धिक परीक्षण</h3>
+<p><strong>प्र.४.</strong> यदि A = 1, B = 2, C = 3 भए MANGO को संख्यात्मक मान कति हुन्छ? <em>(२ अंक)</em></p>
+<p><strong>प्र.५.</strong> श्रृंखला पूरा गर्नुहोस्: 2, 4, 8, 16, ___? <em>(२ अंक)</em></p>
+<p><strong>प्र.६.</strong> एउटा काममा A ले ६ दिनमा र B ले ८ दिनमा सक्छ भने दुवै मिलेर कति दिनमा सक्छन्? <em>(३ अंक)</em></p>`,
+    },
+    {
+      id: "e2", title: "PYQ 2078", type: "PYQ", year: "2078",
+      pageOrder: 2, isPublished: true, isPremium: false,
+      content: `<h3>लोक सेवा आयोग — वि.सं. २०७८</h3>
+<p><strong>प्र.१.</strong> नेपालको सर्वोच्च अदालत कहाँ छ? <em>(१ अंक)</em></p>
+<p><strong>प्र.२.</strong> नेपालमा कति वटा प्रदेश छन्? <em>(१ अंक)</em></p>
+<p><strong>प्र.३.</strong> नेपालको राष्ट्रिय चरा के हो? <em>(१ अंक)</em></p>
+<p><strong>प्र.४.</strong> नेपालको सबैभन्दा अग्लो हिमाल कुन हो? <em>(१ अंक)</em></p>
+<hr/>
+<h3>बौद्धिक परीक्षण</h3>
+<p><strong>प्र.५.</strong> Odd one out: Apple, Mango, Carrot, Banana <em>(२ अंक)</em></p>
+<p><strong>प्र.६.</strong> 15 को 40% कति हो? <em>(२ अंक)</em></p>`,
+    },
+    {
+      id: "e3", title: "Special Set — Sarfaraz Sir", type: "Special Set", year: "2080",
+      pageOrder: 3, isPublished: true, isPremium: true,
+      content: `<h3>विशेष अभ्यास सेट — सरफराज सर</h3>
+<p><strong>प्र.१.</strong> लोक सेवा आयोगको स्थापना कहिले भयो? <em>(२ अंक)</em></p>
+<p><strong>प्र.२.</strong> नेपालको संघीय संसदमा कुल कति सदस्य छन्? <em>(२ अंक)</em></p>
+<p><strong>प्र.३.</strong> नेपालमा पहिलो आम निर्वाचन कहिले भयो? <em>(२ अंक)</em></p>
+<hr/>
+<p><strong>प्र.४.</strong> तार्किक श्रृंखला: A, C, E, G, ___? <em>(१ अंक)</em></p>
+<p><strong>प्र.५.</strong> यदि एउटा संख्याको दोब्बर ३० भए सो संख्या कति? <em>(१ अंक)</em></p>`,
+    },
+    {
+      id: "e4", title: "Practice Set 1", type: "Practice Set", year: null,
+      pageOrder: 4, isPublished: true, isPremium: false,
+      content: `<h3>अभ्यास सेट — १</h3>
+<p><strong>प्र.१.</strong> नेपालको राष्ट्रिय फूल के हो? <em>(१ अंक)</em></p>
+<p><strong>प्र.२.</strong> नेपालको सबैभन्दा लामो नदी कुन हो? <em>(१ अंक)</em></p>
+<p><strong>प्र.३.</strong> नेपालको मुद्रा के हो? <em>(१ अंक)</em></p>
+<p><strong>प्र.४.</strong> नेपालमा कति जिल्ला छन्? <em>(१ अंक)</em></p>
+<hr/>
+<h3>गणित</h3>
+<p><strong>प्र.५.</strong> ३ × ४ + ५ − २ = ? <em>(१ अंक)</em></p>
+<p><strong>प्र.६.</strong> एउटा आयतको लम्बाइ ८ र चौडाइ ५ भए क्षेत्रफल कति? <em>(२ अंक)</em></p>`,
+    },
+  ],
+  "third-paper": [
+    {
+      id: "e5", title: "PYQ 2079", type: "PYQ", year: "2079",
+      pageOrder: 1, isPublished: true, isPremium: false,
+      content: `<h3>लोक सेवा — तृतीय पत्र वि.सं. २०७९</h3>
+<p><strong>प्र.१.</strong> कार्यालय व्यवस्थापन भनेको के हो? <em>(५ अंक)</em></p>
+<p><strong>प्र.२.</strong> पत्राचारका प्रकारहरू उल्लेख गर्नुहोस्। <em>(५ अंक)</em></p>
+<p><strong>प्र.३.</strong> कम्प्युटरका आधारभूत भागहरू के-के हुन्? <em>(५ अंक)</em></p>`,
+    },
+    {
+      id: "e6", title: "Model Set 1", type: "Model Set", year: "2080",
+      pageOrder: 2, isPublished: true, isPremium: false,
+      content: `<h3>मोडल सेट — १ (तृतीय पत्र)</h3>
+<p><strong>प्र.१.</strong> नेपाल सरकारको संगठन संरचना बताउनुहोस्। <em>(१० अंक)</em></p>
+<p><strong>प्र.२.</strong> सूचना प्रविधिको प्रयोग कार्यालय व्यवस्थापनमा कसरी गर्न सकिन्छ? <em>(१० अंक)</em></p>
+<p><strong>प्र.३.</strong> सार्वजनिक सेवा प्रवाहमा सुधारका उपायहरू लेख्नुहोस्। <em>(१० अंक)</em></p>`,
+    },
+  ],
+};
+
+// ─── TYPE BADGE CONFIG ─────────────────────────────────────────────────────
+const TYPE_CONFIG = {
+  "PYQ":          { bg: "#FEF3C7", text: "#92400E", border: "#FDE68A", dot: "#F59E0B" },
+  "Model Set":    { bg: "#DBEAFE", text: "#1E40AF", border: "#BFDBFE", dot: "#3B82F6" },
+  "Practice Set": { bg: "#D1FAE5", text: "#065F46", border: "#A7F3D0", dot: "#10B981" },
+  "Special Set":  { bg: "#EDE9FE", text: "#5B21B6", border: "#DDD6FE", dot: "#8B5CF6" },
+};
+
+// ─── ADMIN PASSWORD ────────────────────────────────────────────────────────
+const ADMIN_PASSWORD = "shikshitmitra2024";
+
+// ═══════════════════════════════════════════════════════════════════════════
+// MAIN APP
+// ═══════════════════════════════════════════════════════════════════════════
+function App() {
+  const [view, setView] = useState("library");
+  const [selectedBook, setSelectedBook] = useState(null);
+  const [exams, setExams] = useState(MOCK_EXAMS);
+  const [usingFirebase, setUsingFirebase] = useState(false);
+  const [bookmarks, setBookmarks] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("sm_bookmarks") || "{}"); } catch { return {}; }
+  });
+  const [lastPage, setLastPage] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("sm_lastpage") || "{}"); } catch { return {}; }
+  });
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [darkMode, setDarkMode] = useState(() => {
+    try { return localStorage.getItem("sm_dark") === "1"; } catch { return false; }
+  });
+  const [toast, setToast] = useState(null);
+  const unsubRefs = useRef({});
+
+  // Initialize Firebase on mount
+  useEffect(() => {
+    const ok = initFirebase();
+    if (ok) {
+      setUsingFirebase(true);
+      loadAllFromFirestore();
+    }
+  }, []);
+
+  const showToast = (msg, type = "success") => {
+    setToast({ msg, type });
+    setTimeout(() => setToast(null), 2500);
+  };
+
+  const loadAllFromFirestore = async () => {
+    for (const bookId of Object.keys(MOCK_BOOKS)) {
+      const data = await FS.getExams(bookId);
+      if (data !== null) {
+        setExams(prev => ({ ...prev, [bookId]: data }));
+        // Subscribe to real-time updates
+        if (unsubRefs.current[bookId]) unsubRefs.current[bookId]();
+        unsubRefs.current[bookId] = FS.subscribeExams(bookId, (docs) => {
+          setExams(prev => ({ ...prev, [bookId]: docs }));
+        });
+      }
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      Object.values(unsubRefs.current).forEach(u => u && u());
+    };
+  }, []);
+
+  const toggleDark = () => {
+    setDarkMode(d => {
+      const next = !d;
+      localStorage.setItem("sm_dark", next ? "1" : "0");
+      return next;
+    });
+  };
+
+  const saveBookmark = (bookId, pageIdx) => {
+    const next = { ...bookmarks, [`${bookId}_${pageIdx}`]: true };
+    setBookmarks(next);
+    localStorage.setItem("sm_bookmarks", JSON.stringify(next));
+  };
+
+  const removeBookmark = (bookId, pageIdx) => {
+    const next = { ...bookmarks };
+    delete next[`${bookId}_${pageIdx}`];
+    setBookmarks(next);
+    localStorage.setItem("sm_bookmarks", JSON.stringify(next));
+  };
+
+  const saveLastPage = (bookId, pageIdx) => {
+    const next = { ...lastPage, [bookId]: pageIdx };
+    setLastPage(next);
+    localStorage.setItem("sm_lastpage", JSON.stringify(next));
+  };
+
+  // ── CRUD operations (Firebase + local state) ──
+  const addExam = async (bookId, exam) => {
+    const newExam = { ...exam, id: Date.now().toString() };
+    if (usingFirebase) {
+      const id = await FS.addExam(bookId, exam);
+      if (id) { showToast("Exam added to Firestore ✓"); return; }
+    }
+    setExams(prev => ({
+      ...prev,
+      [bookId]: [...(prev[bookId] || []), newExam].sort((a, b) => a.pageOrder - b.pageOrder),
+    }));
+    showToast("Exam added ✓");
+  };
+
+  const updateExam = async (bookId, examId, data) => {
+    if (usingFirebase) {
+      await FS.updateExam(bookId, examId, data);
+      showToast("Updated ✓");
+      return;
+    }
+    setExams(prev => ({
+      ...prev,
+      [bookId]: prev[bookId].map(e => e.id === examId ? { ...e, ...data } : e)
+        .sort((a, b) => a.pageOrder - b.pageOrder),
+    }));
+    showToast("Updated ✓");
+  };
+
+  const deleteExam = async (bookId, examId) => {
+    if (usingFirebase) {
+      await FS.deleteExam(bookId, examId);
+      showToast("Deleted", "danger");
+      return;
+    }
+    setExams(prev => ({
+      ...prev,
+      [bookId]: prev[bookId].filter(e => e.id !== examId),
+    }));
+    showToast("Deleted", "danger");
+  };
+
+  const styles = getStyles(darkMode);
+
+  return (
+    <div style={styles.app}>
+      {/* Toast */}
+      {toast && (
+        <div style={{
+          position: "fixed", top: 16, left: "50%", transform: "translateX(-50%)",
+          background: toast.type === "danger" ? "#EF4444" : "#10B981",
+          color: "#fff", padding: "10px 20px", borderRadius: 10,
+          fontSize: 13, fontWeight: 700, zIndex: 9999,
+          boxShadow: "0 4px 20px rgba(0,0,0,0.2)",
+          animation: "fadeInDown 0.3s ease",
+        }}>
+          {toast.msg}
+        </div>
+      )}
+
+      {view === "library" && (
+        <Library
+          books={MOCK_BOOKS}
+          exams={exams}
+          onOpen={(id) => { setSelectedBook(id); setView("book"); }}
+          onAdmin={() => setView("admin")}
+          darkMode={darkMode}
+          onToggleDark={toggleDark}
+          styles={styles}
+          lastPage={lastPage}
+          bookmarks={bookmarks}
+          usingFirebase={usingFirebase}
+        />
+      )}
+      {view === "book" && selectedBook && (
+        <BookReader
+          book={MOCK_BOOKS[selectedBook]}
+          exams={(exams[selectedBook] || []).filter(e => e.isPublished)}
+          onClose={() => setView("library")}
+          darkMode={darkMode}
+          styles={styles}
+          lastPage={lastPage[selectedBook] || 0}
+          onPageChange={(p) => saveLastPage(selectedBook, p)}
+          bookmarks={bookmarks}
+          onBookmark={(p) => saveBookmark(selectedBook, p)}
+          onUnbookmark={(p) => removeBookmark(selectedBook, p)}
+        />
+      )}
+      {view === "admin" && (
+        <AdminPanel
+          isAdmin={isAdmin}
+          onLogin={() => setIsAdmin(true)}
+          onBack={() => setView("library")}
+          exams={exams}
+          books={MOCK_BOOKS}
+          onAdd={addExam}
+          onUpdate={updateExam}
+          onDelete={deleteExam}
+          styles={styles}
+          darkMode={darkMode}
+          usingFirebase={usingFirebase}
+        />
+      )}
+
+      <style>{`
+        @keyframes fadeInDown {
+          from { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+          to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+        @keyframes pageFlip {
+          0%   { transform: rotateY(0deg); }
+          50%  { transform: rotateY(-20deg) scale(0.96); }
+          100% { transform: rotateY(0deg); }
+        }
+        * { box-sizing: border-box; }
+        html, body { margin: 0; padding: 0; }
+        .exam-content h3 { font-size: 15px; font-weight: 700; color: #374151; margin: 0 0 12px; padding-bottom: 8px; border-bottom: 1px dashed #E5E7EB; }
+        .exam-content p  { margin: 8px 0; line-height: 1.9; }
+        .exam-content hr { border: none; border-top: 1px solid #E5E7EB; margin: 16px 0; }
+        .exam-content strong { font-weight: 700; }
+        .exam-content em { color: #6B7280; font-style: italic; }
+        .exam-content ul { padding-left: 20px; }
+        .exam-content li { margin: 6px 0; line-height: 1.7; }
+        .dark .exam-content h3 { color: #E2E8F0; border-color: #334155; }
+        .dark .exam-content hr { border-color: #334155; }
+        .dark .exam-content em { color: #94A3B8; }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 4px; }
+      `}</style>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// LIBRARY VIEW
+// ═══════════════════════════════════════════════════════════════════════════
+function Library({ books, exams, onOpen, onAdmin, darkMode, onToggleDark, styles, lastPage, bookmarks, usingFirebase }) {
+  const [opening, setOpening] = useState(null);
+
+  const handleOpen = (bookId) => {
+    setOpening(bookId);
+    setTimeout(() => { setOpening(null); onOpen(bookId); }, 650);
+  };
+
+  const dark = darkMode;
+
+  return (
+    <div style={styles.library} className={dark ? "dark" : ""}>
+      {/* Header */}
+      <div style={styles.libraryHeader}>
+        <div>
+          <div style={styles.libraryTitle}>Written Exam</div>
+          <div style={styles.librarySubtitle}>लिखित परीक्षा पुस्तकालय</div>
+        </div>
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          {usingFirebase && (
+            <div style={{
+              fontSize: 10, fontWeight: 700, color: "#10B981",
+              background: "#D1FAE5", padding: "3px 8px", borderRadius: 99,
+              border: "1px solid #A7F3D0",
+            }}>🔥 Live</div>
+          )}
+          <button style={styles.iconBtn} onClick={onToggleDark} title="Toggle dark mode">
+            {dark ? "☀️" : "🌙"}
+          </button>
+          <button style={styles.iconBtn} onClick={onAdmin} title="Admin">⚙️</button>
+        </div>
+      </div>
+
+      {/* Shelf */}
+      <div style={styles.shelfWrap}>
+        <div style={styles.shelfLabel}>📚 Your Books</div>
+        <div style={styles.shelf}>
+          {/* Shelf planks */}
+          <div style={styles.shelfPlank} />
+          <div style={styles.booksRow}>
+            {Object.values(books).map(book => {
+              const bookExams = (exams[book.id] || []).filter(e => e.isPublished);
+              const bmCount = Object.keys(bookmarks).filter(k => k.startsWith(book.id)).length;
+              return (
+                <BookCover
+                  key={book.id}
+                  book={book}
+                  examCount={bookExams.length}
+                  isOpening={opening === book.id}
+                  lastPage={lastPage[book.id] || 0}
+                  bmCount={bmCount}
+                  onClick={() => handleOpen(book.id)}
+                  dark={dark}
+                />
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* Info cards */}
+      <div style={styles.infoGrid}>
+        {Object.values(books).map(book => {
+          const bookExams = (exams[book.id] || []).filter(e => e.isPublished);
+          const types = [...new Set(bookExams.map(e => e.type))];
+          const premCount = bookExams.filter(e => e.isPremium).length;
+          return (
+            <div key={book.id} style={{ ...styles.infoCard, borderTop: `3px solid ${book.color}` }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
+                <span style={{ fontSize: 20 }}>{book.emoji}</span>
+                <span style={{ fontWeight: 700, fontSize: 13, color: book.color }}>
+                  {book.title.replace("Kharidar ", "")}
+                </span>
+              </div>
+              <div style={{ fontSize: 11, color: dark ? "#94A3B8" : "#6B7280", marginBottom: 4 }}>
+                {bookExams.length} pages · {premCount} premium
+              </div>
+              <div style={{ fontSize: 11, color: dark ? "#94A3B8" : "#6B7280", marginBottom: 12 }}>
+                {types.join(", ")}
+              </div>
+              <button
+                style={{ ...styles.openBtn, background: book.color }}
+                onClick={() => handleOpen(book.id)}
+              >
+                Open Book →
+              </button>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Bookmarks summary */}
+      {Object.keys(bookmarks).length > 0 && (
+        <div style={{ padding: "0 20px", marginTop: 16 }}>
+          <div style={{
+            background: dark ? "#1E293B" : "#FFF8E1",
+            border: `1px solid ${dark ? "#334155" : "#FDE68A"}`,
+            borderRadius: 10, padding: "12px 16px",
+            fontSize: 13, color: dark ? "#FCD34D" : "#92400E",
+          }}>
+            🔖 {Object.keys(bookmarks).length} bookmarked page{Object.keys(bookmarks).length > 1 ? "s" : ""} saved
+          </div>
+        </div>
+      )}
+
+      <div style={styles.footer}>
+        Shikshit Mitra · सफलताको साथी
+        {usingFirebase && <span style={{ color: "#10B981", marginLeft: 6 }}>· Firebase Connected</span>}
+      </div>
+    </div>
+  );
+}
+
+// ─── BOOK COVER ────────────────────────────────────────────────────────────
+function BookCover({ book, examCount, isOpening, lastPage, bmCount, onClick, dark }) {
+  return (
+    <div style={{ textAlign: "center" }}>
+      <div
+        onClick={onClick}
+        style={{
+          cursor: "pointer",
+          display: "inline-block",
+          transition: "transform 0.65s cubic-bezier(0.23, 1, 0.32, 1)",
+          transform: isOpening
+            ? "rotateY(-35deg) translateX(-8px) scale(1.04)"
+            : "rotateY(0deg) scale(1)",
+          transformOrigin: "left center",
+          perspective: 800,
+        }}
+      >
+        <div style={{ width: 150, height: 210, position: "relative" }}>
+          {/* Pages edge */}
+          <div style={{
+            position: "absolute", right: -7, top: 3,
+            width: 9, height: 206,
+            background: dark
+              ? "linear-gradient(to right, #2D3748, #4A5568, #2D3748)"
+              : "linear-gradient(to right, #E2D9C8, #F5EFE0, #E2D9C8)",
+            borderRadius: "0 2px 2px 0",
+          }} />
+          {/* Spine */}
+          <div style={{
+            position: "absolute", left: -9, top: 0,
+            width: 11, height: 210,
+            background: book.spine,
+            borderRadius: "2px 0 0 2px",
+          }} />
+          {/* Cover */}
+          <div style={{
+            width: 150, height: 210,
+            background: `linear-gradient(150deg, ${book.color} 0%, ${book.accent} 55%, ${book.color} 100%)`,
+            borderRadius: "0 3px 3px 0",
+            padding: "18px 12px",
+            display: "flex", flexDirection: "column",
+            justifyContent: "space-between",
+            position: "relative", overflow: "hidden",
+          }}>
+            {/* Decorative elements */}
+            <div style={{
+              position: "absolute", top: -25, right: -25,
+              width: 100, height: 100, borderRadius: "50%",
+              background: "rgba(255,255,255,0.07)",
+            }} />
+            <div style={{
+              position: "absolute", bottom: -15, left: -15,
+              width: 80, height: 80, borderRadius: "50%",
+              background: "rgba(255,255,255,0.05)",
+            }} />
+            {/* Decorative lines */}
+            <div style={{
+              position: "absolute", top: 0, left: 0, right: 0,
+              height: 3, background: "rgba(255,255,255,0.15)",
+            }} />
+
+            <div style={{ position: "relative" }}>
+              <div style={{ fontSize: 26, marginBottom: 10 }}>{book.emoji}</div>
+              <div style={{
+                color: "rgba(255,255,255,0.7)", fontSize: 9,
+                fontWeight: 700, letterSpacing: 1.5,
+                textTransform: "uppercase", marginBottom: 4,
+              }}>
+                लोक सेवा आयोग
+              </div>
+              <div style={{
+                color: "#fff", fontWeight: 800, fontSize: 13, lineHeight: 1.3,
+              }}>
+                Kharidar
+              </div>
+              <div style={{
+                color: "#fff", fontWeight: 800, fontSize: 15, lineHeight: 1.3, marginTop: 2,
+              }}>
+                {book.title.replace("Kharidar ", "")}
+              </div>
+            </div>
+
+            <div style={{ position: "relative" }}>
+              <div style={{ fontSize: 9, color: "rgba(255,255,255,0.55)", marginBottom: 6 }}>
+                {book.subtitle}
+              </div>
+              <div style={{
+                color: "rgba(255,255,255,0.9)", fontSize: 10, fontWeight: 700,
+                background: "rgba(0,0,0,0.2)", borderRadius: 6,
+                padding: "4px 8px", display: "inline-block",
+              }}>
+                {examCount} Pages
+              </div>
+              <div style={{ marginTop: 5, display: "flex", gap: 4, flexWrap: "wrap" }}>
+                {lastPage > 0 && (
+                  <span style={{
+                    fontSize: 9, color: "#fff",
+                    background: "rgba(255,255,255,0.2)",
+                    borderRadius: 99, padding: "2px 6px",
+                  }}>📖 p.{lastPage + 1}</span>
+                )}
+                {bmCount > 0 && (
+                  <span style={{
+                    fontSize: 9, color: "#fff",
+                    background: "rgba(255,255,255,0.2)",
+                    borderRadius: 99, padding: "2px 6px",
+                  }}>🔖 {bmCount}</span>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style={{
+        marginTop: 10, fontSize: 11,
+        color: dark ? "#64748B" : "#9CA3AF",
+        fontWeight: 600,
+      }}>
+        Tap to open
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// BOOK READER
+// ═══════════════════════════════════════════════════════════════════════════
+function BookReader({ book, exams, onClose, darkMode, styles, lastPage, onPageChange, bookmarks, onBookmark, onUnbookmark }) {
+  const [currentPage, setCurrentPage] = useState(lastPage);
+  const [turning, setTurning] = useState(null);
+  const [showTOC, setShowTOC] = useState(false);
+  const touchStart = useRef(null);
+  const dark = darkMode;
+
+  const totalPages = exams.length + 1;
+
+  const goTo = useCallback((dir) => {
+    if (dir === "next" && currentPage < totalPages - 1) {
+      setTurning("next");
+      setTimeout(() => {
+        const next = currentPage + 1;
+        setCurrentPage(next);
+        onPageChange(next);
+        setTurning(null);
+      }, 320);
+    } else if (dir === "prev" && currentPage > 0) {
+      setTurning("prev");
+      setTimeout(() => {
+        const next = currentPage - 1;
+        setCurrentPage(next);
+        onPageChange(next);
+        setTurning(null);
+      }, 320);
+    }
+  }, [currentPage, totalPages, onPageChange]);
+
+  const jumpTo = (page) => {
+    setCurrentPage(page);
+    onPageChange(page);
+    setShowTOC(false);
+  };
+
+  useEffect(() => {
+    const handleKey = (e) => {
+      if (e.key === "ArrowRight") goTo("next");
+      if (e.key === "ArrowLeft") goTo("prev");
+      if (e.key === "Escape") setShowTOC(false);
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [goTo]);
+
+  const onTouchStart = (e) => { touchStart.current = e.touches[0].clientX; };
+  const onTouchEnd = (e) => {
+    if (touchStart.current === null) return;
+    const diff = touchStart.current - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 45) goTo(diff > 0 ? "next" : "prev");
+    touchStart.current = null;
+  };
+
+  const currentExam = currentPage === 0 ? null : exams[currentPage - 1];
+  const isBookmarked = bookmarks[`${book.id}_${currentPage}`];
+  const progressPct = totalPages > 1 ? Math.round((currentPage / (totalPages - 1)) * 100) : 0;
+
+  const pageStyle = {
+    transition: "transform 0.32s cubic-bezier(0.4,0,0.2,1), opacity 0.32s ease",
+    transform: turning === "next"
+      ? "rotateY(-18deg) scale(0.96)"
+      : turning === "prev"
+        ? "rotateY(18deg) scale(0.96)"
+        : "rotateY(0deg) scale(1)",
+    opacity: turning ? 0.55 : 1,
+  };
+
+  return (
+    <div style={styles.readerWrap} className={dark ? "dark" : ""}>
+      {/* Top bar */}
+      <div style={styles.readerBar}>
+        <button style={styles.backBtn} onClick={onClose}>← Library</button>
+        <div style={{ textAlign: "center", flex: 1 }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: book.color }}>{book.title}</div>
+          <div style={{ fontSize: 10, color: dark ? "#64748B" : "#9CA3AF" }}>
+            {currentPage === 0 ? "Cover" : `Page ${currentPage} of ${totalPages - 1}`}
+          </div>
+        </div>
+        <div style={{ display: "flex", gap: 5 }}>
+          <button style={styles.iconBtn} onClick={() => setShowTOC(t => !t)} title="Table of Contents">
+            📋
+          </button>
+          {currentPage > 0 && (
+            <button
+              style={{ ...styles.iconBtn, color: isBookmarked ? "#F59E0B" : (dark ? "#475569" : "#CBD5E1") }}
+              onClick={() => isBookmarked ? onUnbookmark(currentPage) : onBookmark(currentPage)}
+              title={isBookmarked ? "Remove bookmark" : "Bookmark this page"}
+            >
+              🔖
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Progress bar */}
+      <div style={{ height: 3, background: dark ? "#1E293B" : "#F3F4F6", flexShrink: 0 }}>
+        <div style={{
+          height: "100%", width: `${progressPct}%`,
+          background: book.color, transition: "width 0.4s ease",
+        }} />
+      </div>
+
+      {/* Table of Contents overlay */}
+      {showTOC && (
+        <div style={{
+          position: "absolute", top: 56, left: 0, right: 0, zIndex: 50,
+          background: dark ? "#0F172A" : "#fff",
+          borderBottom: `1px solid ${dark ? "#1E293B" : "#E5E7EB"}`,
+          maxHeight: "60vh", overflowY: "auto",
+          boxShadow: "0 8px 24px rgba(0,0,0,0.15)",
+        }}>
+          <div style={{ padding: "12px 16px" }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: dark ? "#64748B" : "#9CA3AF", marginBottom: 10, textTransform: "uppercase", letterSpacing: 1 }}>
+              Table of Contents
+            </div>
+            {/* Cover */}
+            <button
+              onClick={() => jumpTo(0)}
+              style={{
+                display: "flex", alignItems: "center", gap: 10, width: "100%",
+                padding: "10px 12px", borderRadius: 8, border: "none", cursor: "pointer", textAlign: "left",
+                background: currentPage === 0
+                  ? `${book.color}18`
+                  : dark ? "#1E293B" : "#F9FAFB",
+                color: dark ? "#E2E8F0" : "#1F2937",
+                marginBottom: 4,
+              }}
+            >
+              <span style={{ fontSize: 12, fontWeight: 700, color: book.color, minWidth: 28 }}>C</span>
+              <span style={{ fontSize: 13, fontWeight: 600 }}>Cover Page</span>
+            </button>
+            {/* Exams */}
+            {exams.map((exam, i) => {
+              const tc = TYPE_CONFIG[exam.type] || {};
+              const bm = bookmarks[`${book.id}_${i + 1}`];
+              return (
+                <button
+                  key={exam.id}
+                  onClick={() => jumpTo(i + 1)}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 10, width: "100%",
+                    padding: "10px 12px", borderRadius: 8, border: "none", cursor: "pointer", textAlign: "left",
+                    background: currentPage === i + 1
+                      ? `${book.color}18`
+                      : dark ? "#1E293B" : "#F9FAFB",
+                    color: dark ? "#E2E8F0" : "#1F2937",
+                    marginBottom: 4,
+                  }}
+                >
+                  <span style={{ fontSize: 11, fontWeight: 700, color: book.color, minWidth: 28 }}>{i + 1}</span>
+                  <span style={{ flex: 1, fontSize: 13, fontWeight: 600 }}>{exam.title}</span>
+                  {bm && <span style={{ fontSize: 10 }}>🔖</span>}
+                  <span style={{
+                    fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 5,
+                    background: tc.bg || "#F3F4F6", color: tc.text || "#374151",
+                    border: `1px solid ${tc.border || "#E5E7EB"}`,
+                  }}>{exam.type}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Page */}
+      <div
+        style={styles.pageContainer}
+        onTouchStart={onTouchStart}
+        onTouchEnd={onTouchEnd}
+      >
+        <div style={{ ...styles.page, ...pageStyle }}>
+          {/* Page corner fold */}
+          <div style={{
+            position: "absolute", bottom: 0, right: 0,
+            width: 0, height: 0, borderStyle: "solid",
+            borderWidth: "0 0 28px 28px",
+            borderColor: `transparent transparent ${dark ? "#1E293B" : "#E5E7EB"} transparent`,
+          }} />
+
+          {currentPage === 0 ? (
+            <CoverPage book={book} exams={exams} dark={dark} />
+          ) : currentExam ? (
+            <ExamPage
+              exam={currentExam}
+              book={book}
+              pageNum={currentPage}
+              dark={dark}
+              styles={styles}
+            />
+          ) : null}
+        </div>
+      </div>
+
+      {/* Navigation */}
+      <div style={styles.navBar}>
+        <button
+          style={{ ...styles.navBtn, opacity: currentPage === 0 ? 0.3 : 1 }}
+          onClick={() => goTo("prev")}
+          disabled={currentPage === 0 || !!turning}
+        >
+          ← Prev
+        </button>
+        <div style={{ textAlign: "center" }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: dark ? "#E2E8F0" : "#1F2937" }}>
+            {currentPage} / {totalPages - 1}
+          </div>
+          <div style={{ fontSize: 10, color: dark ? "#64748B" : "#9CA3AF" }}>swipe or tap</div>
+        </div>
+        <button
+          style={{
+            ...styles.navBtn,
+            opacity: currentPage === totalPages - 1 ? 0.3 : 1,
+            background: book.color, color: "#fff", border: "none",
+          }}
+          onClick={() => goTo("next")}
+          disabled={currentPage === totalPages - 1 || !!turning}
+        >
+          Next →
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function CoverPage({ book, exams, dark }) {
+  const types = [...new Set(exams.map(e => e.type))];
+  return (
+    <div style={{ padding: "28px 20px 40px" }}>
+      <div style={{
+        background: `linear-gradient(150deg, ${book.color} 0%, ${book.accent} 60%, ${book.color} 100%)`,
+        borderRadius: 14, padding: "36px 24px", color: "#fff", textAlign: "center", marginBottom: 22,
+      }}>
+        <div style={{ fontSize: 52, marginBottom: 14 }}>{book.emoji}</div>
+        <div style={{ fontSize: 11, opacity: 0.7, letterSpacing: 2, textTransform: "uppercase", marginBottom: 6 }}>
+          लोक सेवा आयोग · Nepal
+        </div>
+        <div style={{ fontSize: 22, fontWeight: 800, marginBottom: 6, letterSpacing: 0.3 }}>{book.title}</div>
+        <div style={{ fontSize: 14, opacity: 0.7 }}>{book.subtitle}</div>
+        <div style={{
+          marginTop: 18, background: "rgba(0,0,0,0.2)",
+          borderRadius: 8, padding: "8px 16px", display: "inline-block",
+          fontSize: 12, fontWeight: 700,
+        }}>
+          {exams.length} Exam Pages Inside
+        </div>
+      </div>
+      <div style={{ display: "flex", gap: 7, flexWrap: "wrap", justifyContent: "center", marginBottom: 18 }}>
+        {types.map(t => {
+          const tc = TYPE_CONFIG[t] || {};
+          return (
+            <span key={t} style={{
+              fontSize: 11, fontWeight: 700, padding: "4px 10px", borderRadius: 7,
+              background: tc.bg || "#F3F4F6", color: tc.text || "#374151",
+              border: `1px solid ${tc.border || "#E5E7EB"}`,
+            }}>{t}</span>
+          );
+        })}
+      </div>
+      <div style={{
+        background: dark ? "#1E293B" : "#F8F7F2",
+        borderRadius: 10, padding: "12px 16px", fontSize: 12,
+        color: dark ? "#94A3B8" : "#6B7280", lineHeight: 1.7,
+      }}>
+        👆 Swipe right to turn pages &nbsp;·&nbsp; Use buttons below &nbsp;·&nbsp; 📋 TOC in top bar
+      </div>
+      <div style={{
+        textAlign: "center", fontSize: 11,
+        color: dark ? "#475569" : "#9CA3AF", marginTop: 20,
+      }}>
+        Shikshit Mitra · सफलताको साथी
+      </div>
+    </div>
+  );
+}
+
+function ExamPage({ exam, book, pageNum, dark, styles }) {
+  const tc = TYPE_CONFIG[exam.type] || {};
+  return (
+    <div style={{ padding: "24px 20px 44px" }}>
+      {/* Header row */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 14 }}>
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+          <span style={{
+            fontSize: 10, fontWeight: 700, padding: "3px 9px", borderRadius: 6,
+            background: tc.bg || "#F3F4F6", color: tc.text || "#374151",
+            border: `1px solid ${tc.border || "#E5E7EB"}`,
+          }}>{exam.type}</span>
+          {exam.year && (
+            <span style={{
+              fontSize: 10, fontWeight: 700, padding: "3px 9px", borderRadius: 6,
+              background: dark ? "#1E293B" : "#F3F4F6",
+              color: dark ? "#94A3B8" : "#6B7280",
+              border: `1px solid ${dark ? "#334155" : "#E5E7EB"}`,
+            }}>{exam.year}</span>
+          )}
+          {exam.isPremium && (
+            <span style={{
+              fontSize: 10, fontWeight: 700, padding: "3px 9px", borderRadius: 6,
+              background: "#FEF9C3", color: "#A16207", border: "1px solid #FDE047",
+            }}>⭐ Premium</span>
+          )}
+        </div>
+        <span style={{
+          fontSize: 10, fontWeight: 700,
+          color: dark ? "#475569" : "#9CA3AF",
+        }}>p.{pageNum}</span>
+      </div>
+
+      {/* Title */}
+      <h2 style={{
+        fontSize: 17, fontWeight: 800,
+        color: book.color,
+        margin: "0 0 18px",
+        paddingBottom: 12,
+        borderBottom: `2px solid ${book.color}22`,
+      }}>
+        {exam.title}
+      </h2>
+
+      {/* Content */}
+      <div
+        className={`exam-content ${dark ? "dark" : ""}`}
+        style={{
+          fontSize: 14, lineHeight: 1.85,
+          color: dark ? "#CBD5E1" : "#1F2937",
+        }}
+        dangerouslySetInnerHTML={{ __html: exam.content }}
+      />
+
+      {/* Page number */}
+      <div style={{
+        textAlign: "center", color: dark ? "#334155" : "#D1D5DB",
+        fontSize: 12, marginTop: 30, paddingTop: 14,
+        borderTop: `1px solid ${dark ? "#1E293B" : "#F3F4F6"}`,
+      }}>
+        — {pageNum} —
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// RICH TEXT EDITOR
+// ═══════════════════════════════════════════════════════════════════════════
+function RichEditor({ value, onChange, dark }) {
+  const editorRef = useRef(null);
+  const [mode, setMode] = useState("visual"); // visual | html
+
+  const exec = (cmd, val = null) => {
+    editorRef.current?.focus();
+    document.execCommand(cmd, false, val);
+    syncFromEditor();
+  };
+
+  const syncFromEditor = () => {
+    if (editorRef.current) onChange(editorRef.current.innerHTML);
+  };
+
+  useEffect(() => {
+    if (editorRef.current && mode === "visual") {
+      if (editorRef.current.innerHTML !== value) {
+        editorRef.current.innerHTML = value || "";
+      }
+    }
+  }, [mode]);
+
+  const toolbarBtnStyle = (active) => ({
+    padding: "4px 8px", fontSize: 12, borderRadius: 5, cursor: "pointer",
+    border: `1px solid ${dark ? "#334155" : "#E5E7EB"}`,
+    background: active ? (dark ? "#334155" : "#E5E7EB") : "transparent",
+    color: dark ? "#E2E8F0" : "#374151",
+    fontWeight: 600,
+  });
+
+  return (
+    <div style={{ border: `1px solid ${dark ? "#334155" : "#E5E7EB"}`, borderRadius: 8, overflow: "hidden" }}>
+      {/* Toolbar */}
+      <div style={{
+        display: "flex", gap: 4, padding: "8px 10px", flexWrap: "wrap",
+        background: dark ? "#1E293B" : "#F9FAFB",
+        borderBottom: `1px solid ${dark ? "#334155" : "#E5E7EB"}`,
+        alignItems: "center",
+      }}>
+        <button style={toolbarBtnStyle(false)} onMouseDown={e => { e.preventDefault(); exec("bold"); }} title="Bold"><strong>B</strong></button>
+        <button style={toolbarBtnStyle(false)} onMouseDown={e => { e.preventDefault(); exec("italic"); }} title="Italic"><em>I</em></button>
+        <button style={toolbarBtnStyle(false)} onMouseDown={e => { e.preventDefault(); exec("underline"); }} title="Underline"><u>U</u></button>
+        <div style={{ width: 1, height: 20, background: dark ? "#334155" : "#E5E7EB", margin: "0 2px" }} />
+        <button style={toolbarBtnStyle(false)} onMouseDown={e => { e.preventDefault(); exec("formatBlock", "h3"); }} title="Heading">H3</button>
+        <button style={toolbarBtnStyle(false)} onMouseDown={e => { e.preventDefault(); exec("formatBlock", "p"); }} title="Paragraph">¶</button>
+        <div style={{ width: 1, height: 20, background: dark ? "#334155" : "#E5E7EB", margin: "0 2px" }} />
+        <button style={toolbarBtnStyle(false)} onMouseDown={e => { e.preventDefault(); exec("insertUnorderedList"); }} title="List">• List</button>
+        <button style={toolbarBtnStyle(false)} onMouseDown={e => { e.preventDefault(); exec("insertHorizontalRule"); }} title="Divider">─</button>
+        <div style={{ flex: 1 }} />
+        <button
+          style={{ ...toolbarBtnStyle(mode === "html"), fontSize: 10 }}
+          onClick={() => {
+            if (mode === "visual") {
+              setMode("html");
+            } else {
+              setMode("visual");
+            }
+          }}
+        >
+          {mode === "visual" ? "</> HTML" : "Visual"}
+        </button>
+      </div>
+
+      {/* Editor area */}
+      {mode === "visual" ? (
+        <div
+          ref={editorRef}
+          contentEditable
+          suppressContentEditableWarning
+          onInput={syncFromEditor}
+          style={{
+            minHeight: 200, padding: "14px", outline: "none",
+            fontSize: 14, lineHeight: 1.8,
+            color: dark ? "#E2E8F0" : "#1F2937",
+            background: dark ? "#0F172A" : "#fff",
+          }}
+        />
+      ) : (
+        <textarea
+          value={value}
+          onChange={e => onChange(e.target.value)}
+          style={{
+            width: "100%", minHeight: 200, padding: "14px",
+            border: "none", outline: "none", resize: "vertical",
+            fontFamily: "monospace", fontSize: 12, lineHeight: 1.6,
+            color: dark ? "#E2E8F0" : "#374151",
+            background: dark ? "#0F172A" : "#fff",
+          }}
+        />
+      )}
+
+      {/* Preview */}
+      {value && (
+        <div style={{
+          borderTop: `1px solid ${dark ? "#1E293B" : "#F3F4F6"}`,
+          padding: "10px 14px",
+          background: dark ? "#0F172A" : "#FEFDF8",
+        }}>
+          <div style={{ fontSize: 10, fontWeight: 700, color: dark ? "#475569" : "#9CA3AF", marginBottom: 8, textTransform: "uppercase", letterSpacing: 1 }}>
+            Preview
+          </div>
+          <div
+            className={`exam-content ${dark ? "dark" : ""}`}
+            style={{ fontSize: 13, lineHeight: 1.8, color: dark ? "#CBD5E1" : "#374151" }}
+            dangerouslySetInnerHTML={{ __html: value }}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ADMIN PANEL
+// ═══════════════════════════════════════════════════════════════════════════
+function AdminPanel({ isAdmin, onLogin, onBack, exams, books, onAdd, onUpdate, onDelete, styles, darkMode, usingFirebase }) {
+  const [pw, setPw] = useState("");
+  const [err, setErr] = useState("");
+  const [adminView, setAdminView] = useState("list");
+  const [editingExam, setEditingExam] = useState(null);
+  const [selectedBook, setSelectedBook] = useState("second-paper");
+  const [form, setForm] = useState({
+    title: "", type: "Model Set", year: "", content: "",
+    pageOrder: 1, isPremium: false, isPublished: true,
+  });
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const dark = darkMode;
+
+  const handleLogin = () => {
+    if (pw === ADMIN_PASSWORD) { onLogin(); setErr(""); }
+    else setErr("Incorrect password. Try again.");
+  };
+
+  const openAdd = () => {
+    const bookExams = exams[selectedBook] || [];
+    setForm({
+      title: "", type: "Model Set", year: "",
+      content: "<p><strong>प्र.१.</strong> Question here <em>(marks)</em></p>",
+      pageOrder: bookExams.length + 1,
+      isPremium: false, isPublished: true,
+    });
+    setEditingExam(null);
+    setAdminView("form");
+  };
+
+  const openEdit = (exam) => {
+    setForm({ ...exam });
+    setEditingExam(exam.id);
+    setAdminView("form");
+  };
+
+  const handleSave = async () => {
+    if (!form.title.trim()) return;
+    setSaving(true);
+    if (editingExam) await onUpdate(selectedBook, editingExam, form);
+    else await onAdd(selectedBook, form);
+    setSaving(false);
+    setSaved(true);
+    setTimeout(() => { setSaved(false); setAdminView("list"); }, 900);
+  };
+
+  const handleDelete = async (examId) => {
+    await onDelete(selectedBook, examId);
+    setDeleteConfirm(null);
+  };
+
+  const inputStyle = {
+    width: "100%", padding: "10px 12px", borderRadius: 8,
+    border: `1px solid ${dark ? "#334155" : "#E5E7EB"}`,
+    background: dark ? "#1E293B" : "#fff",
+    color: dark ? "#E2E8F0" : "#1F2937",
+    fontSize: 14, outline: "none",
+  };
+  const selectStyle = { ...inputStyle };
+  const labelStyle = {
+    display: "block", fontSize: 11, fontWeight: 700,
+    color: dark ? "#64748B" : "#9CA3AF",
+    marginBottom: 5, textTransform: "uppercase", letterSpacing: 0.5,
+  };
+
+  if (!isAdmin) {
+    return (
+      <div style={{ minHeight: "100vh", background: dark ? "#0F172A" : "#F8F7F2", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{
+          width: 320, background: dark ? "#1E293B" : "#fff",
+          borderRadius: 16, padding: "36px 28px", textAlign: "center",
+          boxShadow: "0 8px 32px rgba(0,0,0,0.12)",
+          border: `1px solid ${dark ? "#334155" : "#E5E7EB"}`,
+        }}>
+          <div style={{ fontSize: 36, marginBottom: 12 }}>🔐</div>
+          <div style={{ fontSize: 20, fontWeight: 800, color: dark ? "#F1F5F9" : "#1F2937", marginBottom: 6 }}>Admin Access</div>
+          <div style={{ fontSize: 13, color: dark ? "#64748B" : "#9CA3AF", marginBottom: 24 }}>
+            Enter admin password to manage books
+          </div>
+          <input
+            type="password"
+            value={pw}
+            onChange={e => setPw(e.target.value)}
+            onKeyDown={e => e.key === "Enter" && handleLogin()}
+            placeholder="Admin password"
+            style={{ ...inputStyle, marginBottom: 8 }}
+          />
+          {err && <div style={{ color: "#EF4444", fontSize: 13, marginBottom: 10 }}>{err}</div>}
+          <button
+            style={{ width: "100%", padding: "12px", borderRadius: 8, border: "none", background: "#1A6B3C", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", marginTop: 4 }}
+            onClick={handleLogin}
+          >Login →</button>
+          <button
+            style={{ width: "100%", padding: "10px", borderRadius: 8, border: `1px solid ${dark ? "#334155" : "#E5E7EB"}`, background: "transparent", color: dark ? "#94A3B8" : "#6B7280", fontSize: 13, cursor: "pointer", marginTop: 8 }}
+            onClick={onBack}
+          >← Back to Library</button>
+        </div>
+      </div>
+    );
+  }
+
+  // Form view
+  if (adminView === "form") {
+    return (
+      <div style={{ minHeight: "100vh", background: dark ? "#0F172A" : "#F8F7F2" }} className={dark ? "dark" : ""}>
+        {/* Header */}
+        <div style={{
+          display: "flex", justifyContent: "space-between", alignItems: "center",
+          padding: "14px 16px", background: dark ? "#1E293B" : "#fff",
+          borderBottom: `1px solid ${dark ? "#334155" : "#E5E7EB"}`,
+          position: "sticky", top: 0, zIndex: 10,
+        }}>
+          <button style={styles.backBtn} onClick={() => setAdminView("list")}>← Back</button>
+          <div style={{ fontWeight: 700, color: dark ? "#F1F5F9" : "#1F2937" }}>
+            {editingExam ? "✏️ Edit Exam" : "➕ Add New Exam"}
+          </div>
+          <div style={{ fontSize: 10, color: dark ? "#64748B" : "#9CA3AF" }}>
+            {usingFirebase ? "🔥 Firebase" : "📦 Local"}
+          </div>
+        </div>
+
+        <div style={{ padding: "16px", maxWidth: 480 }}>
+          {/* Book selector */}
+          <div style={{ marginBottom: 14 }}>
+            <label style={labelStyle}>Book</label>
+            <select style={selectStyle} value={selectedBook} onChange={e => setSelectedBook(e.target.value)}>
+              <option value="second-paper">📕 Kharidar Second Paper</option>
+              <option value="third-paper">📗 Kharidar Third Paper</option>
+            </select>
+          </div>
+
+          <div style={{ marginBottom: 14 }}>
+            <label style={labelStyle}>Exam Title</label>
+            <input
+              style={inputStyle}
+              value={form.title}
+              onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
+              placeholder="e.g. Model Set 15 or PYQ 2080"
+            />
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 14 }}>
+            <div>
+              <label style={labelStyle}>Type</label>
+              <select style={selectStyle} value={form.type} onChange={e => setForm(f => ({ ...f, type: e.target.value }))}>
+                <option>PYQ</option>
+                <option>Model Set</option>
+                <option>Practice Set</option>
+                <option>Special Set</option>
+              </select>
+            </div>
+            <div>
+              <label style={labelStyle}>Year (optional)</label>
+              <input
+                style={inputStyle}
+                value={form.year || ""}
+                onChange={e => setForm(f => ({ ...f, year: e.target.value }))}
+                placeholder="e.g. 2079"
+              />
+            </div>
+          </div>
+
+          <div style={{ marginBottom: 14 }}>
+            <label style={labelStyle}>Content</label>
+            <RichEditor
+              value={form.content}
+              onChange={content => setForm(f => ({ ...f, content }))}
+              dark={dark}
+            />
+            <div style={{ fontSize: 10, color: dark ? "#475569" : "#9CA3AF", marginTop: 5 }}>
+              Tip: Use H3 for sections, Bold for question numbers, Italic for marks
+            </div>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginBottom: 20 }}>
+            <div>
+              <label style={labelStyle}>Page Order</label>
+              <input
+                type="number"
+                style={inputStyle}
+                value={form.pageOrder}
+                onChange={e => setForm(f => ({ ...f, pageOrder: parseInt(e.target.value) || 1 }))}
+              />
+            </div>
+            <div>
+              <label style={labelStyle}>Premium</label>
+              <select style={selectStyle} value={form.isPremium ? "yes" : "no"} onChange={e => setForm(f => ({ ...f, isPremium: e.target.value === "yes" }))}>
+                <option value="no">Free</option>
+                <option value="yes">⭐ Premium</option>
+              </select>
+            </div>
+            <div>
+              <label style={labelStyle}>Status</label>
+              <select style={selectStyle} value={form.isPublished ? "pub" : "draft"} onChange={e => setForm(f => ({ ...f, isPublished: e.target.value === "pub" }))}>
+                <option value="pub">✅ Published</option>
+                <option value="draft">📝 Draft</option>
+              </select>
+            </div>
+          </div>
+
+          <button
+            style={{
+              width: "100%", padding: "13px", borderRadius: 8, border: "none",
+              background: saved ? "#10B981" : "#1A6B3C",
+              color: "#fff", fontSize: 14, fontWeight: 700,
+              cursor: saving || saved ? "default" : "pointer",
+              transition: "background 0.3s",
+            }}
+            onClick={handleSave}
+            disabled={saving || saved}
+          >
+            {saving ? "Saving to Firestore..." : saved ? "✅ Saved!" : editingExam ? "Update Exam" : "Save New Exam"}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // List view
+  const bookExams = exams[selectedBook] || [];
+  const book = books[selectedBook];
+
+  return (
+    <div style={{ minHeight: "100vh", background: dark ? "#0F172A" : "#F8F7F2" }} className={dark ? "dark" : ""}>
+      {/* Header */}
+      <div style={{
+        display: "flex", justifyContent: "space-between", alignItems: "center",
+        padding: "14px 16px", background: dark ? "#1E293B" : "#fff",
+        borderBottom: `1px solid ${dark ? "#334155" : "#E5E7EB"}`,
+        position: "sticky", top: 0, zIndex: 10,
+      }}>
+        <button style={styles.backBtn} onClick={onBack}>← Library</button>
+        <div style={{ fontWeight: 700, color: dark ? "#F1F5F9" : "#1F2937" }}>📋 Admin</div>
+        <div style={{ fontSize: 10, color: usingFirebase ? "#10B981" : "#F59E0B", fontWeight: 700 }}>
+          {usingFirebase ? "🔥 Firebase" : "📦 Mock Data"}
+        </div>
+      </div>
+
+      <div style={{ padding: "16px 16px 0" }}>
+        {/* Book tabs */}
+        <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+          {Object.values(books).map(b => (
+            <button key={b.id} onClick={() => setSelectedBook(b.id)} style={{
+              flex: 1, padding: "9px 10px", borderRadius: 8, cursor: "pointer",
+              border: `2px solid ${selectedBook === b.id ? b.color : (dark ? "#334155" : "#E5E7EB")}`,
+              background: selectedBook === b.id ? `${b.color}15` : (dark ? "#1E293B" : "#F9FAFB"),
+              color: selectedBook === b.id ? b.color : (dark ? "#94A3B8" : "#6B7280"),
+              fontSize: 11, fontWeight: 700,
+            }}>
+              {b.emoji} {b.title.replace("Kharidar ", "")}
+            </button>
+          ))}
+        </div>
+
+        {/* Stats row */}
+        <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
+          {[
+            { label: "Total", val: bookExams.length, color: book.color },
+            { label: "Published", val: bookExams.filter(e => e.isPublished).length, color: "#10B981" },
+            { label: "Premium", val: bookExams.filter(e => e.isPremium).length, color: "#F59E0B" },
+            { label: "Draft", val: bookExams.filter(e => !e.isPublished).length, color: "#6B7280" },
+          ].map(s => (
+            <div key={s.label} style={{
+              flex: 1, textAlign: "center", padding: "8px 4px",
+              background: dark ? "#1E293B" : "#fff",
+              borderRadius: 8, border: `1px solid ${dark ? "#334155" : "#E5E7EB"}`,
+            }}>
+              <div style={{ fontSize: 18, fontWeight: 800, color: s.color }}>{s.val}</div>
+              <div style={{ fontSize: 9, color: dark ? "#64748B" : "#9CA3AF", fontWeight: 600 }}>{s.label}</div>
+            </div>
+          ))}
+        </div>
+
+        <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 12 }}>
+          <button
+            style={{
+              padding: "9px 16px", borderRadius: 8, border: "none",
+              background: book.color, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer",
+            }}
+            onClick={openAdd}
+          >
+            + Add New Exam Page
+          </button>
+        </div>
+      </div>
+
+      {/* Exam list */}
+      <div style={{ padding: "0 16px 80px" }}>
+        {bookExams.length === 0 ? (
+          <div style={{ textAlign: "center", padding: 48, color: dark ? "#475569" : "#9CA3AF" }}>
+            <div style={{ fontSize: 36, marginBottom: 12 }}>📄</div>
+            <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 6 }}>No exam pages yet</div>
+            <div style={{ fontSize: 13 }}>Add your first exam page above</div>
+          </div>
+        ) : bookExams.map(exam => {
+          const tc = TYPE_CONFIG[exam.type] || {};
+          return (
+            <div key={exam.id} style={{
+              background: dark ? "#1E293B" : "#fff",
+              border: `1px solid ${dark ? "#334155" : "#E5E7EB"}`,
+              borderRadius: 10, padding: "12px", marginBottom: 10,
+              borderLeft: `3px solid ${tc.dot || book.color}`,
+            }}>
+              {/* Delete confirm */}
+              {deleteConfirm === exam.id ? (
+                <div style={{ textAlign: "center", padding: "8px 0" }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: "#EF4444", marginBottom: 10 }}>
+                    Delete "{exam.title}"?
+                  </div>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <button style={{ flex: 1, padding: "8px", borderRadius: 7, border: "none", background: "#EF4444", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer" }} onClick={() => handleDelete(exam.id)}>
+                      Yes, Delete
+                    </button>
+                    <button style={{ flex: 1, padding: "8px", borderRadius: 7, border: `1px solid ${dark ? "#334155" : "#E5E7EB"}`, background: "transparent", color: dark ? "#94A3B8" : "#6B7280", fontSize: 13, cursor: "pointer" }} onClick={() => setDeleteConfirm(null)}>
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+                    <div style={{
+                      width: 30, height: 30, borderRadius: 7, flexShrink: 0,
+                      background: `${book.color}20`, color: book.color,
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      fontWeight: 800, fontSize: 12,
+                    }}>{exam.pageOrder}</div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontWeight: 700, fontSize: 14, color: dark ? "#F1F5F9" : "#1F2937", marginBottom: 5 }}>
+                        {exam.title}
+                      </div>
+                      <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
+                        <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 5, background: tc.bg || "#F3F4F6", color: tc.text || "#374151", border: `1px solid ${tc.border || "#E5E7EB"}` }}>{exam.type}</span>
+                        {exam.year && <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 5, background: dark ? "#0F172A" : "#F3F4F6", color: dark ? "#94A3B8" : "#6B7280", border: `1px solid ${dark ? "#1E293B" : "#E5E7EB"}` }}>{exam.year}</span>}
+                        <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 5, background: exam.isPublished ? "#D1FAE5" : "#FEF3C7", color: exam.isPublished ? "#065F46" : "#92400E", border: `1px solid ${exam.isPublished ? "#A7F3D0" : "#FDE68A"}` }}>
+                          {exam.isPublished ? "✅ Published" : "📝 Draft"}
+                        </span>
+                        {exam.isPremium && <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 5, background: "#FEF9C3", color: "#A16207", border: "1px solid #FDE047" }}>⭐ Premium</span>}
+                      </div>
+                    </div>
+                  </div>
+                  <div style={{ display: "flex", gap: 6, marginTop: 10 }}>
+                    <button style={{ flex: 1, padding: "7px 6px", borderRadius: 7, border: `1px solid ${dark ? "#334155" : "#E5E7EB"}`, background: "transparent", color: dark ? "#94A3B8" : "#6B7280", fontSize: 11, cursor: "pointer", fontWeight: 600 }}
+                      onClick={() => onUpdate(selectedBook, exam.id, { isPublished: !exam.isPublished })}>
+                      {exam.isPublished ? "Unpublish" : "Publish"}
+                    </button>
+                    <button style={{ flex: 1, padding: "7px 6px", borderRadius: 7, border: `1px solid ${dark ? "#334155" : "#E5E7EB"}`, background: "transparent", color: dark ? "#94A3B8" : "#6B7280", fontSize: 11, cursor: "pointer", fontWeight: 600 }}
+                      onClick={() => onUpdate(selectedBook, exam.id, { isPremium: !exam.isPremium })}>
+                      {exam.isPremium ? "Make Free" : "★ Premium"}
+                    </button>
+                    <button style={{ flex: 1, padding: "7px 6px", borderRadius: 7, border: `1px solid ${dark ? "#334155" : "#E5E7EB"}`, background: "transparent", color: "#2563EB", fontSize: 11, cursor: "pointer", fontWeight: 700 }}
+                      onClick={() => openEdit(exam)}>
+                      Edit
+                    </button>
+                    <button style={{ padding: "7px 10px", borderRadius: 7, border: `1px solid ${dark ? "#334155" : "#E5E7EB"}`, background: "transparent", color: "#EF4444", fontSize: 13, cursor: "pointer" }}
+                      onClick={() => setDeleteConfirm(exam.id)}>
+                      🗑
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// STYLES
+// ═══════════════════════════════════════════════════════════════════════════
+function getStyles(dark) {
+  const bg = dark ? "#0F172A" : "#F4F1EA";
+  const card = dark ? "#1E293B" : "#FFFFFF";
+  const text = dark ? "#F1F5F9" : "#1F2937";
+  const muted = dark ? "#64748B" : "#6B7280";
+  const border = dark ? "#1E293B" : "#E5E7EB";
+  const pageBg = dark ? "#111827" : "#FEFDF8";
+
+  return {
+    app: {
+      minHeight: "100vh", background: bg, color: text,
+      fontFamily: "'Segoe UI', system-ui, -apple-system, sans-serif",
+      maxWidth: 480, margin: "0 auto", position: "relative",
+    },
+    library: { minHeight: "100vh", background: bg },
+    libraryHeader: {
+      display: "flex", justifyContent: "space-between", alignItems: "center",
+      padding: "18px 20px 14px",
+      background: card, borderBottom: `1px solid ${border}`,
+    },
+    libraryTitle: { fontSize: 19, fontWeight: 800, color: text },
+    librarySubtitle: { fontSize: 11, color: muted, marginTop: 2 },
+    shelfWrap: { padding: "24px 20px 20px" },
+    shelfLabel: {
+      fontSize: 11, fontWeight: 700, color: muted,
+      marginBottom: 18, textTransform: "uppercase", letterSpacing: 1.2,
+    },
+    shelf: {
+      background: dark ? "#1A0F08" : "#7A5C20",
+      borderRadius: 14, padding: "28px 24px 0", minHeight: 270,
+      position: "relative",
+      boxShadow: dark
+        ? "inset 0 2px 8px rgba(0,0,0,0.5)"
+        : "inset 0 2px 8px rgba(0,0,0,0.2), 0 4px 16px rgba(0,0,0,0.15)",
+    },
+    shelfPlank: {
+      position: "absolute", bottom: 0, left: 0, right: 0, height: 20,
+      background: dark ? "#2D1A0A" : "#5C4010",
+      borderRadius: "0 0 14px 14px",
+      boxShadow: "0 4px 0 rgba(0,0,0,0.3)",
+    },
+    booksRow: {
+      display: "flex", gap: 22, justifyContent: "center", flexWrap: "wrap",
+    },
+    infoGrid: {
+      display: "grid", gridTemplateColumns: "1fr 1fr",
+      gap: 12, padding: "0 20px", marginTop: 4,
+    },
+    infoCard: {
+      background: card, border: `1px solid ${border}`,
+      borderRadius: 12, padding: "14px",
+    },
+    openBtn: {
+      width: "100%", padding: "8px 0", borderRadius: 8,
+      border: "none", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer",
+    },
+    footer: {
+      textAlign: "center", fontSize: 11, color: muted,
+      marginTop: 20, padding: "14px 20px",
+      borderTop: `1px solid ${border}`,
+    },
+    readerWrap: {
+      minHeight: "100vh", background: bg,
+      display: "flex", flexDirection: "column", position: "relative",
+    },
+    readerBar: {
+      display: "flex", justifyContent: "space-between", alignItems: "center",
+      padding: "11px 14px", background: card,
+      borderBottom: `1px solid ${border}`,
+      position: "sticky", top: 0, zIndex: 20, flexShrink: 0,
+    },
+    pageContainer: {
+      flex: 1, display: "flex", alignItems: "flex-start",
+      justifyContent: "center", padding: "16px",
+      overflowY: "auto", perspective: "1000px",
+    },
+    page: {
+      width: "100%", maxWidth: 440,
+      background: pageBg, borderRadius: 3,
+      minHeight: 520, position: "relative",
+      borderLeft: `4px solid ${dark ? "#334155" : "#DDD6C0"}`,
+      boxShadow: dark
+        ? "6px 6px 24px rgba(0,0,0,0.5), inset 0 0 0 0.5px rgba(255,255,255,0.04)"
+        : "4px 4px 20px rgba(0,0,0,0.1), 8px 0 16px rgba(0,0,0,0.04)",
+    },
+    navBar: {
+      display: "flex", justifyContent: "space-between", alignItems: "center",
+      padding: "12px 16px", background: card,
+      borderTop: `1px solid ${border}`,
+      position: "sticky", bottom: 0, flexShrink: 0,
+    },
+    navBtn: {
+      padding: "10px 16px", borderRadius: 8,
+      border: `1px solid ${border}`,
+      background: card, color: text,
+      fontSize: 13, fontWeight: 700, cursor: "pointer",
+    },
+    backBtn: {
+      padding: "6px 12px", borderRadius: 7,
+      border: `1px solid ${border}`,
+      background: "transparent", color: text,
+      fontSize: 12, cursor: "pointer", fontWeight: 600,
+    },
+    iconBtn: {
+      width: 34, height: 34, borderRadius: 8,
+      border: `1px solid ${border}`, background: "transparent",
+      cursor: "pointer", fontSize: 15,
+      display: "flex", alignItems: "center", justifyContent: "center",
+    },
+  };
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// MOUNT
+// ═══════════════════════════════════════════════════════════════════════════
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(<App />);
+
+</script>
+
+</body>
+</html>
