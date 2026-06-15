@@ -444,61 +444,16 @@ function App() {
         ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 4px; }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
-        /* Desktop: 4-col grid */
-        .shelf-inner {
-          display: grid;
-          grid-template-columns: repeat(4, 1fr);
-          gap: 0 48px;
-          justify-items: center;
-        }
-        /* Tablet: 3 or 4 col still fine */
-        @media (max-width: 900px) {
-          .shelf-inner {
-            grid-template-columns: repeat(3, 1fr);
-            gap: 0 24px;
-          }
-        }
-        /* Mobile: horizontal scroll row, books fixed width */
-        @media (max-width: 600px) {
-          .shelf-inner {
-            display: flex !important;
-            flex-direction: row !important;
-            overflow-x: auto !important;
-            overflow-y: visible !important;
-            gap: 16px !important;
-            scroll-snap-type: x mandatory;
-            -webkit-overflow-scrolling: touch;
-            scrollbar-width: none;
-            padding-bottom: 0;
-            width: 100%;
-            justify-content: flex-start;
-          }
-          .shelf-inner::-webkit-scrollbar { display: none; }
-          .book-cover-cell {
-            flex-shrink: 0 !important;
-            width: 140px !important;
-            scroll-snap-align: center;
-          }
-          .shelf-outer {
-            padding-left: 16px !important;
-            padding-right: 16px !important;
-            padding-top: 24px !important;
-          }
-          .library-pad {
-            padding: 20px 0 0 !important;
-          }
-          .library-label {
-            padding: 0 16px !important;
-          }
-        }
+        .books-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0 48px; justify-items: center; }
+        @media (max-width: 900px) { .books-grid { grid-template-columns: repeat(2, 1fr); gap: 0 32px; } }
+        @media (max-width: 520px) { .books-grid { grid-template-columns: repeat(2, 1fr); gap: 0 20px; } }
       `}</style>
     </div>
   );
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// LIBRARY VIEW — FULL WIDTH GRID + MOBILE HORIZONTAL SCROLL
+// LIBRARY VIEW — FULL WIDTH 4-COLUMN GRID
 // ═══════════════════════════════════════════════════════════════════════════
 function Library({ books, exams, onOpen, onAdmin, darkMode, onToggleDark, styles, lastPage, bookmarks, usingSheet, sheetLoading }) {
   const [opening, setOpening] = useState(null);
@@ -523,76 +478,69 @@ function Library({ books, exams, onOpen, onAdmin, darkMode, onToggleDark, styles
       {/* Header — full width */}
       <div style={{
         display: "flex", justifyContent: "space-between", alignItems: "center",
-        padding: "14px 20px", background: card, borderBottom: `1px solid ${border}`,
-        position: "sticky", top: 0, zIndex: 30,
+        padding: "16px 32px", background: card, borderBottom: `1px solid ${border}`,
       }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <span style={{ fontSize: 22 }}>📚</span>
+        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+          <span style={{ fontSize: 26 }}>📚</span>
           <div>
-            <div style={{ fontSize: 17, fontWeight: 800, color: text, lineHeight: 1 }}>Written Exam</div>
-            <div style={{ fontSize: 10, color: muted, marginTop: 2 }}>लिखित परीक्षा पुस्तकालय · Shikshit Mitra</div>
+            <div style={{ fontSize: 20, fontWeight: 800, color: text, lineHeight: 1 }}>Written Exam</div>
+            <div style={{ fontSize: 11, color: muted, marginTop: 3 }}>लिखित परीक्षा पुस्तकालय · Shikshit Mitra</div>
           </div>
         </div>
-        <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
           {!sheetLoading && (
             <div style={{
-              fontSize: 9, fontWeight: 700,
+              fontSize: 10, fontWeight: 700,
               color: usingSheet ? "#10B981" : "#F59E0B",
               background: usingSheet ? "#D1FAE5" : "#FEF3C7",
-              padding: "3px 8px", borderRadius: 99,
+              padding: "4px 10px", borderRadius: 99,
               border: `1px solid ${usingSheet ? "#A7F3D0" : "#FDE68A"}`,
-            }}>{usingSheet ? "📊 Live" : "📦 Sample"}</div>
+            }}>{usingSheet ? "📊 Live Sheet" : "📦 Sample Data"}</div>
           )}
           <button style={styles.iconBtn} onClick={onToggleDark} title="Toggle dark mode">{dark ? "☀️" : "🌙"}</button>
           <button style={styles.iconBtn} onClick={onAdmin} title="Admin">⚙️</button>
         </div>
       </div>
 
-      {/* BOOKSHELF SECTION */}
-      <div className="library-pad" style={{ padding: "28px 40px 0" }}>
-        <div className="library-label" style={{
+      {/* FULL-WIDTH WOODEN SHELF */}
+      <div style={{ padding: "32px 40px 0" }}>
+        <div style={{
           fontSize: 11, fontWeight: 700, color: muted,
-          marginBottom: 20, textTransform: "uppercase", letterSpacing: 1.4,
-          padding: "0 40px",
+          marginBottom: 24, textTransform: "uppercase", letterSpacing: 1.4,
         }}>Your Library</div>
 
         {/* Shelf backdrop */}
-        <div
-          className="shelf-outer"
-          style={{
-            position: "relative",
-            background: dark
-              ? "linear-gradient(180deg, #1A0F06 0%, #2D1A0A 100%)"
-              : "linear-gradient(180deg, #8B6914 0%, #6B4F0F 100%)",
-            borderRadius: "12px 12px 0 0",
-            paddingTop: 36,
-            paddingLeft: 40,
-            paddingRight: 40,
-            paddingBottom: 0,
-            boxShadow: dark
-              ? "0 8px 32px rgba(0,0,0,0.6), inset 0 2px 8px rgba(0,0,0,0.5)"
-              : "0 8px 32px rgba(0,0,0,0.22), inset 0 2px 8px rgba(0,0,0,0.12)",
-          }}>
-
-          {/* Books — grid on desktop, horizontal scroll on mobile */}
-          <div className="shelf-inner">
+        <div style={{
+          position: "relative",
+          background: dark
+            ? "linear-gradient(180deg, #1A0F06 0%, #2D1A0A 100%)"
+            : "linear-gradient(180deg, #8B6914 0%, #6B4F0F 100%)",
+          borderRadius: "12px 12px 0 0",
+          paddingTop: 36,
+          paddingLeft: 40,
+          paddingRight: 40,
+          boxShadow: dark
+            ? "0 8px 32px rgba(0,0,0,0.6), inset 0 2px 8px rgba(0,0,0,0.5)"
+            : "0 8px 32px rgba(0,0,0,0.22), inset 0 2px 8px rgba(0,0,0,0.12)",
+        }}>
+          {/* 4-column grid of books */}
+          <div className="books-grid">
             {bookList.map(book => {
               const bookExams = (exams[book.id] || []).filter(e => e.isPublished);
               const bmCount = Object.keys(bookmarks).filter(k => k.startsWith(book.id)).length;
               return (
-                <div key={book.id} className="book-cover-cell" style={{ width: "100%" }}>
-                  <BookCover3D
-                    book={book}
-                    examCount={bookExams.length}
-                    isOpening={opening === book.id}
-                    isHovered={hovered === book.id}
-                    lastPage={lastPage[book.id] || 0}
-                    bmCount={bmCount}
-                    onClick={() => handleOpen(book.id)}
-                    onHover={(v) => setHovered(v ? book.id : null)}
-                    dark={dark}
-                  />
-                </div>
+                <BookCover3D
+                  key={book.id}
+                  book={book}
+                  examCount={bookExams.length}
+                  isOpening={opening === book.id}
+                  isHovered={hovered === book.id}
+                  lastPage={lastPage[book.id] || 0}
+                  bmCount={bmCount}
+                  onClick={() => handleOpen(book.id)}
+                  onHover={(v) => setHovered(v ? book.id : null)}
+                  dark={dark}
+                />
               );
             })}
           </div>
@@ -600,14 +548,15 @@ function Library({ books, exams, onOpen, onAdmin, darkMode, onToggleDark, styles
           {/* Shelf plank */}
           <div style={{
             height: 26,
+            marginTop: 0,
             background: dark
               ? "linear-gradient(180deg, #3D2410 0%, #2A1808 100%)"
               : "linear-gradient(180deg, #5C3D0A 0%, #3E2906 100%)",
+            borderRadius: "0 0 0 0",
             boxShadow: "0 8px 0 rgba(0,0,0,0.35), inset 0 2px 0 rgba(255,255,255,0.07)",
             position: "relative", overflow: "hidden",
-            marginLeft: -40, marginRight: -40,
           }}>
-            {Array.from({ length: 60 }, (_, i) => i * 22 + 8).map(x => (
+            {Array.from({ length: 40 }, (_, i) => i * 28 + 10).map(x => (
               <div key={x} style={{
                 position: "absolute", top: 7, left: x,
                 width: 1, height: 12, background: "rgba(0,0,0,0.13)",
@@ -618,20 +567,20 @@ function Library({ books, exams, onOpen, onAdmin, darkMode, onToggleDark, styles
 
         {/* Shadow beneath shelf */}
         <div style={{
-          height: 14,
-          background: "linear-gradient(180deg, rgba(0,0,0,0.2) 0%, transparent 100%)",
+          height: 12,
+          background: "linear-gradient(180deg, rgba(0,0,0,0.18) 0%, transparent 100%)",
           borderRadius: "0 0 8px 8px",
-          marginBottom: 28,
+          marginBottom: 32,
         }} />
       </div>
 
       {/* Bookmarks summary — only show if any */}
       {Object.keys(bookmarks).length > 0 && (
-        <div style={{ padding: "0 20px 20px" }}>
+        <div style={{ padding: "0 40px 24px" }}>
           <div style={{
             background: dark ? "#1E293B" : "#FFF8E1",
             border: `1px solid ${dark ? "#334155" : "#FDE68A"}`,
-            borderRadius: 10, padding: "11px 16px", display: "inline-flex",
+            borderRadius: 10, padding: "12px 18px", display: "inline-flex",
             alignItems: "center", gap: 8,
             fontSize: 13, color: dark ? "#FCD34D" : "#92400E",
           }}>
@@ -642,7 +591,7 @@ function Library({ books, exams, onOpen, onAdmin, darkMode, onToggleDark, styles
 
       <div style={{
         textAlign: "center", fontSize: 11, color: muted,
-        padding: "14px 20px 20px",
+        padding: "16px 40px 24px",
         borderTop: `1px solid ${border}`,
       }}>
         Shikshit Mitra · सफलताको साथी
@@ -654,141 +603,137 @@ function Library({ books, exams, onOpen, onAdmin, darkMode, onToggleDark, styles
 
 // ─── 3D BOOK COVER ─────────────────────────────────────────────────────────
 function BookCover3D({ book, examCount, isOpening, isHovered, lastPage, bmCount, onClick, onHover, dark }) {
-  // On mobile the cell is 140px wide; on desktop up to ~200px
-  // We read the actual rendered width via a ref for perfect fit
-  const cellRef = useRef(null);
-  const [cellW, setCellW] = useState(150);
-
-  useEffect(() => {
-    if (!cellRef.current) return;
-    const ro = new ResizeObserver(entries => {
-      const w = entries[0]?.contentRect?.width;
-      if (w && w > 0) setCellW(Math.floor(w));
-    });
-    ro.observe(cellRef.current);
-    return () => ro.disconnect();
-  }, []);
-
-  // Book dimensions — always relative to cell width
-  const SPINE_FRAC = 0.10;   // spine = 10% of cell
-  const PAGES_FRAC = 0.07;   // page edge = 7%
-  const SPINE_W  = Math.round(cellW * SPINE_FRAC);
-  const PAGES_W  = Math.round(cellW * PAGES_FRAC);
-  const BOOK_W   = cellW - SPINE_W - PAGES_W;
-  const BOOK_H   = Math.round(BOOK_W * 1.42);   // ~A5 ratio
-
-  const FS = (base) => Math.max(7, Math.round(base * cellW / 160)); // scale font
+  const BOOK_W = 160;
+  const BOOK_H = 230;
+  const SPINE_W = 18;
+  const PAGES_W = 12;
 
   const lift = isHovered && !isOpening;
 
   return (
     <div
-      ref={cellRef}
       style={{
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        paddingBottom: 14,
+        paddingBottom: 18,
         cursor: "pointer",
         userSelect: "none",
         width: "100%",
-        WebkitTapHighlightColor: "transparent",
       }}
       onClick={onClick}
       onMouseEnter={() => onHover(true)}
       onMouseLeave={() => onHover(false)}
       onTouchStart={() => onHover(true)}
-      onTouchEnd={() => { setTimeout(() => onHover(false), 600); }}
+      onTouchEnd={() => onHover(false)}
     >
-      {/* 3D wrapper */}
-      <div style={{ perspective: 900, perspectiveOrigin: "50% 50%", marginBottom: 10 }}>
+      {/* 3D book wrapper */}
+      <div style={{
+        perspective: 1000,
+        perspectiveOrigin: "50% 50%",
+        marginBottom: 16,
+      }}>
         <div style={{
           position: "relative",
-          width: cellW,
+          width: BOOK_W + SPINE_W + PAGES_W,
           height: BOOK_H,
           transformStyle: "preserve-3d",
-          transition: "transform 0.5s cubic-bezier(0.23,1,0.32,1), filter 0.5s ease",
+          transition: "transform 0.5s cubic-bezier(0.23, 1, 0.32, 1), filter 0.5s ease",
           transform: isOpening
-            ? "rotateY(-44deg) translateX(-12px) scale(1.07)"
+            ? "rotateY(-45deg) translateX(-14px) scale(1.08)"
             : lift
-              ? "rotateY(-20deg) translateY(-12px)"
-              : "rotateY(-9deg)",
+              ? "rotateY(-22deg) translateY(-14px)"
+              : "rotateY(-10deg)",
           filter: lift || isOpening
-            ? "drop-shadow(0 22px 28px rgba(0,0,0,0.5))"
-            : "drop-shadow(0 8px 16px rgba(0,0,0,0.30))",
+            ? `drop-shadow(0 24px 32px rgba(0,0,0,0.5))`
+            : `drop-shadow(0 10px 18px rgba(0,0,0,0.32))`,
         }}>
           {/* SPINE */}
           <div style={{
-            position: "absolute", left: 0, top: 0,
-            width: SPINE_W, height: BOOK_H,
+            position: "absolute",
+            left: 0, top: 0,
+            width: SPINE_W,
+            height: BOOK_H,
             background: `linear-gradient(to right, ${book.spine} 0%, ${book.color} 60%, ${book.spine} 100%)`,
             borderRadius: "3px 0 0 3px",
-            display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            overflow: "hidden",
           }}>
             <div style={{
-              writingMode: "vertical-rl", textOrientation: "mixed",
+              writingMode: "vertical-rl",
+              textOrientation: "mixed",
               transform: "rotate(180deg)",
-              fontSize: FS(8), fontWeight: 800, color: "rgba(255,255,255,0.85)",
-              letterSpacing: 1, textTransform: "uppercase",
-              maxHeight: BOOK_H - 16, overflow: "hidden", whiteSpace: "nowrap",
+              fontSize: 9, fontWeight: 800, color: "rgba(255,255,255,0.85)",
+              letterSpacing: 1.2, textTransform: "uppercase",
+              maxHeight: BOOK_H - 20,
+              overflow: "hidden",
+              whiteSpace: "nowrap",
             }}>
               {book.title}
             </div>
           </div>
 
-          {/* COVER */}
+          {/* COVER FACE */}
           <div style={{
-            position: "absolute", left: SPINE_W, top: 0,
-            width: BOOK_W, height: BOOK_H,
+            position: "absolute",
+            left: SPINE_W, top: 0,
+            width: BOOK_W,
+            height: BOOK_H,
             background: `linear-gradient(150deg, ${book.color} 0%, ${book.accent} 55%, ${book.color} 100%)`,
-            borderRadius: "0 4px 4px 0",
-            overflow: "hidden", display: "flex", flexDirection: "column",
+            borderRadius: "0 5px 5px 0",
+            overflow: "hidden",
+            display: "flex",
+            flexDirection: "column",
             justifyContent: "space-between",
-            padding: `${FS(14)}px ${FS(10)}px ${FS(10)}px`,
+            padding: "20px 14px 14px",
           }}>
             {/* Decorative blobs */}
-            <div style={{ position: "absolute", top: -28, right: -28, width: BOOK_W * 0.7, height: BOOK_W * 0.7, borderRadius: "50%", background: "rgba(255,255,255,0.08)", pointerEvents: "none" }} />
-            <div style={{ position: "absolute", bottom: -20, left: -20, width: BOOK_W * 0.6, height: BOOK_W * 0.6, borderRadius: "50%", background: "rgba(255,255,255,0.05)", pointerEvents: "none" }} />
-            <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: "rgba(255,255,255,0.18)" }} />
-            <div style={{ position: "absolute", top: BOOK_H * 0.25, left: 0, right: 0, height: 1, background: "rgba(255,255,255,0.1)" }} />
+            <div style={{ position: "absolute", top: -35, right: -35, width: 130, height: 130, borderRadius: "50%", background: "rgba(255,255,255,0.08)", pointerEvents: "none" }} />
+            <div style={{ position: "absolute", bottom: -25, left: -25, width: 110, height: 110, borderRadius: "50%", background: "rgba(255,255,255,0.05)", pointerEvents: "none" }} />
+            <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 4, background: "rgba(255,255,255,0.18)" }} />
+            <div style={{ position: "absolute", top: 62, left: 0, right: 0, height: 1, background: "rgba(255,255,255,0.1)" }} />
 
-            {/* Top: emoji + title */}
+            {/* Top: label + title */}
             <div style={{ position: "relative" }}>
-              <div style={{ fontSize: FS(26), marginBottom: FS(6), lineHeight: 1 }}>{book.emoji}</div>
-              <div style={{ color: "rgba(255,255,255,0.6)", fontSize: FS(7), fontWeight: 700, letterSpacing: 1.2, textTransform: "uppercase", marginBottom: FS(3) }}>
+              <div style={{ fontSize: 30, marginBottom: 10 }}>{book.emoji}</div>
+              <div style={{ color: "rgba(255,255,255,0.6)", fontSize: 8, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 4 }}>
                 लोक सेवा आयोग
               </div>
-              <div style={{ color: "#fff", fontWeight: 800, fontSize: FS(11), lineHeight: 1.3 }}>Kharidar</div>
-              <div style={{ color: "#fff", fontWeight: 800, fontSize: FS(13), lineHeight: 1.25, marginTop: 2 }}>
+              <div style={{ color: "#fff", fontWeight: 800, fontSize: 13, lineHeight: 1.3 }}>Kharidar</div>
+              <div style={{ color: "#fff", fontWeight: 800, fontSize: 16, lineHeight: 1.25, marginTop: 2 }}>
                 {book.title.replace("Kharidar ", "")}
               </div>
             </div>
 
             {/* Bottom: page count + badges */}
             <div style={{ position: "relative" }}>
-              <div style={{ fontSize: FS(8), color: "rgba(255,255,255,0.5)", marginBottom: FS(4) }}>{book.subtitle}</div>
+              <div style={{ fontSize: 9, color: "rgba(255,255,255,0.5)", marginBottom: 6 }}>{book.subtitle}</div>
               <div style={{
-                color: "rgba(255,255,255,0.95)", fontSize: FS(9), fontWeight: 700,
-                background: "rgba(0,0,0,0.25)", borderRadius: 5,
-                padding: `${FS(3)}px ${FS(7)}px`, display: "inline-block", marginBottom: FS(5),
+                color: "rgba(255,255,255,0.95)", fontSize: 10, fontWeight: 700,
+                background: "rgba(0,0,0,0.25)", borderRadius: 6,
+                padding: "4px 9px", display: "inline-block", marginBottom: 6,
               }}>
                 {examCount} Pages
               </div>
-              <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+              <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
                 {lastPage > 0 && (
-                  <span style={{ fontSize: FS(8), color: "#fff", fontWeight: 700, background: "rgba(255,255,255,0.22)", borderRadius: 99, padding: `2px ${FS(5)}px` }}>📖 p.{lastPage + 1}</span>
+                  <span style={{ fontSize: 9, color: "#fff", fontWeight: 700, background: "rgba(255,255,255,0.2)", borderRadius: 99, padding: "2px 7px" }}>📖 p.{lastPage + 1}</span>
                 )}
                 {bmCount > 0 && (
-                  <span style={{ fontSize: FS(8), color: "#fff", fontWeight: 700, background: "rgba(255,255,255,0.22)", borderRadius: 99, padding: `2px ${FS(5)}px` }}>🔖 {bmCount}</span>
+                  <span style={{ fontSize: 9, color: "#fff", fontWeight: 700, background: "rgba(255,255,255,0.2)", borderRadius: 99, padding: "2px 7px" }}>🔖 {bmCount}</span>
                 )}
               </div>
             </div>
           </div>
 
-          {/* PAGE EDGES */}
+          {/* PAGES EDGE */}
           <div style={{
-            position: "absolute", left: SPINE_W + BOOK_W, top: 2,
-            width: PAGES_W, height: BOOK_H - 4,
+            position: "absolute",
+            left: SPINE_W + BOOK_W, top: 2,
+            width: PAGES_W,
+            height: BOOK_H - 4,
             background: dark
               ? "repeating-linear-gradient(to bottom, #374151 0px, #4B5563 2px, #374151 4px)"
               : "repeating-linear-gradient(to bottom, #F9F9F0 0px, #E8E2D0 2px, #F9F9F0 4px)",
@@ -797,10 +742,10 @@ function BookCover3D({ book, examCount, isOpening, isHovered, lastPage, bmCount,
         </div>
       </div>
 
-      {/* Label */}
+      {/* Label below */}
       <div style={{
-        fontSize: Math.max(9, FS(10)), color: dark ? "#64748B" : "#9CA3AF",
-        fontWeight: 600, textAlign: "center", letterSpacing: 0.2,
+        fontSize: 11, color: dark ? "#64748B" : "#9CA3AF",
+        fontWeight: 600, letterSpacing: 0.3, textAlign: "center",
       }}>
         {isOpening ? "Opening…" : "Tap to open"}
       </div>
@@ -1090,8 +1035,21 @@ function CoverPage({ book, exams, dark }) {
 
 function ExamPage({ exam, book, pageNum, dark, styles }) {
   const tc = TYPE_CONFIG[exam.type] || {};
+  const [pdfOpen, setPdfOpen] = useState(false);
+
   return (
     <div style={{ padding: "24px 20px 44px" }}>
+      {/* Fullscreen PDF reader */}
+      {pdfOpen && exam.pdfUrl && (
+        <PdfViewer
+          url={exam.pdfUrl}
+          dark={dark}
+          accent={book.color}
+          examTitle={exam.title}
+          onClose={() => setPdfOpen(false)}
+        />
+      )}
+
       {/* Header row */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 14 }}>
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
@@ -1115,36 +1073,101 @@ function ExamPage({ exam, book, pageNum, dark, styles }) {
             }}>⭐ Premium</span>
           )}
         </div>
-        <span style={{
-          fontSize: 10, fontWeight: 700,
-          color: dark ? "#475569" : "#9CA3AF",
-        }}>p.{pageNum}</span>
+        <span style={{ fontSize: 10, fontWeight: 700, color: dark ? "#475569" : "#9CA3AF" }}>p.{pageNum}</span>
       </div>
 
       {/* Title */}
       <h2 style={{
-        fontSize: 17, fontWeight: 800,
-        color: book.color,
-        margin: "0 0 18px",
-        paddingBottom: 12,
+        fontSize: 17, fontWeight: 800, color: book.color,
+        margin: "0 0 18px", paddingBottom: 12,
         borderBottom: `2px solid ${book.color}22`,
       }}>
         {exam.title}
       </h2>
 
-      {/* PDF (if provided) */}
+      {/* PDF launcher card */}
       {exam.pdfUrl && (
-        <PdfViewer url={exam.pdfUrl} dark={dark} accent={book.color} />
+        <div style={{
+          marginBottom: 20,
+          borderRadius: 14, overflow: "hidden",
+          border: `1px solid ${dark ? "#1E293B" : "#E5E7EB"}`,
+          background: dark ? "#0F172A" : "#F8F7F2",
+        }}>
+          {/* Preview thumbnail strip */}
+          <div style={{
+            height: 120,
+            background: `linear-gradient(135deg, #111827 0%, #1E293B 50%, #111827 100%)`,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            position: "relative", overflow: "hidden",
+          }}>
+            {/* Decorative pages visual */}
+            {[...Array(3)].map((_, i) => (
+              <div key={i} style={{
+                position: "absolute",
+                width: 52, height: 70,
+                background: i === 1 ? "#fff" : "rgba(255,255,255,0.55)",
+                borderRadius: 3,
+                boxShadow: "0 4px 16px rgba(0,0,0,0.5)",
+                transform: `rotate(${(i - 1) * 7}deg) translateX(${(i - 1) * 22}px)`,
+                zIndex: i === 1 ? 2 : 1,
+              }}>
+                {i === 1 && (
+                  <div style={{ padding: 6 }}>
+                    {[...Array(6)].map((_, j) => (
+                      <div key={j} style={{
+                        height: 3, borderRadius: 2, marginBottom: 4,
+                        background: j === 0 ? book.color : "#E5E7EB",
+                        width: j === 0 ? "70%" : `${50 + Math.random() * 40}%`,
+                      }} />
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+            {/* Shikshit Mitra logo pill */}
+            <div style={{
+              position: "absolute", top: 10, right: 10,
+              background: `${book.color}CC`, color: "#fff",
+              fontSize: 9, fontWeight: 800, padding: "3px 8px", borderRadius: 6,
+              letterSpacing: 0.5,
+            }}>शिक्षित मित्र</div>
+          </div>
+
+          {/* Info row + open button */}
+          <div style={{
+            display: "flex", alignItems: "center", gap: 12,
+            padding: "12px 14px",
+          }}>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: dark ? "#F1F5F9" : "#1F2937", marginBottom: 2 }}>
+                {exam.title}
+              </div>
+              <div style={{ fontSize: 11, color: dark ? "#64748B" : "#9CA3AF" }}>
+                PDF · Full exam paper
+              </div>
+            </div>
+            <button
+              onClick={() => setPdfOpen(true)}
+              style={{
+                padding: "10px 18px", borderRadius: 10, border: "none",
+                background: book.color, color: "#fff",
+                fontSize: 13, fontWeight: 800, cursor: "pointer",
+                boxShadow: `0 4px 14px ${book.color}66`,
+                whiteSpace: "nowrap",
+                flexShrink: 0,
+              }}
+            >
+              📖 Read
+            </button>
+          </div>
+        </div>
       )}
 
-      {/* Content (optional notes / typed questions) */}
+      {/* Content (optional typed questions) */}
       {exam.content && exam.content.trim() && (
         <div
           className={`exam-content ${dark ? "dark" : ""}`}
-          style={{
-            fontSize: 14, lineHeight: 1.85,
-            color: dark ? "#CBD5E1" : "#1F2937",
-          }}
+          style={{ fontSize: 14, lineHeight: 1.85, color: dark ? "#CBD5E1" : "#1F2937" }}
           dangerouslySetInnerHTML={{ __html: exam.content }}
         />
       )}
@@ -1161,10 +1184,10 @@ function ExamPage({ exam, book, pageNum, dark, styles }) {
   );
 }
 
-// ─── PDF VIEWER (pdf.js, A4 ratio, zoom, no black) ──────────────────────
-function PdfViewer({ url, dark, accent }) {
-  const containerRef = useRef(null);
+// ─── FULL-SCREEN IMMERSIVE PDF READER ────────────────────────────────────────
+function PdfViewer({ url, dark, accent, examTitle, onClose }) {
   const canvasRef = useRef(null);
+  const scrollRef = useRef(null);
   const [pdfDoc, setPdfDoc] = useState(null);
   const [currentPdfPage, setCurrentPdfPage] = useState(1);
   const [totalPdfPages, setTotalPdfPages] = useState(0);
@@ -1172,12 +1195,31 @@ function PdfViewer({ url, dark, accent }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [pdfJsReady, setPdfJsReady] = useState(false);
+  const [uiVisible, setUiVisible] = useState(true);
+  const [isTwoPage, setIsTwoPage] = useState(false);
+  const [rightCanvasRef] = useState(() => React.createRef());
   const renderTaskRef = useRef(null);
+  const renderTaskRightRef = useRef(null);
+  const hideTimer = useRef(null);
 
-  // A4 ratio: 1:1.414 (width:height)
-  const A4_RATIO = 1.414;
+  // Lock body scroll when fullscreen PDF is open
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = ""; };
+  }, []);
 
-  // Inject pdf.js if not present
+  // Auto-hide UI after 3s of no interaction
+  const resetHideTimer = () => {
+    setUiVisible(true);
+    clearTimeout(hideTimer.current);
+    hideTimer.current = setTimeout(() => setUiVisible(false), 3000);
+  };
+  useEffect(() => {
+    resetHideTimer();
+    return () => clearTimeout(hideTimer.current);
+  }, []);
+
+  // Inject pdf.js
   useEffect(() => {
     if (window.pdfjsLib) { setPdfJsReady(true); return; }
     const script = document.createElement("script");
@@ -1191,241 +1233,254 @@ function PdfViewer({ url, dark, accent }) {
     document.head.appendChild(script);
   }, []);
 
-  // Extract Drive file ID and load via pdf.js
+  // Load PDF
   useEffect(() => {
     if (!pdfJsReady || !url) return;
-    // url is already a /preview link — derive a /view link for direct download
     const m = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
-    const directUrl = m
-      ? `https://drive.google.com/uc?export=download&id=${m[1]}`
-      : url;
-
-    setLoading(true);
-    setError(null);
-    setPdfDoc(null);
-    setCurrentPdfPage(1);
-
-    window.pdfjsLib.getDocument({
-      url: directUrl,
-      withCredentials: false,
-    }).promise.then(doc => {
-      setPdfDoc(doc);
-      setTotalPdfPages(doc.numPages);
-      setLoading(false);
-    }).catch(() => {
-      // Fall back to iframe if CORS blocks pdf.js
-      setError("cors_fallback");
-      setLoading(false);
-    });
+    const directUrl = m ? `https://drive.google.com/uc?export=download&id=${m[1]}` : url;
+    setLoading(true); setError(null); setPdfDoc(null); setCurrentPdfPage(1);
+    window.pdfjsLib.getDocument({ url: directUrl, withCredentials: false }).promise
+      .then(doc => { setPdfDoc(doc); setTotalPdfPages(doc.numPages); setLoading(false); })
+      .catch(() => { setError("cors_fallback"); setLoading(false); });
   }, [pdfJsReady, url]);
 
-  // Render page on canvas
+  // Render page(s) on canvas
+  const renderPage = useCallback(async (doc, pageNum, canvasEl, zoomLevel, containerEl) => {
+    if (!doc || !canvasEl || !containerEl) return;
+    try {
+      const page = await doc.getPage(pageNum);
+      const containerW = containerEl.offsetWidth || 600;
+      const baseVP = page.getViewport({ scale: 1 });
+      const scale = (containerW / baseVP.width) * zoomLevel;
+      const viewport = page.getViewport({ scale });
+      canvasEl.width = viewport.width;
+      canvasEl.height = viewport.height;
+      const ctx = canvasEl.getContext("2d");
+      ctx.fillStyle = "#FFFFFF";
+      ctx.fillRect(0, 0, canvasEl.width, canvasEl.height);
+      const task = page.render({ canvasContext: ctx, viewport });
+      return task;
+    } catch {}
+  }, []);
+
   useEffect(() => {
-    if (!pdfDoc || !canvasRef.current || !containerRef.current) return;
+    if (!pdfDoc || !canvasRef.current || !scrollRef.current) return;
+    setLoading(true);
+    const singleW = isTwoPage ? scrollRef.current.offsetWidth / 2 - 24 : scrollRef.current.offsetWidth - 48;
+    const fakeContainer = { offsetWidth: singleW };
 
-    const renderPage = async () => {
-      if (renderTaskRef.current) {
-        try { renderTaskRef.current.cancel(); } catch {}
-      }
-      setLoading(true);
-      try {
-        const page = await pdfDoc.getPage(currentPdfPage);
-        const containerWidth = containerRef.current ? containerRef.current.offsetWidth : 340;
-        // Scale to fit container width, then apply user zoom
-        const baseVP = page.getViewport({ scale: 1 });
-        const scale = (containerWidth / baseVP.width) * zoom;
-        const viewport = page.getViewport({ scale });
+    if (renderTaskRef.current) { try { renderTaskRef.current.cancel(); } catch {} }
+    renderPage(pdfDoc, currentPdfPage, canvasRef.current, zoom, fakeContainer)
+      .then(task => { renderTaskRef.current = task; if (task) task.promise.then(() => setLoading(false)).catch(() => {}); })
+      .catch(() => setLoading(false));
 
-        const canvas = canvasRef.current;
-        canvas.width = viewport.width;
-        canvas.height = viewport.height;
-        const ctx = canvas.getContext("2d");
-        ctx.fillStyle = "#FEFDF8";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    if (isTwoPage && rightCanvasRef.current && currentPdfPage + 1 <= totalPdfPages) {
+      if (renderTaskRightRef.current) { try { renderTaskRightRef.current.cancel(); } catch {} }
+      renderPage(pdfDoc, currentPdfPage + 1, rightCanvasRef.current, zoom, fakeContainer)
+        .then(task => { renderTaskRightRef.current = task; });
+    }
+  }, [pdfDoc, currentPdfPage, zoom, isTwoPage, renderPage, totalPdfPages]);
 
-        const task = page.render({ canvasContext: ctx, viewport });
-        renderTaskRef.current = task;
-        await task.promise;
-        setLoading(false);
-      } catch (e) {
-        if (e?.name !== "RenderingCancelledException") {
-          setLoading(false);
-        }
-      }
+  const goPage = (dir) => {
+    const step = isTwoPage ? 2 : 1;
+    setCurrentPdfPage(p => dir === "next"
+      ? Math.min(totalPdfPages, p + step)
+      : Math.max(1, p - step));
+    resetHideTimer();
+  };
+
+  // Keyboard nav
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.key === "ArrowRight" || e.key === "ArrowDown") goPage("next");
+      if (e.key === "ArrowLeft"  || e.key === "ArrowUp")   goPage("prev");
+      if (e.key === "Escape") onClose && onClose();
     };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [totalPdfPages, isTwoPage, onClose]);
 
-    renderPage();
-  }, [pdfDoc, currentPdfPage, zoom]);
-
-  // Derive original Drive link for "open in new tab"
   const m = url && url.match(/\/d\/([a-zA-Z0-9_-]+)/);
   const openLink = m ? `https://drive.google.com/file/d/${m[1]}/view` : url;
 
-  // Container width for A4 height calc
-  const containerWidth = containerRef.current ? containerRef.current.offsetWidth : 340;
-  const a4Height = Math.round(containerWidth * A4_RATIO);
+  // Shared button style for the dark toolbar
+  const tb = (extra = {}) => ({
+    background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.18)",
+    color: "#fff", borderRadius: 8, cursor: "pointer", fontWeight: 700,
+    fontSize: 13, padding: "6px 12px", backdropFilter: "blur(8px)",
+    transition: "background 0.15s",
+    ...extra,
+  });
 
-  // CORS fallback: use iframe but with better styling
+  // CORS fallback — full-screen iframe
   if (error === "cors_fallback") {
     return (
-      <div style={{ marginBottom: 18 }}>
+      <div style={{
+        position: "fixed", inset: 0, zIndex: 1000,
+        background: "#111827",
+        display: "flex", flexDirection: "column",
+      }} onMouseMove={resetHideTimer} onClick={resetHideTimer}>
+        {/* Top bar */}
         <div style={{
-          width: "100%",
-          paddingTop: `${A4_RATIO * 100}%`,
-          position: "relative",
-          borderRadius: 6,
-          overflow: "hidden",
-          boxShadow: dark
-            ? "0 4px 24px rgba(0,0,0,0.55)"
-            : "2px 4px 18px rgba(0,0,0,0.18), -1px 0 0 #E5E0D5",
-          background: "#FEFDF8",
+          display: "flex", alignItems: "center", gap: 10,
+          padding: "10px 16px",
+          background: "rgba(0,0,0,0.85)", backdropFilter: "blur(12px)",
+          borderBottom: "1px solid rgba(255,255,255,0.08)",
+          transition: "opacity 0.3s", opacity: uiVisible ? 1 : 0, pointerEvents: uiVisible ? "auto" : "none",
+          flexShrink: 0,
         }}>
-          <iframe
-            src={url}
-            title="Exam PDF"
-            style={{
-              position: "absolute", inset: 0,
-              width: "100%", height: "100%",
-              border: "none", background: "#FEFDF8",
-            }}
-            allow="autoplay"
-          />
+          <button style={tb()} onClick={onClose}>✕ Close</button>
+          <div style={{ flex: 1, fontSize: 13, fontWeight: 700, color: "#E2E8F0", textAlign: "center" }}>{examTitle}</div>
+          <a href={openLink} target="_blank" rel="noopener noreferrer" style={{ ...tb(), textDecoration: "none" }}>⬡ Open</a>
         </div>
-        <PdfControls
-          current={currentPdfPage} total={totalPdfPages}
-          onPrev={() => setCurrentPdfPage(p => Math.max(1, p - 1))}
-          onNext={() => setCurrentPdfPage(p => Math.min(totalPdfPages, p + 1))}
-          zoom={zoom} onZoom={setZoom}
-          openLink={openLink} dark={dark} accent={accent}
-          showPageNav={false}
-        />
+        <iframe src={url} title="Exam PDF"
+          style={{ flex: 1, border: "none", background: "#fff" }} allow="autoplay" />
       </div>
     );
   }
 
   return (
-    <div style={{ marginBottom: 18 }}>
-      {/* Paper container — true A4 ratio */}
-      <div
-        ref={containerRef}
-        style={{
-          width: "100%",
-          background: dark ? "#1E293B" : "#E8E3D8",
-          borderRadius: 8,
-          padding: "12px",
-          boxSizing: "border-box",
-        }}
-      >
-        <div style={{
-          position: "relative",
-          width: "100%",
-          background: "#FEFDF8",
-          borderRadius: 4,
-          overflow: "hidden",
-          boxShadow: dark
-            ? "0 4px 24px rgba(0,0,0,0.55)"
-            : "2px 4px 18px rgba(0,0,0,0.18), -1px 0 0 #E5E0D5",
-          minHeight: loading && !pdfDoc ? a4Height : undefined,
-        }}>
-          {/* Loading spinner */}
-          {loading && (
-            <div style={{
-              position: "absolute", inset: 0,
-              display: "flex", flexDirection: "column",
-              alignItems: "center", justifyContent: "center",
-              background: "#FEFDF8", zIndex: 2, gap: 12,
-              minHeight: a4Height,
-            }}>
-              <div style={{
-                width: 32, height: 32, borderRadius: "50%",
-                border: `3px solid ${accent}33`,
-                borderTopColor: accent,
-                animation: "sm-spin 0.7s linear infinite",
-              }} />
-              <div style={{ fontSize: 12, color: "#6B7280", fontWeight: 600 }}>
-                {pdfDoc ? "Rendering page…" : "Loading PDF…"}
-              </div>
-            </div>
-          )}
-
-          {/* PDF canvas */}
-          <canvas
-            ref={canvasRef}
-            style={{
-              display: "block",
-              width: "100%",
-              height: "auto",
-              opacity: loading ? 0 : 1,
-              transition: "opacity 0.25s ease",
-            }}
-          />
-
-          {/* No doc yet placeholder */}
-          {!pdfDoc && !loading && !error && (
-            <div style={{
-              minHeight: a4Height,
-              display: "flex", alignItems: "center", justifyContent: "center",
-              color: "#9CA3AF", fontSize: 13,
-            }}>
-              No PDF loaded
+    <div
+      style={{ position: "fixed", inset: 0, zIndex: 1000, background: "#111827", display: "flex", flexDirection: "column", userSelect: "none" }}
+      onMouseMove={resetHideTimer}
+      onClick={resetHideTimer}
+    >
+      {/* ── TOP BAR ── */}
+      <div style={{
+        display: "flex", alignItems: "center", gap: 10,
+        padding: "10px 16px", flexShrink: 0,
+        background: "rgba(0,0,0,0.75)", backdropFilter: "blur(16px)",
+        borderBottom: "1px solid rgba(255,255,255,0.07)",
+        transition: "opacity 0.35s ease",
+        opacity: uiVisible ? 1 : 0, pointerEvents: uiVisible ? "auto" : "none",
+        position: "absolute", top: 0, left: 0, right: 0, zIndex: 10,
+      }}>
+        <button style={tb()} onClick={onClose}>✕</button>
+        <div style={{ flex: 1, textAlign: "center" }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: "#F1F5F9" }}>{examTitle}</div>
+          {totalPdfPages > 0 && (
+            <div style={{ fontSize: 10, color: "#64748B", marginTop: 1 }}>
+              Page {currentPdfPage}{isTwoPage && currentPdfPage + 1 <= totalPdfPages ? `–${currentPdfPage + 1}` : ""} of {totalPdfPages}
             </div>
           )}
         </div>
+        <a href={openLink} target="_blank" rel="noopener noreferrer" style={{ ...tb(), fontSize: 11, textDecoration: "none" }}>⬡ Open</a>
       </div>
 
-      {/* Controls */}
-      <PdfControls
-        current={currentPdfPage} total={totalPdfPages}
-        onPrev={() => setCurrentPdfPage(p => Math.max(1, p - 1))}
-        onNext={() => setCurrentPdfPage(p => Math.min(totalPdfPages, p + 1))}
-        zoom={zoom} onZoom={setZoom}
-        openLink={openLink} dark={dark} accent={accent}
-        showPageNav={totalPdfPages > 1}
-      />
-    </div>
-  );
-}
-
-function PdfControls({ current, total, onPrev, onNext, zoom, onZoom, openLink, dark, accent, showPageNav }) {
-  const btnStyle = {
-    padding: "6px 10px", borderRadius: 7, fontSize: 13, cursor: "pointer", fontWeight: 700,
-    border: `1px solid ${dark ? "#334155" : "#E5E7EB"}`,
-    background: dark ? "#1E293B" : "#F9FAFB",
-    color: dark ? "#E2E8F0" : "#374151",
-  };
-  return (
-    <div style={{ marginTop: 10, display: "flex", gap: 7, alignItems: "center", flexWrap: "wrap" }}>
-      {/* Zoom controls */}
-      <button style={btnStyle} onClick={() => onZoom(z => Math.max(0.5, z - 0.25))} title="Zoom out">−</button>
-      <span style={{ fontSize: 11, fontWeight: 700, color: dark ? "#94A3B8" : "#6B7280", minWidth: 36, textAlign: "center" }}>
-        {Math.round(zoom * 100)}%
-      </span>
-      <button style={btnStyle} onClick={() => onZoom(z => Math.min(3.0, z + 0.25))} title="Zoom in">+</button>
-      <button style={{ ...btnStyle, fontSize: 10 }} onClick={() => onZoom(1.0)} title="Reset zoom">Reset</button>
-
-      <div style={{ flex: 1 }} />
-
-      {/* Page navigation */}
-      {showPageNav && (
-        <>
-          <button style={{ ...btnStyle, opacity: current <= 1 ? 0.4 : 1 }} onClick={onPrev} disabled={current <= 1}>‹</button>
-          <span style={{ fontSize: 11, fontWeight: 700, color: dark ? "#94A3B8" : "#6B7280" }}>{current}/{total}</span>
-          <button style={{ ...btnStyle, opacity: current >= total ? 0.4 : 1 }} onClick={onNext} disabled={current >= total}>›</button>
-        </>
-      )}
-
-      {/* Open externally */}
-      <a href={openLink} target="_blank" rel="noopener noreferrer"
+      {/* ── PDF CANVAS AREA ── */}
+      <div
+        ref={scrollRef}
         style={{
-          display: "inline-flex", alignItems: "center", gap: 5,
-          padding: "6px 10px", borderRadius: 7,
-          background: `${accent}12`, color: accent,
-          border: `1px solid ${accent}30`,
-          fontSize: 11, fontWeight: 700, textDecoration: "none",
+          flex: 1, overflowY: "auto", overflowX: "hidden",
+          display: "flex", alignItems: "flex-start", justifyContent: "center",
+          padding: "56px 20px 72px",
+          gap: isTwoPage ? 8 : 0,
         }}
       >
-        📄 Open
-      </a>
+        {/* Loading */}
+        {loading && (
+          <div style={{
+            position: "absolute", inset: 0,
+            display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+            gap: 14, zIndex: 5,
+          }}>
+            <div style={{
+              width: 40, height: 40, borderRadius: "50%",
+              border: `3px solid rgba(255,255,255,0.1)`,
+              borderTopColor: accent || "#1a6b3c",
+              animation: "sm-spin 0.8s linear infinite",
+            }} />
+            <div style={{ fontSize: 13, color: "#64748B", fontWeight: 600 }}>
+              {pdfDoc ? "Rendering…" : "Loading PDF…"}
+            </div>
+          </div>
+        )}
+
+        {/* Left / single page */}
+        <div style={{
+          background: "#fff",
+          borderRadius: 3,
+          boxShadow: "0 8px 48px rgba(0,0,0,0.7), 0 2px 8px rgba(0,0,0,0.4)",
+          overflow: "hidden",
+          flex: isTwoPage ? "0 0 calc(50% - 4px)" : "0 0 100%",
+          maxWidth: isTwoPage ? "calc(50% - 4px)" : 780,
+          opacity: loading ? 0.3 : 1, transition: "opacity 0.2s",
+        }}>
+          <canvas ref={canvasRef} style={{ display: "block", width: "100%", height: "auto" }} />
+        </div>
+
+        {/* Right page (two-page spread) */}
+        {isTwoPage && currentPdfPage + 1 <= totalPdfPages && (
+          <div style={{
+            background: "#fff", borderRadius: 3,
+            boxShadow: "0 8px 48px rgba(0,0,0,0.7), 0 2px 8px rgba(0,0,0,0.4)",
+            overflow: "hidden",
+            flex: "0 0 calc(50% - 4px)", maxWidth: "calc(50% - 4px)",
+            opacity: loading ? 0.3 : 1, transition: "opacity 0.2s",
+          }}>
+            <canvas ref={rightCanvasRef} style={{ display: "block", width: "100%", height: "auto" }} />
+          </div>
+        )}
+      </div>
+
+      {/* ── SIDE NAV ARROWS ── */}
+      {currentPdfPage > 1 && (
+        <button
+          onClick={(e) => { e.stopPropagation(); goPage("prev"); }}
+          style={{
+            position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)",
+            ...tb({ padding: "14px 16px", fontSize: 20, borderRadius: 12, zIndex: 20 }),
+            opacity: uiVisible ? 1 : 0, transition: "opacity 0.35s ease",
+          }}
+        >‹</button>
+      )}
+      {currentPdfPage < totalPdfPages && (
+        <button
+          onClick={(e) => { e.stopPropagation(); goPage("next"); }}
+          style={{
+            position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)",
+            ...tb({ padding: "14px 16px", fontSize: 20, borderRadius: 12, zIndex: 20 }),
+            opacity: uiVisible ? 1 : 0, transition: "opacity 0.35s ease",
+          }}
+        >›</button>
+      )}
+
+      {/* ── BOTTOM TOOLBAR ── */}
+      <div style={{
+        position: "absolute", bottom: 0, left: 0, right: 0, zIndex: 10,
+        display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+        padding: "12px 20px",
+        background: "rgba(0,0,0,0.75)", backdropFilter: "blur(16px)",
+        borderTop: "1px solid rgba(255,255,255,0.07)",
+        transition: "opacity 0.35s ease",
+        opacity: uiVisible ? 1 : 0, pointerEvents: uiVisible ? "auto" : "none",
+        flexWrap: "wrap",
+      }}>
+        {/* Zoom */}
+        <button style={tb()} onClick={() => { setZoom(z => Math.max(0.4, z - 0.2)); resetHideTimer(); }}>−</button>
+        <span style={{ fontSize: 12, fontWeight: 700, color: "#94A3B8", minWidth: 40, textAlign: "center" }}>
+          {Math.round(zoom * 100)}%
+        </span>
+        <button style={tb()} onClick={() => { setZoom(z => Math.min(3.0, z + 0.2)); resetHideTimer(); }}>+</button>
+        <button style={{ ...tb(), fontSize: 10 }} onClick={() => { setZoom(1.0); resetHideTimer(); }}>Fit</button>
+
+        <div style={{ width: 1, height: 22, background: "rgba(255,255,255,0.12)", margin: "0 4px" }} />
+
+        {/* Page nav */}
+        <button style={{ ...tb(), opacity: currentPdfPage <= 1 ? 0.3 : 1 }} onClick={() => goPage("prev")} disabled={currentPdfPage <= 1}>← Prev</button>
+        <span style={{ fontSize: 12, fontWeight: 700, color: "#E2E8F0", minWidth: 60, textAlign: "center" }}>
+          {currentPdfPage}{isTwoPage && currentPdfPage + 1 <= totalPdfPages ? `–${currentPdfPage + 1}` : ""} / {totalPdfPages}
+        </span>
+        <button style={{ ...tb({ background: `${accent}99` }), opacity: currentPdfPage >= totalPdfPages ? 0.3 : 1 }} onClick={() => goPage("next")} disabled={currentPdfPage >= totalPdfPages}>Next →</button>
+
+        <div style={{ width: 1, height: 22, background: "rgba(255,255,255,0.12)", margin: "0 4px" }} />
+
+        {/* Two-page toggle */}
+        <button style={{ ...tb(), fontSize: 11, background: isTwoPage ? "rgba(255,255,255,0.22)" : "rgba(255,255,255,0.1)" }}
+          onClick={() => { setIsTwoPage(t => !t); resetHideTimer(); }}>
+          {isTwoPage ? "☰ Single" : "⊞ Spread"}
+        </button>
+      </div>
     </div>
   );
 }
