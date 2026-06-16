@@ -765,22 +765,21 @@ function BookCover3D({ book, examCount, isOpening, isHovered, lastPage, bmCount,
 // BOOK READER
 // ═══════════════════════════════════════════════════════════════════════════
 function BookReader({ book, exams, onClose, darkMode, styles, lastPage, onPageChange, bookmarks, onBookmark, onUnbookmark }) {
-  const stageRef       = useRef(null);
-  const pageFlipRef    = useRef(null);
-  const [ready,        setReady]        = useState(false);
-  const [currentPage,  setCurrentPage]  = useState(lastPage);
+  const [currentPage,  setCurrentPage]  = useState(lastPage || 0);
+  const [animDir,      setAnimDir]      = useState(null); // "next" | "prev" | null
   const [showTOC,      setShowTOC]      = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [uiVisible,    setUiVisible]    = useState(true);
-  const hideTimer      = useRef(null);
-  const dark           = darkMode;
-  const totalPages     = exams.length + 1; // cover + one per exam
+  const hideTimer  = useRef(null);
+  const touchStart = useRef(null);
+  const dark       = darkMode;
+  const totalPages = exams.length + 1; // 0 = cover, 1..n = exams
 
-  // ── Auto-hide UI ──────────────────────────────────────────────────────────
+  // ── Auto-hide UI ─────────────────────────────────────────────────────────
   const resetHide = useCallback(() => {
     setUiVisible(true);
     clearTimeout(hideTimer.current);
-    hideTimer.current = setTimeout(() => setUiVisible(false), 4000);
+    hideTimer.current = setTimeout(() => setUiVisible(false), 4500);
   }, []);
   useEffect(() => { resetHide(); return () => clearTimeout(hideTimer.current); }, [resetHide]);
 
@@ -788,10 +787,10 @@ function BookReader({ book, exams, onClose, darkMode, styles, lastPage, onPageCh
   const toggleFS = () => {
     const el = document.documentElement;
     if (!document.fullscreenElement) {
-      (el.requestFullscreen || el.webkitRequestFullscreen).call(el);
+      (el.requestFullscreen || el.webkitRequestFullscreen || (() => {})).call(el);
       setIsFullscreen(true);
     } else {
-      (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+      (document.exitFullscreen || document.webkitExitFullscreen || (() => {})).call(document);
       setIsFullscreen(false);
     }
     resetHide();
@@ -802,342 +801,332 @@ function BookReader({ book, exams, onClose, darkMode, styles, lastPage, onPageCh
     return () => document.removeEventListener("fullscreenchange", h);
   }, []);
 
-  // ── Init StPageFlip after mount ──────────────────────────────────────────
-  useEffect(() => {
-    if (!stageRef.current) return;
-    if (typeof PageFlip === "undefined") {
-      // CDN not loaded yet — retry
-      const t = setTimeout(() => setReady(r => !r), 500);
-      return () => clearTimeout(t);
-    }
-
-    const isMobile = window.innerWidth < 680;
-    const stageW   = stageRef.current.offsetWidth  || window.innerWidth;
-    const stageH   = stageRef.current.offsetHeight || window.innerHeight - 120;
-    const pageW    = isMobile ? stageW : Math.min(Math.floor(stageW / 2), 540);
-    const pageH    = Math.min(stageH - 20, Math.round(pageW * 1.41));
-
-    const pf = new PageFlip(stageRef.current, {
-      width:  pageW,
-      height: pageH,
-      size:   "fixed",
-      minWidth: 120, maxWidth: 900,
-      minHeight: 150, maxHeight: 1400,
-      showCover:        true,
-      drawShadow:       true,
-      flippingTime:     650,
-      usePortrait:      isMobile,
-      autoSize:         false,
-      mobileScrollSupport: true,
-      clickEventForward:   true,
-      swipeDistance:    40,
-      showPageCorners:  true,
-      disableFlipByClick: false,
-    });
-
-    // Build page HTML elements from DOM (hidden container below)
-    const pageNodes = stageRef.current.querySelectorAll(".pf-page");
-    pf.loadFromHTML(Array.from(pageNodes));
-
-    pf.on("flip", e => {
-      const pg = e.data; // 0-indexed
-      setCurrentPage(pg);
-      onPageChange(pg);
-      resetHide();
-    });
-
-    if (lastPage > 0) { try { pf.turnToPage(lastPage); } catch {} }
-
-    pageFlipRef.current = pf;
-    setReady(true);
-
-    return () => { try { pf.destroy(); } catch {} pageFlipRef.current = null; };
-  }, []);
-
-  // ── Navigation ────────────────────────────────────────────────────────────
-  const goNext = () => { pageFlipRef.current?.flipNext("bottom"); resetHide(); };
-  const goPrev = () => { pageFlipRef.current?.flipPrev("bottom"); resetHide(); };
-  const jumpTo = (pg) => {
-    try { pageFlipRef.current?.turnToPage(pg); } catch {}
-    setCurrentPage(pg); onPageChange(pg); setShowTOC(false); resetHide();
-  };
+  // ── Navigation with flip animation ───────────────────────────────────────
+  const goTo = useCallback((dir) => {
+    if (animDir) return; // already animating
+    if (dir === "next" && currentPage >= totalPages - 1) return;
+    if (dir === "prev" && currentPage <= 0) return;
+    setAnimDir(dir);
+    resetHide();
+    setTimeout(() => {
+      const next = dir === "next" ? currentPage + 1 : currentPage - 1;
+      setCurrentPage(next);
+      onPageChange(next);
+      setAnimDir(null);
+    }, 350);
+  }, [animDir, currentPage, totalPages, onPageChange, resetHide]);
 
   // ── Keyboard ──────────────────────────────────────────────────────────────
   useEffect(() => {
-    const h = e => {
-      if (e.key === "ArrowRight") goNext();
-      if (e.key === "ArrowLeft")  goPrev();
+    const h = (e) => {
+      if (e.key === "ArrowRight" || e.key === "ArrowDown") goTo("next");
+      if (e.key === "ArrowLeft"  || e.key === "ArrowUp")   goTo("prev");
       if (e.key === "Escape") { if (showTOC) setShowTOC(false); else onClose(); }
     };
     window.addEventListener("keydown", h);
     return () => window.removeEventListener("keydown", h);
-  }, [showTOC]);
+  }, [goTo, showTOC, onClose]);
 
+  // ── Touch swipe ───────────────────────────────────────────────────────────
+  const onTouchStart = (e) => { touchStart.current = e.touches[0].clientX; };
+  const onTouchEnd   = (e) => {
+    if (touchStart.current === null) return;
+    const diff = touchStart.current - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 45) goTo(diff > 0 ? "next" : "prev");
+    touchStart.current = null;
+  };
+
+  const jumpTo = (pg) => {
+    setCurrentPage(pg); onPageChange(pg); setShowTOC(false); resetHide();
+  };
+
+  const currentExam  = currentPage === 0 ? null : exams[currentPage - 1];
   const isBookmarked = bookmarks[`${book.id}_${currentPage}`];
   const progressPct  = totalPages > 1 ? Math.round((currentPage / (totalPages - 1)) * 100) : 0;
+  const dark2 = dark;
 
-  // ── Page background/text colours ─────────────────────────────────────────
+  // ── Page flip animation style ─────────────────────────────────────────────
+  const flipStyle = {
+    transition: animDir ? "transform 0.35s cubic-bezier(0.4,0,0.2,1), opacity 0.35s ease" : "none",
+    transform: animDir === "next"
+      ? "perspective(1200px) rotateY(-25deg) scale(0.94) translateX(-3%)"
+      : animDir === "prev"
+        ? "perspective(1200px) rotateY(25deg) scale(0.94) translateX(3%)"
+        : "perspective(1200px) rotateY(0deg) scale(1) translateX(0)",
+    opacity: animDir ? 0.4 : 1,
+    transformOrigin: animDir === "next" ? "left center" : "right center",
+  };
+
   const pageBg   = dark ? "#1E293B" : "#FFFEF9";
-  const pageText = dark ? "#E2E8F0" : "#1F2937";
+  const pageText = dark ? "#CBD5E1" : "#1F2937";
   const pageBorder = dark ? "#334155" : "#E5E7EB";
 
-  // ── Shared top/bottom bar button style ────────────────────────────────────
-  const btn = (extra = {}) => ({
-    background: "transparent", border: "none", cursor: "pointer",
-    color: dark ? "#94A3B8" : "#6B7280", borderRadius: 8,
-    padding: "6px 10px", fontSize: 13, fontWeight: 700,
+  const barStyle = {
+    display: "flex", alignItems: "center", padding: "0 14px", height: 52, flexShrink: 0,
+    background: dark ? "rgba(15,23,42,0.98)" : book.color,
+    borderBottom: "1px solid rgba(255,255,255,0.1)",
+    transition: "opacity 0.3s",
+  };
+
+  const barBtn = (extra = {}) => ({
+    background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.18)",
+    color: "#fff", borderRadius: 8, cursor: "pointer", fontWeight: 700,
+    fontSize: 12, padding: "6px 12px", flexShrink: 0,
     display: "inline-flex", alignItems: "center", gap: 4,
-    transition: "background 0.15s",
     ...extra,
   });
 
   return (
-    <div style={{
-      position: "fixed", inset: 0, zIndex: 500,
-      display: "flex", flexDirection: "column",
-      background: dark ? "#0F172A" : "#2d2d2d",
-      fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif",
-    }}
+    <div
+      style={{
+        position: "fixed", inset: 0, zIndex: 500,
+        display: "flex", flexDirection: "column",
+        background: dark ? "#0F172A" : "#1a1a2a",
+        fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif",
+        userSelect: "none",
+      }}
       onMouseMove={resetHide}
-      onClick={resetHide}
     >
+      {/* ══ TOP BAR ════════════════════════════════════════════════════════ */}
+      <div style={{ ...barStyle, opacity: uiVisible ? 1 : 0, pointerEvents: uiVisible ? "auto" : "none", zIndex: 10 }}>
+        <button style={barBtn()} onClick={onClose}>← Library</button>
 
-      {/* ══ TOP BAR ═══════════════════════════════════════════════════════ */}
-      <div style={{
-        display: "flex", alignItems: "center", gap: 6,
-        padding: "0 12px", height: 50, flexShrink: 0,
-        background: dark ? "rgba(15,23,42,0.97)" : "rgba(26,107,60,0.97)",
-        borderBottom: "1px solid rgba(255,255,255,0.08)",
-        transition: "opacity 0.3s",
-        opacity: uiVisible ? 1 : 0, pointerEvents: uiVisible ? "auto" : "none",
-        zIndex: 10,
-      }}>
-        <button style={btn({ color: "#fff", padding: "6px 12px", background: "rgba(255,255,255,0.12)", borderRadius: 8 })}
-          onClick={onClose}>← Library</button>
-
-        <div style={{ flex: 1, textAlign: "center" }}>
-          <div style={{ fontSize: 12, fontWeight: 800, color: "#fff" }}>{book.title}</div>
-          <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", fontWeight: 600 }}>
+        <div style={{ flex: 1, textAlign: "center", margin: "0 10px" }}>
+          <div style={{ fontSize: 13, fontWeight: 800, color: "#fff", lineHeight: 1 }}>{book.title}</div>
+          <div style={{ fontSize: 10, color: "rgba(255,255,255,0.55)", fontWeight: 600, marginTop: 2 }}>
             {currentPage === 0 ? "Cover" : `Page ${currentPage} of ${totalPages - 1}`}
           </div>
         </div>
 
-        {/* TOC */}
-        <button style={btn({ color: "#fff", background: showTOC ? "rgba(255,255,255,0.2)" : "rgba(255,255,255,0.1)", borderRadius: 8 })}
-          onClick={() => { setShowTOC(t => !t); resetHide(); }}>⊞</button>
-
-        {/* Bookmark */}
-        {currentPage > 0 && (
-          <button
-            style={btn({ color: isBookmarked ? "#FCD34D" : "#fff", background: "rgba(255,255,255,0.1)", borderRadius: 8 })}
-            onClick={() => { isBookmarked ? onUnbookmark(currentPage) : onBookmark(currentPage); resetHide(); }}
-          >🔖</button>
-        )}
-
-        {/* Fullscreen */}
-        <button style={btn({ color: "#fff", background: "rgba(255,255,255,0.1)", borderRadius: 8 })}
-          onClick={toggleFS}>{isFullscreen ? "⊡" : "⛶"}</button>
+        <div style={{ display: "flex", gap: 6 }}>
+          <button style={barBtn({ background: showTOC ? "rgba(255,255,255,0.25)" : "rgba(255,255,255,0.12)" })}
+            onClick={() => { setShowTOC(t => !t); resetHide(); }}>⊞</button>
+          {currentPage > 0 && (
+            <button style={barBtn({ color: isBookmarked ? "#FCD34D" : "#fff" })}
+              onClick={() => { isBookmarked ? onUnbookmark(currentPage) : onBookmark(currentPage); resetHide(); }}>🔖</button>
+          )}
+          <button style={barBtn()} onClick={toggleFS}>{isFullscreen ? "⊡" : "⛶"}</button>
+        </div>
       </div>
 
-      {/* ══ PROGRESS BAR ══════════════════════════════════════════════════ */}
+      {/* ══ PROGRESS ════════════════════════════════════════════════════════ */}
       <div style={{ height: 3, background: "rgba(255,255,255,0.08)", flexShrink: 0 }}>
         <div style={{ height: "100%", width: `${progressPct}%`, background: book.color, transition: "width 0.4s ease" }} />
       </div>
 
-      {/* ══ TOC OVERLAY ═══════════════════════════════════════════════════ */}
+      {/* ══ TOC OVERLAY ════════════════════════════════════════════════════ */}
       {showTOC && (
         <div style={{
-          position: "absolute", top: 53, left: 0, right: 0, zIndex: 50,
+          position: "absolute", top: 55, left: 0, right: 0, zIndex: 200,
           background: dark ? "#0F172A" : "#fff",
           borderBottom: `1px solid ${pageBorder}`,
-          maxHeight: "55vh", overflowY: "auto",
-          boxShadow: "0 8px 30px rgba(0,0,0,0.3)",
+          maxHeight: "60vh", overflowY: "auto",
+          boxShadow: "0 8px 30px rgba(0,0,0,0.35)",
         }}>
-          <div style={{ padding: "10px 14px" }}>
+          <div style={{ padding: "12px 16px" }}>
             <div style={{ fontSize: 10, fontWeight: 800, color: dark ? "#475569" : "#9CA3AF", marginBottom: 8, textTransform: "uppercase", letterSpacing: 1 }}>
               Table of Contents
             </div>
-            {[{ label: "Cover Page", page: 0 }, ...exams.map((e, i) => ({ label: e.title, type: e.type, page: i + 1 }))].map(({ label, type, page }) => (
+            {[{ label: "Cover Page", type: null, page: 0 }, ...exams.map((e, i) => ({ label: e.title, type: e.type, page: i + 1 }))].map(({ label, type, page }) => (
               <button key={page} onClick={() => jumpTo(page)} style={{
                 display: "flex", alignItems: "center", gap: 8, width: "100%",
-                padding: "9px 10px", borderRadius: 8, border: "none", cursor: "pointer", textAlign: "left",
+                padding: "9px 10px", borderRadius: 8, border: "none", cursor: "pointer",
                 background: currentPage === page ? `${book.color}18` : (dark ? "#1E293B" : "#F9FAFB"),
-                color: dark ? "#E2E8F0" : "#1F2937", marginBottom: 3,
+                color: dark ? "#E2E8F0" : "#1F2937", marginBottom: 3, textAlign: "left",
               }}>
-                <span style={{ fontSize: 11, fontWeight: 800, color: book.color, minWidth: 26 }}>{page === 0 ? "C" : page}</span>
+                <span style={{ fontSize: 11, fontWeight: 800, color: book.color, minWidth: 24 }}>{page === 0 ? "C" : page}</span>
                 <span style={{ flex: 1, fontSize: 13, fontWeight: 600 }}>{label}</span>
-                {type && <span style={{ fontSize: 9, fontWeight: 700, padding: "2px 6px", borderRadius: 5, background: `${book.color}18`, color: book.color }}>{type}</span>}
+                {type && <span style={{ fontSize: 9, fontWeight: 700, padding: "2px 7px", borderRadius: 5, background: `${book.color}15`, color: book.color }}>{type}</span>}
               </button>
             ))}
           </div>
         </div>
       )}
 
-      {/* ══ BOOK STAGE ════════════════════════════════════════════════════ */}
-      <div style={{
-        flex: 1, display: "flex", alignItems: "center", justifyContent: "center",
-        overflow: "hidden", position: "relative",
-        background: "radial-gradient(ellipse at center, #3a3a4a 0%, #1a1a2a 100%)",
-      }}>
+      {/* ══ BOOK STAGE ══════════════════════════════════════════════════════ */}
+      <div
+        style={{
+          flex: 1, display: "flex", alignItems: "center", justifyContent: "center",
+          overflow: "hidden", position: "relative",
+          background: "radial-gradient(ellipse at center, #3a3a4a 0%, #1a1a2a 100%)",
+        }}
+        onTouchStart={onTouchStart}
+        onTouchEnd={onTouchEnd}
+      >
+        {/* ── Single page card ── */}
+        <div style={{
+          width: "min(520px, 90vw)",
+          height: "min(760px, calc(100vh - 130px))",
+          ...flipStyle,
+          position: "relative",
+          borderRadius: 4,
+          boxShadow: "0 20px 60px rgba(0,0,0,0.7), 4px 4px 0 rgba(0,0,0,0.4), 8px 8px 0 rgba(0,0,0,0.2)",
+          overflow: "hidden",
+        }}>
 
-        {/* StPageFlip container — page divs live inside */}
-        <div ref={stageRef} style={{ width: "100%", height: "100%" }}>
-
-          {/* ── COVER PAGE (page 0) ─────────────────────────── */}
-          <div className="pf-page" style={{ background: book.color, overflow: "hidden" }}>
+          {currentPage === 0 ? (
+            /* ── COVER ── */
             <div style={{
-              height: "100%", display: "flex", flexDirection: "column",
+              height: "100%", background: `linear-gradient(160deg, ${book.color} 0%, ${book.color}bb 100%)`,
+              display: "flex", flexDirection: "column",
               alignItems: "center", justifyContent: "center",
-              padding: "32px 24px", textAlign: "center",
-              background: `linear-gradient(160deg, ${book.color} 0%, ${book.color}cc 100%)`,
+              padding: "32px 28px", textAlign: "center", position: "relative",
             }}>
-              <div style={{ fontSize: 48, marginBottom: 16 }}>📚</div>
-              <div style={{ fontSize: 10, fontWeight: 800, color: "rgba(255,255,255,0.7)", letterSpacing: 2, textTransform: "uppercase", marginBottom: 8 }}>
+              <div style={{ fontSize: 52, marginBottom: 18, filter: "drop-shadow(0 4px 12px rgba(0,0,0,0.3))" }}>📚</div>
+              <div style={{ fontSize: 11, fontWeight: 800, color: "rgba(255,255,255,0.65)", letterSpacing: 2, textTransform: "uppercase", marginBottom: 10 }}>
                 लोक सेवा आयोग
               </div>
-              <div style={{ fontSize: 22, fontWeight: 900, color: "#fff", lineHeight: 1.3, marginBottom: 6 }}>
+              <div style={{ fontSize: 26, fontWeight: 900, color: "#fff", lineHeight: 1.25, marginBottom: 8 }}>
                 {book.title}
               </div>
-              <div style={{ fontSize: 13, color: "rgba(255,255,255,0.75)", fontWeight: 600, marginBottom: 24 }}>
+              <div style={{ fontSize: 14, color: "rgba(255,255,255,0.7)", fontWeight: 600, marginBottom: 28 }}>
                 {book.subtitle}
               </div>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "center" }}>
                 {[...new Set(exams.map(e => e.type))].map(t => (
-                  <span key={t} style={{ fontSize: 10, fontWeight: 700, padding: "3px 10px", borderRadius: 99, background: "rgba(255,255,255,0.18)", color: "#fff", border: "1px solid rgba(255,255,255,0.3)" }}>{t}</span>
+                  <span key={t} style={{
+                    fontSize: 11, fontWeight: 700, padding: "4px 12px", borderRadius: 99,
+                    background: "rgba(255,255,255,0.18)", color: "#fff",
+                    border: "1px solid rgba(255,255,255,0.3)",
+                  }}>{t}</span>
                 ))}
               </div>
-              <div style={{ position: "absolute", bottom: 20, fontSize: 11, color: "rgba(255,255,255,0.5)", fontWeight: 700 }}>
-                Shikshit Mitra · {exams.length} Pages
+              <div style={{ position: "absolute", bottom: 22, fontSize: 11, color: "rgba(255,255,255,0.45)", fontWeight: 600 }}>
+                Shikshit Mitra &nbsp;·&nbsp; {exams.length} Pages
               </div>
+              {/* Page corner fold */}
+              <div style={{ position: "absolute", bottom: 0, right: 0, width: 0, height: 0, borderStyle: "solid", borderWidth: "0 0 30px 30px", borderColor: "transparent transparent rgba(0,0,0,0.2) transparent" }} />
             </div>
-          </div>
 
-          {/* ── EXAM PAGES ────────────────────────────────────── */}
-          {exams.map((exam, i) => {
-            const tc = TYPE_CONFIG[exam.type] || {};
-            return (
-              <div key={exam.id} className="pf-page" style={{ background: pageBg, overflow: "hidden" }}>
-                <div style={{ height: "100%", overflowY: "auto", padding: "20px 18px 28px", position: "relative" }}>
+          ) : currentExam ? (
+            /* ── EXAM PAGE ── */
+            <div style={{ height: "100%", background: pageBg, overflowY: "auto", padding: "22px 20px 30px", position: "relative" }}>
+              {/* Page corner fold */}
+              <div style={{ position: "absolute", bottom: 0, right: 0, width: 0, height: 0, borderStyle: "solid", borderWidth: "0 0 28px 28px", borderColor: `transparent transparent ${dark ? "#334155" : "#D1D5DB"} transparent` }} />
 
-                  {/* Page corner fold */}
-                  <div style={{
-                    position: "absolute", bottom: 0, right: 0, width: 0, height: 0,
-                    borderStyle: "solid", borderWidth: "0 0 24px 24px",
-                    borderColor: `transparent transparent ${dark ? "#334155" : "#E5E7EB"} transparent`,
-                  }} />
-
-                  {/* Type + Year badges */}
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
-                    <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
-                      <span style={{ fontSize: 9, fontWeight: 800, padding: "2px 8px", borderRadius: 5, background: tc.bg || "#F3F4F6", color: tc.text || "#374151", border: `1px solid ${tc.border || "#E5E7EB"}` }}>{exam.type}</span>
-                      {exam.year && <span style={{ fontSize: 9, fontWeight: 700, padding: "2px 8px", borderRadius: 5, background: dark ? "#1E293B" : "#F3F4F6", color: dark ? "#94A3B8" : "#6B7280", border: `1px solid ${pageBorder}` }}>{exam.year}</span>}
-                    </div>
-                    <span style={{ fontSize: 9, fontWeight: 700, color: dark ? "#475569" : "#CBD5E1" }}>p.{i + 1}</span>
-                  </div>
-
-                  {/* Title */}
-                  <h2 style={{ fontSize: 15, fontWeight: 900, color: book.color, margin: "0 0 12px", paddingBottom: 8, borderBottom: `2px solid ${book.color}22`, lineHeight: 1.3 }}>
-                    {exam.title}
-                  </h2>
-
-                  {/* Content */}
-                  {exam.content && exam.content.trim() ? (
-                    <div
-                      className={`exam-content${dark ? " dark" : ""}`}
-                      style={{ fontSize: 12, lineHeight: 1.8, color: pageText }}
-                      dangerouslySetInnerHTML={{ __html: exam.content }}
-                    />
-                  ) : (
-                    <div style={{
-                      display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-                      height: "60%", gap: 10, color: dark ? "#334155" : "#D1D5DB",
-                    }}>
-                      <div style={{ fontSize: 36 }}>📄</div>
-                      <div style={{ fontSize: 11, fontWeight: 700, textAlign: "center" }}>
-                        PDF coming soon<br />
-                        <span style={{ fontSize: 10, fontWeight: 500 }}>Content will appear here</span>
-                      </div>
-                    </div>
+              {/* Type + Year badges */}
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
+                <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
+                  {(() => { const tc = TYPE_CONFIG[currentExam.type] || {}; return (
+                    <span style={{ fontSize: 10, fontWeight: 800, padding: "3px 9px", borderRadius: 6, background: tc.bg || "#F3F4F6", color: tc.text || "#374151", border: `1px solid ${tc.border || "#E5E7EB"}` }}>
+                      {currentExam.type}
+                    </span>
+                  ); })()}
+                  {currentExam.year && (
+                    <span style={{ fontSize: 10, fontWeight: 700, padding: "3px 9px", borderRadius: 6, background: dark ? "#1E293B" : "#F3F4F6", color: dark ? "#94A3B8" : "#6B7280", border: `1px solid ${pageBorder}` }}>
+                      {currentExam.year}
+                    </span>
                   )}
+                </div>
+                <span style={{ fontSize: 10, fontWeight: 700, color: dark ? "#334155" : "#CBD5E1" }}>p.{currentPage}</span>
+              </div>
 
-                  {/* Page number footer */}
-                  <div style={{ textAlign: "center", color: dark ? "#1E293B" : "#E5E7EB", fontSize: 10, marginTop: 16, paddingTop: 10, borderTop: `1px solid ${pageBorder}` }}>
-                    — {i + 1} —
+              {/* Title */}
+              <h2 style={{ fontSize: 17, fontWeight: 900, color: book.color, margin: "0 0 14px", paddingBottom: 10, borderBottom: `2px solid ${book.color}25`, lineHeight: 1.3 }}>
+                {currentExam.title}
+              </h2>
+
+              {/* Content */}
+              {currentExam.content && currentExam.content.trim() ? (
+                <div
+                  className={`exam-content${dark ? " dark" : ""}`}
+                  style={{ fontSize: 13, lineHeight: 1.85, color: pageText }}
+                  dangerouslySetInnerHTML={{ __html: currentExam.content }}
+                />
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "60%", gap: 12, color: dark ? "#334155" : "#D1D5DB", textAlign: "center" }}>
+                  <div style={{ fontSize: 40 }}>📄</div>
+                  <div style={{ fontSize: 12, fontWeight: 700, lineHeight: 1.6 }}>
+                    Content coming soon<br />
+                    <span style={{ fontSize: 11, fontWeight: 500 }}>Add content via Google Sheet or Admin panel</span>
                   </div>
                 </div>
+              )}
+
+              {/* Page number footer */}
+              <div style={{ textAlign: "center", color: dark ? "#1E293B" : "#E5E7EB", fontSize: 10, marginTop: 18, paddingTop: 10, borderTop: `1px solid ${pageBorder}` }}>
+                — {currentPage} —
               </div>
-            );
-          })}
+            </div>
+          ) : null}
         </div>
 
-        {/* ── SIDE ARROWS ─────────────────────────────────────── */}
+        {/* ── Left arrow ── */}
         <button
-          onClick={e => { e.stopPropagation(); goPrev(); }}
+          onClick={() => goTo("prev")}
+          disabled={currentPage === 0}
           style={{
-            position: "absolute", left: 8, top: "50%", transform: "translateY(-50%)",
-            width: 40, height: 64, borderRadius: 10, border: "1px solid rgba(255,255,255,0.15)",
-            background: "rgba(0,0,0,0.55)", color: "#fff", fontSize: 22, cursor: "pointer",
+            position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)",
+            width: 44, height: 70, borderRadius: 12,
+            background: "rgba(0,0,0,0.6)", border: "1px solid rgba(255,255,255,0.14)",
+            color: "#fff", fontSize: 26, cursor: "pointer", zIndex: 20,
             display: "flex", alignItems: "center", justifyContent: "center",
-            opacity: uiVisible && currentPage > 0 ? 1 : 0,
-            transition: "opacity 0.3s", pointerEvents: uiVisible && currentPage > 0 ? "auto" : "none",
-            zIndex: 20, backdropFilter: "blur(6px)",
+            opacity: currentPage === 0 ? 0 : uiVisible ? 1 : 0,
+            transition: "opacity 0.3s",
+            pointerEvents: currentPage === 0 || !uiVisible ? "none" : "auto",
+            backdropFilter: "blur(6px)",
           }}
         >‹</button>
 
+        {/* ── Right arrow ── */}
         <button
-          onClick={e => { e.stopPropagation(); goNext(); }}
+          onClick={() => goTo("next")}
+          disabled={currentPage >= totalPages - 1}
           style={{
-            position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)",
-            width: 40, height: 64, borderRadius: 10, border: "1px solid rgba(255,255,255,0.15)",
-            background: "rgba(0,0,0,0.55)", color: "#fff", fontSize: 22, cursor: "pointer",
+            position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)",
+            width: 44, height: 70, borderRadius: 12,
+            background: "rgba(0,0,0,0.6)", border: "1px solid rgba(255,255,255,0.14)",
+            color: "#fff", fontSize: 26, cursor: "pointer", zIndex: 20,
             display: "flex", alignItems: "center", justifyContent: "center",
-            opacity: uiVisible && currentPage < totalPages - 1 ? 1 : 0,
-            transition: "opacity 0.3s", pointerEvents: uiVisible && currentPage < totalPages - 1 ? "auto" : "none",
-            zIndex: 20, backdropFilter: "blur(6px)",
+            opacity: currentPage >= totalPages - 1 ? 0 : uiVisible ? 1 : 0,
+            transition: "opacity 0.3s",
+            pointerEvents: currentPage >= totalPages - 1 || !uiVisible ? "none" : "auto",
+            backdropFilter: "blur(6px)",
           }}
         >›</button>
       </div>
 
-      {/* ══ BOTTOM NAV ════════════════════════════════════════════════════ */}
+      {/* ══ BOTTOM NAV ══════════════════════════════════════════════════════ */}
       <div style={{
         display: "flex", alignItems: "center", justifyContent: "space-between",
-        padding: "0 16px", height: 58, flexShrink: 0,
-        background: dark ? "rgba(15,23,42,0.97)" : "rgba(26,107,60,0.97)",
-        borderTop: "1px solid rgba(255,255,255,0.08)",
-        transition: "opacity 0.3s",
-        opacity: uiVisible ? 1 : 0, pointerEvents: uiVisible ? "auto" : "none",
+        padding: "0 20px", height: 58, flexShrink: 0,
+        background: dark ? "rgba(15,23,42,0.98)" : book.color,
+        borderTop: "1px solid rgba(255,255,255,0.1)",
+        opacity: uiVisible ? 1 : 0, transition: "opacity 0.3s",
+        pointerEvents: uiVisible ? "auto" : "none",
       }}>
         <button
+          onClick={() => goTo("prev")}
+          disabled={currentPage === 0 || !!animDir}
           style={{
-            padding: "9px 18px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.18)",
-            background: "rgba(255,255,255,0.1)", color: "#fff",
-            fontSize: 13, fontWeight: 700, cursor: "pointer",
+            padding: "8px 18px", borderRadius: 10,
+            background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.2)",
+            color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer",
             opacity: currentPage === 0 ? 0.3 : 1,
           }}
-          onClick={goPrev} disabled={currentPage === 0}
         >← Prev</button>
 
         <div style={{ textAlign: "center" }}>
-          <div style={{ fontSize: 14, fontWeight: 800, color: "#fff" }}>
-            {currentPage} / {totalPages - 1}
-          </div>
+          <div style={{ fontSize: 15, fontWeight: 800, color: "#fff" }}>{currentPage} / {totalPages - 1}</div>
           <div style={{ fontSize: 9, color: "rgba(255,255,255,0.5)", fontWeight: 600 }}>swipe or tap</div>
         </div>
 
         <button
+          onClick={() => goTo("next")}
+          disabled={currentPage >= totalPages - 1 || !!animDir}
           style={{
-            padding: "9px 18px", borderRadius: 10, border: "none",
-            background: currentPage === totalPages - 1 ? "rgba(255,255,255,0.1)" : "#fff",
-            color: currentPage === totalPages - 1 ? "rgba(255,255,255,0.4)" : book.color,
+            padding: "8px 18px", borderRadius: 10,
+            background: currentPage >= totalPages - 1 ? "rgba(255,255,255,0.08)" : "#fff",
+            border: "none", color: currentPage >= totalPages - 1 ? "rgba(255,255,255,0.3)" : book.color,
             fontSize: 13, fontWeight: 800, cursor: "pointer",
-            opacity: currentPage === totalPages - 1 ? 0.4 : 1,
+            opacity: currentPage >= totalPages - 1 ? 0.4 : 1,
           }}
-          onClick={goNext} disabled={currentPage === totalPages - 1}
         >Next →</button>
       </div>
     </div>
   );
 }
+
 
 function CoverPage({ book, exams, dark }) {
   const types = [...new Set(exams.map(e => e.type))];
