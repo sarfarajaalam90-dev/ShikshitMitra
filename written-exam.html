@@ -1037,15 +1037,20 @@ function ExamPage({ exam, book, pageNum, dark, styles }) {
   const tc = TYPE_CONFIG[exam.type] || {};
   const [pdfOpen, setPdfOpen] = useState(false);
 
+  // Auto-open PDF reader immediately if this exam has a PDF
+  useEffect(() => {
+    if (exam.pdfUrl) setPdfOpen(true);
+  }, [exam.id]);
+
   return (
     <div style={{ padding: "24px 20px 44px" }}>
-      {/* Fullscreen PDF reader */}
+      {/* Book-style PDF reader */}
       {pdfOpen && exam.pdfUrl && (
-        <PdfViewer
+        <BookPdfReader
           url={exam.pdfUrl}
-          dark={dark}
           accent={book.color}
           examTitle={exam.title}
+          examId={exam.id}
           onClose={() => setPdfOpen(false)}
         />
       )}
@@ -1085,82 +1090,21 @@ function ExamPage({ exam, book, pageNum, dark, styles }) {
         {exam.title}
       </h2>
 
-      {/* PDF launcher card */}
-      {exam.pdfUrl && (
-        <div style={{
-          marginBottom: 20,
-          borderRadius: 14, overflow: "hidden",
-          border: `1px solid ${dark ? "#1E293B" : "#E5E7EB"}`,
-          background: dark ? "#0F172A" : "#F8F7F2",
-        }}>
-          {/* Preview thumbnail strip */}
-          <div style={{
-            height: 120,
-            background: `linear-gradient(135deg, #111827 0%, #1E293B 50%, #111827 100%)`,
-            display: "flex", alignItems: "center", justifyContent: "center",
-            position: "relative", overflow: "hidden",
-          }}>
-            {/* Decorative pages visual */}
-            {[...Array(3)].map((_, i) => (
-              <div key={i} style={{
-                position: "absolute",
-                width: 52, height: 70,
-                background: i === 1 ? "#fff" : "rgba(255,255,255,0.55)",
-                borderRadius: 3,
-                boxShadow: "0 4px 16px rgba(0,0,0,0.5)",
-                transform: `rotate(${(i - 1) * 7}deg) translateX(${(i - 1) * 22}px)`,
-                zIndex: i === 1 ? 2 : 1,
-              }}>
-                {i === 1 && (
-                  <div style={{ padding: 6 }}>
-                    {[...Array(6)].map((_, j) => (
-                      <div key={j} style={{
-                        height: 3, borderRadius: 2, marginBottom: 4,
-                        background: j === 0 ? book.color : "#E5E7EB",
-                        width: j === 0 ? "70%" : `${50 + Math.random() * 40}%`,
-                      }} />
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))}
-            {/* Shikshit Mitra logo pill */}
-            <div style={{
-              position: "absolute", top: 10, right: 10,
-              background: `${book.color}CC`, color: "#fff",
-              fontSize: 9, fontWeight: 800, padding: "3px 8px", borderRadius: 6,
-              letterSpacing: 0.5,
-            }}>शिक्षित मित्र</div>
-          </div>
-
-          {/* Info row + open button */}
-          <div style={{
-            display: "flex", alignItems: "center", gap: 12,
-            padding: "12px 14px",
-          }}>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: dark ? "#F1F5F9" : "#1F2937", marginBottom: 2 }}>
-                {exam.title}
-              </div>
-              <div style={{ fontSize: 11, color: dark ? "#64748B" : "#9CA3AF" }}>
-                PDF · Full exam paper
-              </div>
-            </div>
-            <button
-              onClick={() => setPdfOpen(true)}
-              style={{
-                padding: "10px 18px", borderRadius: 10, border: "none",
-                background: book.color, color: "#fff",
-                fontSize: 13, fontWeight: 800, cursor: "pointer",
-                boxShadow: `0 4px 14px ${book.color}66`,
-                whiteSpace: "nowrap",
-                flexShrink: 0,
-              }}
-            >
-              📖 Read
-            </button>
-          </div>
-        </div>
+      {/* If PDF exists but not open yet (e.g. user closed it), show re-open button */}
+      {exam.pdfUrl && !pdfOpen && (
+        <button
+          onClick={() => setPdfOpen(true)}
+          style={{
+            display: "flex", alignItems: "center", gap: 10, width: "100%",
+            padding: "14px 18px", borderRadius: 12, border: "none",
+            background: book.color, color: "#fff",
+            fontSize: 14, fontWeight: 800, cursor: "pointer", marginBottom: 20,
+            boxShadow: `0 4px 18px ${book.color}55`,
+          }}
+        >
+          <span style={{ fontSize: 20 }}>📖</span>
+          <span>Open Book Reader</span>
+        </button>
       )}
 
       {/* Content (optional typed questions) */}
@@ -1184,40 +1128,552 @@ function ExamPage({ exam, book, pageNum, dark, styles }) {
   );
 }
 
-// ─── FULL-SCREEN IMMERSIVE PDF READER ────────────────────────────────────────
-function PdfViewer({ url, dark, accent, examTitle, onClose }) {
-  const canvasRef = useRef(null);
-  const scrollRef = useRef(null);
+// ═══════════════════════════════════════════════════════════════════════════
+// BOOK-STYLE PDF READER — Kindle/Google Play Books experience
+// PDF.js renders each page as a canvas. CSS 3D flip animation between pages.
+// ═══════════════════════════════════════════════════════════════════════════
+function BookPdfReader({ url, accent, examTitle, examId, onClose }) {
   const [pdfDoc, setPdfDoc] = useState(null);
-  const [currentPdfPage, setCurrentPdfPage] = useState(1);
-  const [totalPdfPages, setTotalPdfPages] = useState(0);
-  const [zoom, setZoom] = useState(1.0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [currentPage, setCurrentPage] = useState(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem("sm_pdf_lastpage") || "{}");
+      return saved[examId] || 1;
+    } catch { return 1; }
+  });
+  const [renderedPages, setRenderedPages] = useState({}); // pageNum → dataURL
   const [loading, setLoading] = useState(true);
+  const [loadingPage, setLoadingPage] = useState(false);
   const [error, setError] = useState(null);
   const [pdfJsReady, setPdfJsReady] = useState(false);
+  const [flipping, setFlipping] = useState(null); // "next" | "prev" | null
   const [uiVisible, setUiVisible] = useState(true);
-  const [isTwoPage, setIsTwoPage] = useState(false);
-  const [rightCanvasRef] = useState(() => React.createRef());
-  const renderTaskRef = useRef(null);
-  const renderTaskRightRef = useRef(null);
+  const containerRef = useRef(null);
   const hideTimer = useRef(null);
+  const touchStartX = useRef(null);
+  const touchStartY = useRef(null);
+  // pinch zoom
+  const pinchStartDist = useRef(null);
+  const pinchStartZoom = useRef(1);
+  const [zoom, setZoom] = useState(1);
+  const renderQueue = useRef(new Set());
 
-  // Lock body scroll when fullscreen PDF is open
+  // ── Lock body scroll ──
   useEffect(() => {
     document.body.style.overflow = "hidden";
     return () => { document.body.style.overflow = ""; };
   }, []);
 
-  // Auto-hide UI after 3s of no interaction
-  const resetHideTimer = () => {
+  // ── Auto-hide UI ──
+  const resetHide = useCallback(() => {
     setUiVisible(true);
     clearTimeout(hideTimer.current);
-    hideTimer.current = setTimeout(() => setUiVisible(false), 3000);
+    hideTimer.current = setTimeout(() => setUiVisible(false), 3500);
+  }, []);
+  useEffect(() => { resetHide(); return () => clearTimeout(hideTimer.current); }, [resetHide]);
+
+  // ── Save last page ──
+  useEffect(() => {
+    if (!examId || currentPage < 1) return;
+    try {
+      const saved = JSON.parse(localStorage.getItem("sm_pdf_lastpage") || "{}");
+      saved[examId] = currentPage;
+      localStorage.setItem("sm_pdf_lastpage", JSON.stringify(saved));
+    } catch {}
+  }, [examId, currentPage]);
+
+  // ── Load PDF.js ──
+  useEffect(() => {
+    if (window.pdfjsLib) { setPdfJsReady(true); return; }
+    const s = document.createElement("script");
+    s.src = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";
+    s.onload = () => {
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+        "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+      setPdfJsReady(true);
+    };
+    s.onerror = () => setError("Failed to load PDF engine.");
+    document.head.appendChild(s);
+  }, []);
+
+  // ── Render a single PDF page to a dataURL ──
+  const renderPageToDataUrl = useCallback(async (doc, pageNum, widthPx) => {
+    if (renderQueue.current.has(pageNum)) return;
+    renderQueue.current.add(pageNum);
+    try {
+      const page = await doc.getPage(pageNum);
+      const baseVP = page.getViewport({ scale: 1 });
+      const scale = widthPx / baseVP.width;
+      const viewport = page.getViewport({ scale });
+      const canvas = document.createElement("canvas");
+      canvas.width = viewport.width;
+      canvas.height = viewport.height;
+      const ctx = canvas.getContext("2d");
+      ctx.fillStyle = "#FFFFFF";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      await page.render({ canvasContext: ctx, viewport }).promise;
+      const dataUrl = canvas.toDataURL("image/jpeg", 0.92);
+      setRenderedPages(prev => ({ ...prev, [pageNum]: dataUrl }));
+    } catch (e) {
+      console.warn("render page error", e);
+    } finally {
+      renderQueue.current.delete(pageNum);
+    }
+  }, []);
+
+  // ── Load PDF document ──
+  useEffect(() => {
+    if (!pdfJsReady || !url) return;
+    const m = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+    const directUrl = m ? `https://drive.google.com/uc?export=download&id=${m[1]}` : url;
+    setLoading(true); setError(null); setPdfDoc(null); setRenderedPages({});
+    window.pdfjsLib.getDocument({ url: directUrl, withCredentials: false }).promise
+      .then(doc => {
+        setPdfDoc(doc);
+        setTotalPages(doc.numPages);
+        setLoading(false);
+      })
+      .catch(() => { setError("cors"); setLoading(false); });
+  }, [pdfJsReady, url]);
+
+  // ── Render current + adjacent pages when doc or page changes ──
+  useEffect(() => {
+    if (!pdfDoc || !containerRef.current) return;
+    const w = Math.min(containerRef.current.offsetWidth - 32, 480) * window.devicePixelRatio;
+    // Render current, next, prev
+    [currentPage - 1, currentPage, currentPage + 1, currentPage + 2].forEach(p => {
+      if (p >= 1 && p <= totalPages && !renderedPages[p]) {
+        renderPageToDataUrl(pdfDoc, p, w);
+      }
+    });
+  }, [pdfDoc, currentPage, totalPages, renderPageToDataUrl]);
+
+  // ── Navigation with flip animation ──
+  const goPage = useCallback((dir) => {
+    if (flipping) return;
+    const next = dir === "next" ? currentPage + 1 : currentPage - 1;
+    if (next < 1 || next > totalPages) return;
+    setFlipping(dir);
+    setLoadingPage(!renderedPages[next]);
+    setTimeout(() => {
+      setCurrentPage(next);
+      setFlipping(null);
+      setLoadingPage(false);
+      resetHide();
+    }, 400);
+  }, [flipping, currentPage, totalPages, renderedPages, resetHide]);
+
+  // ── Keyboard ──
+  useEffect(() => {
+    const h = (e) => {
+      if (e.key === "ArrowRight") goPage("next");
+      if (e.key === "ArrowLeft") goPage("prev");
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", h);
+    return () => window.removeEventListener("keydown", h);
+  }, [goPage, onClose]);
+
+  // ── Swipe gesture ──
+  const onTouchStart = (e) => {
+    if (e.touches.length === 1) {
+      touchStartX.current = e.touches[0].clientX;
+      touchStartY.current = e.touches[0].clientY;
+    } else if (e.touches.length === 2) {
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      pinchStartDist.current = Math.sqrt(dx * dx + dy * dy);
+      pinchStartZoom.current = zoom;
+    }
   };
+  const onTouchMove = (e) => {
+    if (e.touches.length === 2 && pinchStartDist.current) {
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      const ratio = dist / pinchStartDist.current;
+      setZoom(Math.min(3, Math.max(0.5, pinchStartZoom.current * ratio)));
+      e.preventDefault();
+    }
+  };
+  const onTouchEnd = (e) => {
+    if (e.changedTouches.length === 1 && touchStartX.current !== null) {
+      const dx = touchStartX.current - e.changedTouches[0].clientX;
+      const dy = Math.abs(e.changedTouches[0].clientY - touchStartY.current);
+      if (Math.abs(dx) > 50 && dy < 80) {
+        goPage(dx > 0 ? "next" : "prev");
+      } else {
+        resetHide();
+      }
+    }
+    pinchStartDist.current = null;
+    touchStartX.current = null;
+  };
+
+  const m = url && url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+  const openLink = m ? `https://drive.google.com/file/d/${m[1]}/view` : url;
+  const progress = totalPages > 0 ? Math.round((currentPage / totalPages) * 100) : 0;
+
+  // ── CORS fallback ──
+  if (error === "cors") {
+    return (
+      <div style={{ position: "fixed", inset: 0, zIndex: 1000, background: "#FEFDF8", display: "flex", flexDirection: "column" }}>
+        <div style={{
+          display: "flex", alignItems: "center", gap: 10, padding: "12px 16px",
+          background: "#fff", borderBottom: "1px solid #E5E7EB",
+        }}>
+          <button onClick={onClose} style={{ padding: "6px 14px", borderRadius: 8, border: "none", background: accent, color: "#fff", fontWeight: 700, cursor: "pointer", fontSize: 13 }}>✕ Close</button>
+          <div style={{ flex: 1, fontSize: 13, fontWeight: 700, color: "#1F2937", textAlign: "center" }}>{examTitle}</div>
+          <a href={openLink} target="_blank" rel="noopener noreferrer" style={{ padding: "6px 14px", borderRadius: 8, border: `1px solid ${accent}`, color: accent, fontWeight: 700, fontSize: 12, textDecoration: "none" }}>⬡ Open</a>
+        </div>
+        <iframe src={url} title={examTitle} style={{ flex: 1, border: "none" }} allow="autoplay" />
+      </div>
+    );
+  }
+
+  const currentImgSrc = renderedPages[currentPage];
+  const nextImgSrc = renderedPages[currentPage + 1];
+
+  return (
+    <div
+      ref={containerRef}
+      style={{ position: "fixed", inset: 0, zIndex: 1000, background: "#E8E0D0", display: "flex", flexDirection: "column", userSelect: "none", fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif" }}
+      onMouseMove={resetHide}
+      onTouchStart={onTouchStart}
+      onTouchMove={onTouchMove}
+      onTouchEnd={onTouchEnd}
+      onClick={resetHide}
+    >
+      {/* ── TOP BAR ── */}
+      <div style={{
+        position: "absolute", top: 0, left: 0, right: 0, zIndex: 20,
+        display: "flex", alignItems: "center", gap: 8, padding: "10px 14px",
+        background: "rgba(255,253,248,0.95)", backdropFilter: "blur(12px)",
+        borderBottom: "1px solid rgba(0,0,0,0.08)",
+        transition: "opacity 0.3s ease",
+        opacity: uiVisible ? 1 : 0, pointerEvents: uiVisible ? "auto" : "none",
+      }}>
+        <button
+          onClick={onClose}
+          style={{ padding: "7px 14px", borderRadius: 8, border: "none", background: accent, color: "#fff", fontWeight: 700, cursor: "pointer", fontSize: 13, flexShrink: 0 }}
+        >← Back</button>
+        <div style={{ flex: 1, textAlign: "center" }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: "#1F2937", lineHeight: 1.2 }}>{examTitle}</div>
+          <div style={{ fontSize: 10, color: "#9CA3AF", marginTop: 1 }}>
+            {totalPages > 0 ? `Page ${currentPage} of ${totalPages}` : "Loading…"}
+          </div>
+        </div>
+        <div style={{ display: "flex", gap: 6, alignItems: "center", flexShrink: 0 }}>
+          <button
+            onClick={() => setZoom(z => Math.max(0.5, z - 0.25))}
+            style={{ padding: "5px 10px", borderRadius: 7, border: "1px solid #E5E7EB", background: "#fff", cursor: "pointer", fontSize: 15, fontWeight: 700, color: "#374151" }}
+          >−</button>
+          <span style={{ fontSize: 11, fontWeight: 700, color: "#6B7280", minWidth: 36, textAlign: "center" }}>{Math.round(zoom * 100)}%</span>
+          <button
+            onClick={() => setZoom(z => Math.min(3, z + 0.25))}
+            style={{ padding: "5px 10px", borderRadius: 7, border: "1px solid #E5E7EB", background: "#fff", cursor: "pointer", fontSize: 15, fontWeight: 700, color: "#374151" }}
+          >+</button>
+          <button
+            onClick={() => setZoom(1)}
+            style={{ padding: "5px 10px", borderRadius: 7, border: "1px solid #E5E7EB", background: "#fff", cursor: "pointer", fontSize: 11, fontWeight: 700, color: "#374151" }}
+          >Fit</button>
+        </div>
+      </div>
+
+      {/* ── READING AREA ── */}
+      <div style={{
+        flex: 1, display: "flex", alignItems: "center", justifyContent: "center",
+        padding: "70px 20px 80px", overflow: "hidden", position: "relative",
+      }}>
+        {/* Paper texture background */}
+        <div style={{
+          position: "absolute", inset: 0,
+          backgroundImage: `radial-gradient(circle at 30% 50%, #DDD5C4 0%, #C8BCA8 100%)`,
+          backgroundSize: "cover",
+        }} />
+
+        {/* Initial loading */}
+        {loading && (
+          <div style={{
+            position: "relative", zIndex: 5, display: "flex", flexDirection: "column",
+            alignItems: "center", gap: 16,
+          }}>
+            <div style={{
+              width: 48, height: 48, borderRadius: "50%",
+              border: "3px solid rgba(0,0,0,0.1)", borderTopColor: accent,
+              animation: "sm-spin 0.8s linear infinite",
+            }} />
+            <div style={{ fontSize: 13, fontWeight: 700, color: "#6B7280" }}>Opening book…</div>
+          </div>
+        )}
+
+        {/* ── PAGE FLIP STAGE ── */}
+        {!loading && (
+          <div style={{
+            position: "relative", zIndex: 2,
+            width: "100%", maxWidth: 520,
+            perspective: 1200,
+          }}>
+            {/* The page itself */}
+            <div style={{
+              position: "relative",
+              transformStyle: "preserve-3d",
+              transition: flipping
+                ? "transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)"
+                : "transform 0.15s ease",
+              transform: flipping === "next"
+                ? "rotateY(-25deg) scale(0.97)"
+                : flipping === "prev"
+                  ? "rotateY(25deg) scale(0.97)"
+                  : "rotateY(0deg) scale(1)",
+              transformOrigin: flipping === "next" ? "left center" : "right center",
+            }}>
+              {/* Book shadow beneath */}
+              <div style={{
+                position: "absolute", bottom: -16, left: "5%", right: "5%", height: 30,
+                background: "rgba(0,0,0,0.25)",
+                filter: "blur(14px)", borderRadius: "50%", zIndex: -1,
+              }} />
+
+              {/* Page wrapper */}
+              <div style={{
+                background: "#FEFDF8",
+                borderRadius: "1px 6px 6px 1px",
+                overflow: "hidden",
+                boxShadow: flipping
+                  ? "0 20px 60px rgba(0,0,0,0.45), 12px 0 30px rgba(0,0,0,0.2), -2px 0 0 #DDD5C4"
+                  : "0 12px 40px rgba(0,0,0,0.3), 6px 0 20px rgba(0,0,0,0.12), -2px 0 0 #C8BCA8",
+                position: "relative",
+                transform: `scale(${zoom})`,
+                transformOrigin: "center top",
+                transition: "box-shadow 0.3s ease",
+              }}>
+                {/* Left binding shadow */}
+                <div style={{
+                  position: "absolute", left: 0, top: 0, bottom: 0, width: 18, zIndex: 3,
+                  background: "linear-gradient(to right, rgba(0,0,0,0.12) 0%, rgba(0,0,0,0.04) 60%, transparent 100%)",
+                  pointerEvents: "none",
+                }} />
+                {/* Top page curl shadow */}
+                <div style={{
+                  position: "absolute", top: 0, left: 0, right: 0, height: 8, zIndex: 3,
+                  background: "linear-gradient(to bottom, rgba(0,0,0,0.06) 0%, transparent 100%)",
+                  pointerEvents: "none",
+                }} />
+
+                {/* Page image */}
+                {currentImgSrc ? (
+                  <img
+                    src={currentImgSrc}
+                    alt={`Page ${currentPage}`}
+                    style={{
+                      display: "block", width: "100%", height: "auto",
+                      imageRendering: "crisp-edges",
+                    }}
+                    draggable={false}
+                  />
+                ) : (
+                  /* Skeleton while rendering */
+                  <div style={{
+                    paddingTop: "141.4%", background: "#FEFDF8",
+                    position: "relative",
+                  }}>
+                    <div style={{
+                      position: "absolute", inset: 0, display: "flex",
+                      alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 12,
+                    }}>
+                      <div style={{
+                        width: 36, height: 36, borderRadius: "50%",
+                        border: "3px solid rgba(0,0,0,0.08)", borderTopColor: accent,
+                        animation: "sm-spin 0.8s linear infinite",
+                      }} />
+                      <div style={{ fontSize: 12, color: "#9CA3AF", fontWeight: 600 }}>Rendering page {currentPage}…</div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Next page peek (depth illusion) */}
+              {nextImgSrc && !flipping && (
+                <div style={{
+                  position: "absolute", top: 3, right: -4, bottom: -3, left: 4,
+                  background: "#F5F0E8", borderRadius: "1px 6px 6px 1px",
+                  zIndex: -1,
+                  boxShadow: "4px 0 12px rgba(0,0,0,0.15)",
+                  overflow: "hidden",
+                }}>
+                  <img src={nextImgSrc} alt="" style={{ display: "block", width: "100%", height: "auto", opacity: 0.4 }} draggable={false} />
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ── TAP ZONES ── */}
+        {!loading && totalPages > 0 && (
+          <>
+            {/* Left tap */}
+            <div
+              onClick={(e) => { e.stopPropagation(); goPage("prev"); }}
+              style={{
+                position: "absolute", left: 0, top: 0, bottom: 0, width: "22%",
+                cursor: currentPage > 1 ? "pointer" : "default", zIndex: 10,
+                display: "flex", alignItems: "center", justifyContent: "flex-start",
+                paddingLeft: 8,
+              }}
+            >
+              {currentPage > 1 && uiVisible && (
+                <div style={{
+                  width: 36, height: 36, borderRadius: "50%",
+                  background: "rgba(0,0,0,0.18)", backdropFilter: "blur(6px)",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: 18, color: "#fff", fontWeight: 700,
+                  transition: "opacity 0.3s",
+                }}>‹</div>
+              )}
+            </div>
+            {/* Right tap */}
+            <div
+              onClick={(e) => { e.stopPropagation(); goPage("next"); }}
+              style={{
+                position: "absolute", right: 0, top: 0, bottom: 0, width: "22%",
+                cursor: currentPage < totalPages ? "pointer" : "default", zIndex: 10,
+                display: "flex", alignItems: "center", justifyContent: "flex-end",
+                paddingRight: 8,
+              }}
+            >
+              {currentPage < totalPages && uiVisible && (
+                <div style={{
+                  width: 36, height: 36, borderRadius: "50%",
+                  background: "rgba(0,0,0,0.18)", backdropFilter: "blur(6px)",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: 18, color: "#fff", fontWeight: 700,
+                }}>›</div>
+              )}
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* ── BOTTOM BAR ── */}
+      <div style={{
+        position: "absolute", bottom: 0, left: 0, right: 0, zIndex: 20,
+        padding: "10px 16px 14px",
+        background: "rgba(255,253,248,0.95)", backdropFilter: "blur(12px)",
+        borderTop: "1px solid rgba(0,0,0,0.08)",
+        transition: "opacity 0.3s ease",
+        opacity: uiVisible ? 1 : 0, pointerEvents: uiVisible ? "auto" : "none",
+      }}>
+        {/* Progress bar */}
+        <div style={{ height: 3, background: "rgba(0,0,0,0.1)", borderRadius: 99, marginBottom: 10, overflow: "hidden" }}>
+          <div style={{
+            height: "100%", width: `${progress}%`,
+            background: accent, borderRadius: 99,
+            transition: "width 0.4s ease",
+          }} />
+        </div>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+          <button
+            onClick={() => goPage("prev")}
+            disabled={currentPage <= 1 || !!flipping}
+            style={{
+              padding: "9px 18px", borderRadius: 8,
+              border: "1px solid rgba(0,0,0,0.12)",
+              background: "#fff", color: "#374151",
+              fontSize: 13, fontWeight: 700, cursor: currentPage <= 1 ? "default" : "pointer",
+              opacity: currentPage <= 1 ? 0.35 : 1,
+            }}
+          >← Prev</button>
+
+          <div style={{ textAlign: "center" }}>
+            <div style={{ fontSize: 14, fontWeight: 800, color: "#1F2937" }}>
+              {currentPage} <span style={{ color: "#9CA3AF", fontWeight: 400 }}>/</span> {totalPages}
+            </div>
+            <div style={{ fontSize: 10, color: "#9CA3AF" }}>
+              {progress}% read · swipe or tap edges
+            </div>
+          </div>
+
+          <button
+            onClick={() => goPage("next")}
+            disabled={currentPage >= totalPages || !!flipping}
+            style={{
+              padding: "9px 18px", borderRadius: 8, border: "none",
+              background: accent, color: "#fff",
+              fontSize: 13, fontWeight: 700, cursor: currentPage >= totalPages ? "default" : "pointer",
+              opacity: currentPage >= totalPages ? 0.35 : 1,
+              boxShadow: `0 3px 10px ${accent}55`,
+            }}
+          >Next →</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── OLD PDF VIEWER (kept for reference, replaced above) ──────────────────
+function PdfViewer({ url, dark, accent, examTitle, onClose, examId }) {
+  const canvasRef = useRef(null);
+  const scrollRef = useRef(null);
+  const thumbContainerRef = useRef(null);
+
+  // Detect viewport width for auto spread mode
+  const isWide = window.innerWidth >= 900;
+  const isTablet = window.innerWidth >= 600;
+
+  const [pdfDoc, setPdfDoc] = useState(null);
+  const [currentPdfPage, setCurrentPdfPage] = useState(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem("sm_pdf_lastpage") || "{}");
+      return saved[examId] || 1;
+    } catch { return 1; }
+  });
+  const [totalPdfPages, setTotalPdfPages] = useState(0);
+  // fitMode: "width" | "page" | "custom"
+  const [fitMode, setFitMode] = useState("width");
+  const [zoom, setZoom] = useState(1.0);
+  const [loading, setLoading] = useState(true);
+  const [renderLoading, setRenderLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [pdfJsReady, setPdfJsReady] = useState(false);
+  const [uiVisible, setUiVisible] = useState(true);
+  const [isTwoPage, setIsTwoPage] = useState(isWide);
+  const [showThumbs, setShowThumbs] = useState(false);
+  const [thumbs, setThumbs] = useState({});
+  const [pageInput, setPageInput] = useState("");
+  const [editingPage, setEditingPage] = useState(false);
+  const rightCanvasRef = useRef(null);
+  const renderTaskRef = useRef(null);
+  const renderTaskRightRef = useRef(null);
+  const hideTimer = useRef(null);
+  const touchStartX = useRef(null);
+
+  // Lock body scroll
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = ""; };
+  }, []);
+
+  // Save last page per exam
+  useEffect(() => {
+    if (!examId || currentPdfPage < 1) return;
+    try {
+      const saved = JSON.parse(localStorage.getItem("sm_pdf_lastpage") || "{}");
+      saved[examId] = currentPdfPage;
+      localStorage.setItem("sm_pdf_lastpage", JSON.stringify(saved));
+    } catch {}
+  }, [examId, currentPdfPage]);
+
+  // Auto-hide UI
+  const resetHideTimer = useCallback(() => {
+    setUiVisible(true);
+    clearTimeout(hideTimer.current);
+    hideTimer.current = setTimeout(() => setUiVisible(false), 3500);
+  }, []);
   useEffect(() => {
     resetHideTimer();
     return () => clearTimeout(hideTimer.current);
-  }, []);
+  }, [resetHideTimer]);
 
   // Inject pdf.js
   useEffect(() => {
@@ -1238,199 +1694,376 @@ function PdfViewer({ url, dark, accent, examTitle, onClose }) {
     if (!pdfJsReady || !url) return;
     const m = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
     const directUrl = m ? `https://drive.google.com/uc?export=download&id=${m[1]}` : url;
-    setLoading(true); setError(null); setPdfDoc(null); setCurrentPdfPage(1);
+    setLoading(true); setError(null); setPdfDoc(null);
     window.pdfjsLib.getDocument({ url: directUrl, withCredentials: false }).promise
-      .then(doc => { setPdfDoc(doc); setTotalPdfPages(doc.numPages); setLoading(false); })
+      .then(doc => {
+        setPdfDoc(doc);
+        setTotalPdfPages(doc.numPages);
+        setLoading(false);
+      })
       .catch(() => { setError("cors_fallback"); setLoading(false); });
   }, [pdfJsReady, url]);
 
-  // Render page(s) on canvas
-  const renderPage = useCallback(async (doc, pageNum, canvasEl, zoomLevel, containerEl) => {
-    if (!doc || !canvasEl || !containerEl) return;
+  // Core render function
+  const renderPage = useCallback(async (doc, pageNum, canvasEl, containerW, zoomLevel, fMode) => {
+    if (!doc || !canvasEl || pageNum < 1 || pageNum > doc.numPages) return null;
     try {
       const page = await doc.getPage(pageNum);
-      const containerW = containerEl.offsetWidth || 600;
       const baseVP = page.getViewport({ scale: 1 });
-      const scale = (containerW / baseVP.width) * zoomLevel;
+      let scale;
+      if (fMode === "page") {
+        // Fit the entire page height within the visible area
+        const containerH = (scrollRef.current?.offsetHeight || 600) - 120;
+        const scaleW = containerW / baseVP.width;
+        const scaleH = containerH / baseVP.height;
+        scale = Math.min(scaleW, scaleH) * zoomLevel;
+      } else {
+        // Fit to width (default)
+        scale = (containerW / baseVP.width) * zoomLevel;
+      }
       const viewport = page.getViewport({ scale });
-      canvasEl.width = viewport.width;
-      canvasEl.height = viewport.height;
+      const dpr = window.devicePixelRatio || 1;
+      canvasEl.width = Math.floor(viewport.width * dpr);
+      canvasEl.height = Math.floor(viewport.height * dpr);
+      canvasEl.style.width = viewport.width + "px";
+      canvasEl.style.height = viewport.height + "px";
       const ctx = canvasEl.getContext("2d");
+      ctx.scale(dpr, dpr);
       ctx.fillStyle = "#FFFFFF";
-      ctx.fillRect(0, 0, canvasEl.width, canvasEl.height);
+      ctx.fillRect(0, 0, viewport.width, viewport.height);
       const task = page.render({ canvasContext: ctx, viewport });
       return task;
-    } catch {}
+    } catch { return null; }
   }, []);
 
+  // Trigger render on page/zoom/layout change
   useEffect(() => {
     if (!pdfDoc || !canvasRef.current || !scrollRef.current) return;
-    setLoading(true);
-    const singleW = isTwoPage ? scrollRef.current.offsetWidth / 2 - 24 : scrollRef.current.offsetWidth - 48;
-    const fakeContainer = { offsetWidth: singleW };
+    setRenderLoading(true);
+
+    const thumbbarW = showThumbs && isTablet ? 88 : 0;
+    const available = scrollRef.current.offsetWidth - thumbbarW;
+    const gap = isTwoPage ? 12 : 0;
+    const singleW = isTwoPage
+      ? Math.floor((available - gap - 48) / 2)
+      : available - 48;
 
     if (renderTaskRef.current) { try { renderTaskRef.current.cancel(); } catch {} }
-    renderPage(pdfDoc, currentPdfPage, canvasRef.current, zoom, fakeContainer)
-      .then(task => { renderTaskRef.current = task; if (task) task.promise.then(() => setLoading(false)).catch(() => {}); })
-      .catch(() => setLoading(false));
 
+    renderPage(pdfDoc, currentPdfPage, canvasRef.current, singleW, zoom, fitMode)
+      .then(task => {
+        renderTaskRef.current = task;
+        if (task) task.promise.then(() => setRenderLoading(false)).catch(() => setRenderLoading(false));
+        else setRenderLoading(false);
+      })
+      .catch(() => setRenderLoading(false));
+
+    // Right page for spread view
     if (isTwoPage && rightCanvasRef.current && currentPdfPage + 1 <= totalPdfPages) {
       if (renderTaskRightRef.current) { try { renderTaskRightRef.current.cancel(); } catch {} }
-      renderPage(pdfDoc, currentPdfPage + 1, rightCanvasRef.current, zoom, fakeContainer)
+      renderPage(pdfDoc, currentPdfPage + 1, rightCanvasRef.current, singleW, zoom, fitMode)
         .then(task => { renderTaskRightRef.current = task; });
     }
-  }, [pdfDoc, currentPdfPage, zoom, isTwoPage, renderPage, totalPdfPages]);
+  }, [pdfDoc, currentPdfPage, zoom, isTwoPage, fitMode, showThumbs, renderPage, totalPdfPages, isTablet]);
 
-  const goPage = (dir) => {
+  // Generate thumbnails lazily when thumb panel opens
+  useEffect(() => {
+    if (!showThumbs || !pdfDoc) return;
+    const generate = async () => {
+      const newThumbs = { ...thumbs };
+      for (let i = 1; i <= totalPdfPages; i++) {
+        if (newThumbs[i]) continue;
+        try {
+          const page = await pdfDoc.getPage(i);
+          const vp = page.getViewport({ scale: 0.18 });
+          const c = document.createElement("canvas");
+          c.width = vp.width; c.height = vp.height;
+          const ctx = c.getContext("2d");
+          ctx.fillStyle = "#fff";
+          ctx.fillRect(0, 0, c.width, c.height);
+          await page.render({ canvasContext: ctx, viewport: vp }).promise;
+          newThumbs[i] = c.toDataURL();
+          setThumbs({ ...newThumbs });
+        } catch {}
+      }
+    };
+    generate();
+  }, [showThumbs, pdfDoc, totalPdfPages]);
+
+  // Scroll active thumb into view
+  useEffect(() => {
+    if (!showThumbs || !thumbContainerRef.current) return;
+    const active = thumbContainerRef.current.querySelector(`[data-thumb="${currentPdfPage}"]`);
+    if (active) active.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }, [currentPdfPage, showThumbs]);
+
+  const goPage = useCallback((dir) => {
     const step = isTwoPage ? 2 : 1;
     setCurrentPdfPage(p => dir === "next"
       ? Math.min(totalPdfPages, p + step)
       : Math.max(1, p - step));
     resetHideTimer();
-  };
+  }, [isTwoPage, totalPdfPages, resetHideTimer]);
 
   // Keyboard nav
   useEffect(() => {
     const handler = (e) => {
-      if (e.key === "ArrowRight" || e.key === "ArrowDown") goPage("next");
-      if (e.key === "ArrowLeft"  || e.key === "ArrowUp")   goPage("prev");
+      if (editingPage) return;
+      if (e.key === "ArrowRight" || e.key === "ArrowDown" || e.key === "PageDown") goPage("next");
+      if (e.key === "ArrowLeft"  || e.key === "ArrowUp"   || e.key === "PageUp")   goPage("prev");
       if (e.key === "Escape") onClose && onClose();
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [totalPdfPages, isTwoPage, onClose]);
+  }, [goPage, onClose, editingPage]);
+
+  // Touch swipe
+  const handleTouchStart = (e) => { touchStartX.current = e.touches[0].clientX; };
+  const handleTouchEnd = (e) => {
+    if (touchStartX.current === null) return;
+    const diff = touchStartX.current - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 50) goPage(diff > 0 ? "next" : "prev");
+    touchStartX.current = null;
+    resetHideTimer();
+  };
+
+  // Page jump input
+  const commitPageJump = () => {
+    const n = parseInt(pageInput, 10);
+    if (n >= 1 && n <= totalPdfPages) setCurrentPdfPage(n);
+    setEditingPage(false);
+    setPageInput("");
+  };
 
   const m = url && url.match(/\/d\/([a-zA-Z0-9_-]+)/);
   const openLink = m ? `https://drive.google.com/file/d/${m[1]}/view` : url;
 
-  // Shared button style for the dark toolbar
   const tb = (extra = {}) => ({
-    background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.18)",
+    background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.18)",
     color: "#fff", borderRadius: 8, cursor: "pointer", fontWeight: 700,
-    fontSize: 13, padding: "6px 12px", backdropFilter: "blur(8px)",
-    transition: "background 0.15s",
+    fontSize: 13, padding: "6px 13px", backdropFilter: "blur(8px)",
+    transition: "background 0.15s", flexShrink: 0,
     ...extra,
   });
 
-  // CORS fallback — full-screen iframe
+  const progressPct = totalPdfPages > 1 ? ((currentPdfPage - 1) / (totalPdfPages - 1)) * 100 : 0;
+
+  // ── CORS FALLBACK (iframe) ──
   if (error === "cors_fallback") {
     return (
-      <div style={{
-        position: "fixed", inset: 0, zIndex: 1000,
-        background: "#111827",
-        display: "flex", flexDirection: "column",
-      }} onMouseMove={resetHideTimer} onClick={resetHideTimer}>
-        {/* Top bar */}
+      <div style={{ position: "fixed", inset: 0, zIndex: 1000, background: "#111827", display: "flex", flexDirection: "column" }}
+        onMouseMove={resetHideTimer} onClick={resetHideTimer}>
         <div style={{
-          display: "flex", alignItems: "center", gap: 10,
-          padding: "10px 16px",
+          display: "flex", alignItems: "center", gap: 10, padding: "10px 16px", flexShrink: 0,
           background: "rgba(0,0,0,0.85)", backdropFilter: "blur(12px)",
           borderBottom: "1px solid rgba(255,255,255,0.08)",
           transition: "opacity 0.3s", opacity: uiVisible ? 1 : 0, pointerEvents: uiVisible ? "auto" : "none",
-          flexShrink: 0,
         }}>
           <button style={tb()} onClick={onClose}>✕ Close</button>
           <div style={{ flex: 1, fontSize: 13, fontWeight: 700, color: "#E2E8F0", textAlign: "center" }}>{examTitle}</div>
-          <a href={openLink} target="_blank" rel="noopener noreferrer" style={{ ...tb(), textDecoration: "none" }}>⬡ Open</a>
+          <a href={openLink} target="_blank" rel="noopener noreferrer" style={{ ...tb(), textDecoration: "none" }}>Open ↗</a>
         </div>
-        <iframe src={url} title="Exam PDF"
-          style={{ flex: 1, border: "none", background: "#fff" }} allow="autoplay" />
+        <iframe src={url} title="Exam PDF" style={{ flex: 1, border: "none", background: "#fff" }} allow="autoplay" />
       </div>
     );
   }
 
   return (
     <div
-      style={{ position: "fixed", inset: 0, zIndex: 1000, background: "#111827", display: "flex", flexDirection: "column", userSelect: "none" }}
+      style={{ position: "fixed", inset: 0, zIndex: 1000, background: "#1a1a2e", display: "flex", flexDirection: "column", userSelect: "none" }}
       onMouseMove={resetHideTimer}
-      onClick={resetHideTimer}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
     >
-      {/* ── TOP BAR ── */}
+      {/* ══ TOP BAR ══ */}
       <div style={{
-        display: "flex", alignItems: "center", gap: 10,
-        padding: "10px 16px", flexShrink: 0,
-        background: "rgba(0,0,0,0.75)", backdropFilter: "blur(16px)",
-        borderBottom: "1px solid rgba(255,255,255,0.07)",
-        transition: "opacity 0.35s ease",
-        opacity: uiVisible ? 1 : 0, pointerEvents: uiVisible ? "auto" : "none",
-        position: "absolute", top: 0, left: 0, right: 0, zIndex: 10,
+        display: "flex", alignItems: "center", gap: 8, padding: "0 12px",
+        height: 50, flexShrink: 0,
+        background: "rgba(10,10,20,0.92)", backdropFilter: "blur(20px)",
+        borderBottom: "1px solid rgba(255,255,255,0.08)",
+        transition: "opacity 0.35s", opacity: uiVisible ? 1 : 0, pointerEvents: uiVisible ? "auto" : "none",
+        zIndex: 20,
       }}>
-        <button style={tb()} onClick={onClose}>✕</button>
-        <div style={{ flex: 1, textAlign: "center" }}>
-          <div style={{ fontSize: 13, fontWeight: 700, color: "#F1F5F9" }}>{examTitle}</div>
-          {totalPdfPages > 0 && (
-            <div style={{ fontSize: 10, color: "#64748B", marginTop: 1 }}>
-              Page {currentPdfPage}{isTwoPage && currentPdfPage + 1 <= totalPdfPages ? `–${currentPdfPage + 1}` : ""} of {totalPdfPages}
+        {/* Close */}
+        <button style={tb({ padding: "5px 10px", fontSize: 14 })} onClick={onClose} title="Close (Esc)">✕</button>
+
+        {/* Title */}
+        <div style={{ flex: 1, textAlign: "center", minWidth: 0 }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: "#E2E8F0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            {examTitle}
+          </div>
+        </div>
+
+        {/* Thumbnails toggle */}
+        <button
+          style={tb({ background: showThumbs ? "rgba(255,255,255,0.22)" : "rgba(255,255,255,0.12)", padding: "5px 10px", fontSize: 12 })}
+          onClick={() => { setShowThumbs(t => !t); resetHideTimer(); }}
+          title="Toggle thumbnail panel"
+        >⊞</button>
+
+        {/* View toggle */}
+        <button
+          style={tb({ background: isTwoPage ? "rgba(255,255,255,0.22)" : "rgba(255,255,255,0.12)", padding: "5px 10px", fontSize: 11 })}
+          onClick={() => { setIsTwoPage(t => !t); resetHideTimer(); }}
+          title={isTwoPage ? "Single page" : "Book spread"}
+        >{isTwoPage ? "▭" : "▭▭"}</button>
+
+        {/* Open externally */}
+        <a href={openLink} target="_blank" rel="noopener noreferrer"
+          style={{ ...tb({ padding: "5px 10px", fontSize: 11, textDecoration: "none" }) }}>↗</a>
+      </div>
+
+      {/* ══ PROGRESS BAR ══ */}
+      <div style={{ height: 2, background: "rgba(255,255,255,0.06)", flexShrink: 0 }}>
+        <div style={{ height: "100%", width: `${progressPct}%`, background: accent || "#1a6b3c", transition: "width 0.3s ease" }} />
+      </div>
+
+      {/* ══ MAIN BODY: thumbs + canvas ══ */}
+      <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
+
+        {/* ── THUMBNAIL PANEL ── */}
+        {showThumbs && isTablet && (
+          <div
+            ref={thumbContainerRef}
+            style={{
+              width: 96, flexShrink: 0, overflowY: "auto", overflowX: "hidden",
+              background: "rgba(0,0,0,0.5)", borderRight: "1px solid rgba(255,255,255,0.07)",
+              padding: "8px 6px", display: "flex", flexDirection: "column", gap: 8,
+            }}
+          >
+            {Array.from({ length: totalPdfPages }, (_, i) => i + 1).map(n => (
+              <div
+                key={n}
+                data-thumb={n}
+                onClick={() => { setCurrentPdfPage(n); resetHideTimer(); }}
+                style={{
+                  cursor: "pointer", borderRadius: 4, overflow: "hidden",
+                  border: n === currentPdfPage
+                    ? `2px solid ${accent || "#1a6b3c"}`
+                    : "2px solid rgba(255,255,255,0.1)",
+                  transition: "border-color 0.2s, transform 0.15s",
+                  transform: n === currentPdfPage ? "scale(1.03)" : "scale(1)",
+                  background: "#fff",
+                  position: "relative",
+                }}
+              >
+                {thumbs[n]
+                  ? <img src={thumbs[n]} alt={`Page ${n}`} style={{ display: "block", width: "100%", height: "auto" }} />
+                  : <div style={{ height: 60, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <div style={{ width: 16, height: 16, borderRadius: "50%", border: "2px solid rgba(255,255,255,0.2)", borderTopColor: "#fff", animation: "sm-spin 0.8s linear infinite" }} />
+                    </div>
+                }
+                <div style={{
+                  position: "absolute", bottom: 0, left: 0, right: 0,
+                  background: n === currentPdfPage ? (accent || "#1a6b3c") : "rgba(0,0,0,0.55)",
+                  color: "#fff", fontSize: 9, fontWeight: 700, textAlign: "center", padding: "2px 0",
+                }}>{n}</div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* ── CANVAS SCROLL AREA ── */}
+        <div
+          ref={scrollRef}
+          style={{
+            flex: 1, overflowY: "auto", overflowX: "hidden",
+            display: "flex", flexDirection: "column",
+            alignItems: "center", justifyContent: "flex-start",
+            background: "#2a2a3e",
+            padding: "24px 20px 90px",
+          }}
+        >
+          {/* Initial loading spinner */}
+          {loading && (
+            <div style={{
+              position: "absolute", inset: 0, display: "flex", flexDirection: "column",
+              alignItems: "center", justifyContent: "center", gap: 16, zIndex: 5,
+            }}>
+              <div style={{
+                width: 44, height: 44, borderRadius: "50%",
+                border: "3px solid rgba(255,255,255,0.1)",
+                borderTopColor: accent || "#1a6b3c",
+                animation: "sm-spin 0.8s linear infinite",
+              }} />
+              <div style={{ fontSize: 13, color: "#94A3B8", fontWeight: 600 }}>
+                {pdfDoc ? "Rendering page…" : "Loading PDF…"}
+              </div>
             </div>
           )}
-        </div>
-        <a href={openLink} target="_blank" rel="noopener noreferrer" style={{ ...tb(), fontSize: 11, textDecoration: "none" }}>⬡ Open</a>
-      </div>
 
-      {/* ── PDF CANVAS AREA ── */}
-      <div
-        ref={scrollRef}
-        style={{
-          flex: 1, overflowY: "auto", overflowX: "hidden",
-          display: "flex", alignItems: "flex-start", justifyContent: "center",
-          padding: "56px 20px 72px",
-          gap: isTwoPage ? 8 : 0,
-        }}
-      >
-        {/* Loading */}
-        {loading && (
+          {/* ── BOOK SPREAD WRAPPER ── */}
           <div style={{
-            position: "absolute", inset: 0,
-            display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-            gap: 14, zIndex: 5,
+            display: "flex", flexDirection: "row",
+            alignItems: "flex-start", justifyContent: "center",
+            gap: 0,
+            opacity: loading ? 0.2 : 1, transition: "opacity 0.25s",
+            position: "relative",
+            maxWidth: isTwoPage ? 1400 : 900,
+            width: "100%",
           }}>
+            {/* Left / single page */}
             <div style={{
-              width: 40, height: 40, borderRadius: "50%",
-              border: `3px solid rgba(255,255,255,0.1)`,
-              borderTopColor: accent || "#1a6b3c",
-              animation: "sm-spin 0.8s linear infinite",
-            }} />
-            <div style={{ fontSize: 13, color: "#64748B", fontWeight: 600 }}>
-              {pdfDoc ? "Rendering…" : "Loading PDF…"}
+              background: "#fff",
+              borderRadius: isTwoPage ? "4px 0 0 4px" : 4,
+              boxShadow: isTwoPage
+                ? "0 12px 60px rgba(0,0,0,0.6), 4px 0 12px rgba(0,0,0,0.3)"
+                : "0 12px 60px rgba(0,0,0,0.6), 0 2px 12px rgba(0,0,0,0.4)",
+              overflow: "hidden",
+              flex: isTwoPage ? "1 1 0" : "0 0 auto",
+              width: isTwoPage ? undefined : "100%",
+              maxWidth: isTwoPage ? undefined : 820,
+            }}>
+              <canvas ref={canvasRef} style={{ display: "block", width: "100%", height: "auto" }} />
             </div>
-          </div>
-        )}
 
-        {/* Left / single page */}
-        <div style={{
-          background: "#fff",
-          borderRadius: 3,
-          boxShadow: "0 8px 48px rgba(0,0,0,0.7), 0 2px 8px rgba(0,0,0,0.4)",
-          overflow: "hidden",
-          flex: isTwoPage ? "0 0 calc(50% - 4px)" : "0 0 100%",
-          maxWidth: isTwoPage ? "calc(50% - 4px)" : 780,
-          opacity: loading ? 0.3 : 1, transition: "opacity 0.2s",
-        }}>
-          <canvas ref={canvasRef} style={{ display: "block", width: "100%", height: "auto" }} />
+            {/* Center gutter shadow for book spread */}
+            {isTwoPage && currentPdfPage + 1 <= totalPdfPages && (
+              <div style={{
+                width: 14, flexShrink: 0,
+                background: "linear-gradient(to right, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.05) 50%, rgba(0,0,0,0.35) 100%)",
+                alignSelf: "stretch", zIndex: 2,
+              }} />
+            )}
+
+            {/* Right page (book spread) */}
+            {isTwoPage && currentPdfPage + 1 <= totalPdfPages && (
+              <div style={{
+                background: "#fff",
+                borderRadius: "0 4px 4px 0",
+                boxShadow: "-4px 0 12px rgba(0,0,0,0.3), 0 12px 60px rgba(0,0,0,0.6)",
+                overflow: "hidden",
+                flex: "1 1 0",
+              }}>
+                <canvas ref={rightCanvasRef} style={{ display: "block", width: "100%", height: "auto" }} />
+              </div>
+            )}
+
+            {/* Render loading overlay (subtle) */}
+            {renderLoading && !loading && (
+              <div style={{
+                position: "absolute", top: 8, right: 8,
+                width: 22, height: 22, borderRadius: "50%",
+                border: "2px solid rgba(255,255,255,0.15)",
+                borderTopColor: accent || "#1a6b3c",
+                animation: "sm-spin 0.7s linear infinite",
+                zIndex: 10,
+              }} />
+            )}
+          </div>
         </div>
-
-        {/* Right page (two-page spread) */}
-        {isTwoPage && currentPdfPage + 1 <= totalPdfPages && (
-          <div style={{
-            background: "#fff", borderRadius: 3,
-            boxShadow: "0 8px 48px rgba(0,0,0,0.7), 0 2px 8px rgba(0,0,0,0.4)",
-            overflow: "hidden",
-            flex: "0 0 calc(50% - 4px)", maxWidth: "calc(50% - 4px)",
-            opacity: loading ? 0.3 : 1, transition: "opacity 0.2s",
-          }}>
-            <canvas ref={rightCanvasRef} style={{ display: "block", width: "100%", height: "auto" }} />
-          </div>
-        )}
       </div>
 
-      {/* ── SIDE NAV ARROWS ── */}
+      {/* ══ SIDE NAV ARROWS (fixed, semi-transparent) ══ */}
       {currentPdfPage > 1 && (
         <button
           onClick={(e) => { e.stopPropagation(); goPage("prev"); }}
           style={{
-            position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)",
-            ...tb({ padding: "14px 16px", fontSize: 20, borderRadius: 12, zIndex: 20 }),
-            opacity: uiVisible ? 1 : 0, transition: "opacity 0.35s ease",
+            position: "fixed", left: showThumbs && isTablet ? 108 : 8, top: "50%",
+            transform: "translateY(-50%)",
+            ...tb({ padding: "12px 10px", fontSize: 22, borderRadius: 10, zIndex: 20,
+              background: "rgba(0,0,0,0.55)", border: "1px solid rgba(255,255,255,0.14)" }),
+            opacity: uiVisible ? 1 : 0, transition: "opacity 0.35s",
           }}
         >‹</button>
       )}
@@ -1438,47 +2071,100 @@ function PdfViewer({ url, dark, accent, examTitle, onClose }) {
         <button
           onClick={(e) => { e.stopPropagation(); goPage("next"); }}
           style={{
-            position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)",
-            ...tb({ padding: "14px 16px", fontSize: 20, borderRadius: 12, zIndex: 20 }),
-            opacity: uiVisible ? 1 : 0, transition: "opacity 0.35s ease",
+            position: "fixed", right: 8, top: "50%", transform: "translateY(-50%)",
+            ...tb({ padding: "12px 10px", fontSize: 22, borderRadius: 10, zIndex: 20,
+              background: "rgba(0,0,0,0.55)", border: "1px solid rgba(255,255,255,0.14)" }),
+            opacity: uiVisible ? 1 : 0, transition: "opacity 0.35s",
           }}
         >›</button>
       )}
 
-      {/* ── BOTTOM TOOLBAR ── */}
-      <div style={{
-        position: "absolute", bottom: 0, left: 0, right: 0, zIndex: 10,
-        display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-        padding: "12px 20px",
-        background: "rgba(0,0,0,0.75)", backdropFilter: "blur(16px)",
-        borderTop: "1px solid rgba(255,255,255,0.07)",
-        transition: "opacity 0.35s ease",
-        opacity: uiVisible ? 1 : 0, pointerEvents: uiVisible ? "auto" : "none",
-        flexWrap: "wrap",
-      }}>
-        {/* Zoom */}
-        <button style={tb()} onClick={() => { setZoom(z => Math.max(0.4, z - 0.2)); resetHideTimer(); }}>−</button>
-        <span style={{ fontSize: 12, fontWeight: 700, color: "#94A3B8", minWidth: 40, textAlign: "center" }}>
+      {/* ══ BOTTOM TOOLBAR ══ */}
+      <div
+        onClick={e => e.stopPropagation()}
+        style={{
+          position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 30,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          gap: 6, padding: "10px 14px",
+          background: "rgba(8,8,20,0.88)", backdropFilter: "blur(20px)",
+          borderTop: "1px solid rgba(255,255,255,0.07)",
+          transition: "opacity 0.35s", flexWrap: "wrap",
+          opacity: uiVisible ? 1 : 0, pointerEvents: uiVisible ? "auto" : "none",
+        }}
+      >
+        {/* Zoom controls */}
+        <button style={tb({ padding: "5px 10px", fontSize: 16 })} onClick={() => { setZoom(z => Math.max(0.3, z - 0.15)); setFitMode("custom"); resetHideTimer(); }}>−</button>
+        <span style={{ fontSize: 11, fontWeight: 700, color: "#94A3B8", minWidth: 38, textAlign: "center" }}>
           {Math.round(zoom * 100)}%
         </span>
-        <button style={tb()} onClick={() => { setZoom(z => Math.min(3.0, z + 0.2)); resetHideTimer(); }}>+</button>
-        <button style={{ ...tb(), fontSize: 10 }} onClick={() => { setZoom(1.0); resetHideTimer(); }}>Fit</button>
+        <button style={tb({ padding: "5px 10px", fontSize: 16 })} onClick={() => { setZoom(z => Math.min(3.5, z + 0.15)); setFitMode("custom"); resetHideTimer(); }}>+</button>
 
-        <div style={{ width: 1, height: 22, background: "rgba(255,255,255,0.12)", margin: "0 4px" }} />
+        <div style={{ width: 1, height: 20, background: "rgba(255,255,255,0.1)", margin: "0 2px" }} />
 
-        {/* Page nav */}
-        <button style={{ ...tb(), opacity: currentPdfPage <= 1 ? 0.3 : 1 }} onClick={() => goPage("prev")} disabled={currentPdfPage <= 1}>← Prev</button>
-        <span style={{ fontSize: 12, fontWeight: 700, color: "#E2E8F0", minWidth: 60, textAlign: "center" }}>
-          {currentPdfPage}{isTwoPage && currentPdfPage + 1 <= totalPdfPages ? `–${currentPdfPage + 1}` : ""} / {totalPdfPages}
-        </span>
-        <button style={{ ...tb({ background: `${accent}99` }), opacity: currentPdfPage >= totalPdfPages ? 0.3 : 1 }} onClick={() => goPage("next")} disabled={currentPdfPage >= totalPdfPages}>Next →</button>
+        {/* Fit modes */}
+        <button
+          style={tb({ fontSize: 10, padding: "5px 9px", background: fitMode === "width" ? "rgba(255,255,255,0.22)" : "rgba(255,255,255,0.1)" })}
+          onClick={() => { setFitMode("width"); setZoom(1.0); resetHideTimer(); }}
+          title="Fit to width"
+        >↔ Width</button>
+        <button
+          style={tb({ fontSize: 10, padding: "5px 9px", background: fitMode === "page" ? "rgba(255,255,255,0.22)" : "rgba(255,255,255,0.1)" })}
+          onClick={() => { setFitMode("page"); setZoom(1.0); resetHideTimer(); }}
+          title="Fit full page"
+        >⤢ Page</button>
 
-        <div style={{ width: 1, height: 22, background: "rgba(255,255,255,0.12)", margin: "0 4px" }} />
+        <div style={{ width: 1, height: 20, background: "rgba(255,255,255,0.1)", margin: "0 2px" }} />
 
-        {/* Two-page toggle */}
-        <button style={{ ...tb(), fontSize: 11, background: isTwoPage ? "rgba(255,255,255,0.22)" : "rgba(255,255,255,0.1)" }}
-          onClick={() => { setIsTwoPage(t => !t); resetHideTimer(); }}>
-          {isTwoPage ? "☰ Single" : "⊞ Spread"}
+        {/* Page navigation */}
+        <button
+          style={{ ...tb({ padding: "5px 10px" }), opacity: currentPdfPage <= 1 ? 0.3 : 1 }}
+          onClick={() => goPage("prev")} disabled={currentPdfPage <= 1}
+        >← Prev</button>
+
+        {/* Page number — click to jump */}
+        {editingPage ? (
+          <input
+            autoFocus
+            type="number"
+            min={1} max={totalPdfPages}
+            value={pageInput}
+            onChange={e => setPageInput(e.target.value)}
+            onKeyDown={e => { if (e.key === "Enter") commitPageJump(); if (e.key === "Escape") { setEditingPage(false); setPageInput(""); } }}
+            onBlur={commitPageJump}
+            style={{
+              width: 50, padding: "4px 6px", borderRadius: 6, border: "1px solid rgba(255,255,255,0.3)",
+              background: "rgba(255,255,255,0.15)", color: "#fff", fontSize: 12, fontWeight: 700,
+              textAlign: "center", outline: "none",
+            }}
+          />
+        ) : (
+          <span
+            onClick={() => { setEditingPage(true); setPageInput(String(currentPdfPage)); resetHideTimer(); }}
+            style={{
+              fontSize: 12, fontWeight: 700, color: "#E2E8F0",
+              minWidth: 58, textAlign: "center", cursor: "pointer",
+              background: "rgba(255,255,255,0.1)", padding: "5px 10px",
+              borderRadius: 8, border: "1px solid rgba(255,255,255,0.15)",
+            }}
+            title="Click to jump to page"
+          >
+            {currentPdfPage}{isTwoPage && currentPdfPage + 1 <= totalPdfPages ? `–${currentPdfPage + 1}` : ""} / {totalPdfPages}
+          </span>
+        )}
+
+        <button
+          style={{ ...tb({ padding: "5px 10px", background: `${accent}88` }), opacity: currentPdfPage >= totalPdfPages ? 0.3 : 1 }}
+          onClick={() => goPage("next")} disabled={currentPdfPage >= totalPdfPages}
+        >Next →</button>
+
+        <div style={{ width: 1, height: 20, background: "rgba(255,255,255,0.1)", margin: "0 2px" }} />
+
+        {/* Spread toggle */}
+        <button
+          style={tb({ fontSize: 10, padding: "5px 9px", background: isTwoPage ? "rgba(255,255,255,0.22)" : "rgba(255,255,255,0.1)" })}
+          onClick={() => { setIsTwoPage(t => !t); resetHideTimer(); }}
+          title={isTwoPage ? "Switch to single page" : "Switch to book spread"}
+        >{isTwoPage ? "▭ Single" : "▭▭ Spread"}
         </button>
       </div>
     </div>
