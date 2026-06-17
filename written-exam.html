@@ -1,2450 +1,471 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ne">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Written Exam — Shikshit Mitra</title>
-<meta name="theme-color" content="#1a6b3c">
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-
-<!-- PDF.js — renders PDF pages to canvas -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-
-<!-- StPageFlip — realistic book page-curl animation -->
-<script src="https://cdn.jsdelivr.net/npm/page-flip@2.0.7/dist/js/page-flip.browser.js"></script>
-
-<!-- React + Babel -->
-<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>शिक्षित मित्र — Shikshit Mitra</title>
 <style>
-  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  html, body { margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif; }
-  #root { min-height: 100vh; }
-  #boot-loader {
-    position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
-    background: #F4F1EA; gap: 12px; z-index: 9999;
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0f0e17;
+    --surface: #1a1927;
+    --surface2: #23213a;
+    --border: rgba(255,255,255,0.08);
+    --border2: rgba(255,255,255,0.14);
+    --text: #fffffe;
+    --text2: #a7a3c0;
+    --text3: #6b6882;
+    --accent: #6c63d5;
+    --accent2: #8b84f0;
+    --gold: #f2c94c;
+    --teal: #1db37a;
+    --coral: #e05c3a;
   }
-  #boot-loader .spin {
-    width: 34px; height: 34px; border-radius: 50%;
-    border: 3px solid #E5E7EB; border-top-color: #1a6b3c;
-    animation: sm-spin .8s linear infinite;
+
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
   }
-  #boot-loader span { font-size: 12px; font-weight: 700; color: #6B7280; letter-spacing: .5px; }
-  @keyframes sm-spin { to { transform: rotate(360deg); } }
+
+  /* HEADER */
+  header {
+    padding: 1.25rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: rgba(15,14,23,0.92);
+    backdrop-filter: blur(12px);
+    z-index: 100;
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .logo-icon {
+    width: 36px; height: 36px;
+    background: var(--accent);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+  }
+  .logo-text { font-size: 18px; font-weight: 700; letter-spacing: -0.02em; }
+  .logo-sub { font-size: 11px; color: var(--text2); letter-spacing: 0.04em; text-transform: uppercase; }
+
+  .header-right { display: flex; gap: 8px; align-items: center; }
+  .tag-pill {
+    font-size: 11px; padding: 4px 10px; border-radius: 20px;
+    background: rgba(108,99,213,0.15); color: var(--accent2);
+    border: 1px solid rgba(108,99,213,0.3);
+  }
+
+  /* HERO */
+  .hero {
+    padding: 3rem 2rem 2rem;
+    text-align: center;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  .hero h1 {
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.15;
+    margin-bottom: 0.75rem;
+  }
+  .hero h1 span { color: var(--accent2); }
+  .hero p { font-size: 15px; color: var(--text2); line-height: 1.6; }
+
+  /* SHELF SECTION */
+  .shelf-section { padding: 2rem; max-width: 960px; margin: 0 auto; }
+  .section-eyebrow {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--text3); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 8px;
+  }
+  .section-eyebrow::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  /* BOOKS HORIZONTAL */
+  .books-row {
+    display: flex;
+    gap: 24px;
+    padding-bottom: 1rem;
+    overflow-x: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border2) transparent;
+  }
+
+  .book-wrap {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 12px; cursor: pointer; flex-shrink: 0;
+  }
+
+  .book {
+    width: 120px; height: 168px;
+    border-radius: 4px 12px 12px 4px;
+    display: flex; flex-direction: column;
+    justify-content: space-between;
+    padding: 14px 10px;
+    position: relative;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border-left: 7px solid rgba(0,0,0,0.25);
+    cursor: pointer;
+  }
+  .book:hover { transform: translateY(-10px) rotate(-1deg); }
+  .book-second { background: linear-gradient(145deg, #534AB7, #3C3489); box-shadow: 6px 6px 20px rgba(83,74,183,0.35); }
+  .book-third  { background: linear-gradient(145deg, #0F6E56, #085041); box-shadow: 6px 6px 20px rgba(15,110,86,0.35); }
+  .book-officer{ background: linear-gradient(145deg, #993C1D, #712B13); box-shadow: 6px 6px 20px rgba(153,60,29,0.35); }
+  .book-default{ background: linear-gradient(145deg, #185FA5, #0C447C); box-shadow: 6px 6px 20px rgba(24,95,165,0.35); }
+
+  .book-gloss {
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 60%);
+    border-radius: 4px 12px 12px 4px;
+    pointer-events: none;
+  }
+  .book-label-top { font-size: 9px; text-transform: uppercase; letter-spacing: 0.08em; opacity: 0.7; color: #fff; }
+  .book-title-text { font-size: 13px; font-weight: 700; color: #fff; line-height: 1.3; }
+  .book-bottom { display: flex; justify-content: space-between; align-items: flex-end; }
+  .book-year { font-size: 10px; color: rgba(255,255,255,0.6); }
+  .book-pro-badge {
+    font-size: 8px; padding: 2px 5px; border-radius: 3px;
+    background: var(--gold); color: #1a1200; font-weight: 700; letter-spacing: 0.05em;
+  }
+  .book-pages-badge {
+    font-size: 9px; padding: 2px 6px; border-radius: 3px;
+    background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.8);
+  }
+
+  .book-name {
+    font-size: 13px; font-weight: 600; text-align: center;
+    color: var(--text); line-height: 1.3; max-width: 110px;
+  }
+  .book-type { font-size: 11px; color: var(--text3); text-align: center; }
+
+  /* SHELF PLANK */
+  .shelf-plank {
+    height: 14px;
+    background: linear-gradient(180deg, #6B4C2A 0%, #3e2a12 100%);
+    border-radius: 2px;
+    margin-top: 4px;
+    box-shadow: 0 6px 12px rgba(0,0,0,0.4);
+  }
+
+  /* LOADING / ERROR */
+  .status-msg {
+    padding: 2rem; text-align: center; color: var(--text2); font-size: 14px;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .spinner {
+    width: 18px; height: 18px; border: 2px solid var(--border2);
+    border-top-color: var(--accent); border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* VIEWER MODAL */
+  .overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.8); z-index: 999;
+    align-items: center; justify-content: center;
+    padding: 16px;
+    backdrop-filter: blur(4px);
+  }
+  .overlay.open { display: flex; }
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 16px;
+    width: 100%; max-width: 880px;
+    height: 90vh;
+    display: flex; flex-direction: column;
+    overflow: hidden;
+  }
+  .modal-header {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .modal-header-left { display: flex; flex-direction: column; gap: 2px; }
+  .modal-header h2 { font-size: 16px; font-weight: 700; }
+  .modal-header .modal-sub { font-size: 12px; color: var(--text2); }
+  .modal-close {
+    width: 32px; height: 32px; border-radius: 8px;
+    border: 1px solid var(--border2); background: transparent;
+    color: var(--text2); cursor: pointer; font-size: 18px;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s;
+  }
+  .modal-close:hover { background: var(--surface2); color: var(--text); }
+
+  .modal-tabs {
+    display: flex; gap: 6px; padding: 10px 18px;
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto; flex-shrink: 0;
+    scrollbar-width: thin; scrollbar-color: var(--border2) transparent;
+  }
+  .modal-tab {
+    padding: 6px 14px; font-size: 12px; border-radius: 8px;
+    border: 1px solid var(--border2); background: transparent;
+    color: var(--text2); cursor: pointer; white-space: nowrap;
+    flex-shrink: 0; transition: all 0.15s;
+  }
+  .modal-tab:hover { background: var(--surface2); color: var(--text); }
+  .modal-tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  .modal-body { flex: 1; overflow: hidden; position: relative; }
+  .modal-body iframe { width: 100%; height: 100%; border: none; display: block; }
+  .modal-empty {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    height: 100%; gap: 12px; color: var(--text2); font-size: 14px;
+  }
+  .modal-empty svg { opacity: 0.3; }
+  .open-link-btn {
+    margin-top: 8px; padding: 8px 18px; border-radius: 8px;
+    background: var(--accent); color: #fff; border: none; cursor: pointer;
+    font-size: 13px; font-weight: 600; text-decoration: none; display: inline-block;
+  }
+
+  /* FOOTER */
+  footer {
+    padding: 2rem; text-align: center;
+    font-size: 12px; color: var(--text3);
+    border-top: 1px solid var(--border); margin-top: 3rem;
+  }
+
+  @media (max-width: 600px) {
+    header { padding: 1rem; }
+    .hero { padding: 2rem 1rem 1rem; }
+    .shelf-section { padding: 1rem; }
+    .book { width: 96px; height: 136px; }
+    .modal { height: 95vh; border-radius: 12px; }
+  }
 </style>
 </head>
 <body>
 
-<div id="boot-loader"><div class="spin"></div><span>Loading Written Exam…</span></div>
-<div id="root"></div>
+<header>
+  <div class="logo">
+    <div class="logo-icon">📚</div>
+    <div>
+      <div class="logo-text">शिक्षित मित्र</div>
+      <div class="logo-sub">Civil Service Prep</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <span class="tag-pill">लोक सेवा</span>
+  </div>
+</header>
 
-<script type="text/babel" data-presets="react">
-window.addEventListener('load', function(){
-  var loader = document.getElementById('boot-loader');
-  if (loader) loader.style.display = 'none';
-});
-</script>
+<div class="hero">
+  <h1>Your <span>Study Library</span><br>for Civil Service</h1>
+  <p>Click any book below to read chapters, past questions, and study materials.</p>
+</div>
 
-<script type="text/babel" data-presets="react">
-const { useState, useEffect, useRef, useCallback } = React;
+<div class="shelf-section">
+  <div class="section-eyebrow">पुस्तकहरू &mdash; Books</div>
+  <div id="shelfRow" class="books-row">
+    <div class="status-msg"><div class="spinner"></div> Loading library...</div>
+  </div>
+  <div class="shelf-plank"></div>
+</div>
 
-// ─── DATA SOURCE: Google Sheet (published as CSV) ───────────────────────────
-// Expected header row (any order, case-insensitive):
-// Book | PageOrder | Title | Type | Year | Premium | Published | PdfUrl | Content
-//
-// Book      → "second-paper" or "third-paper"
-// PageOrder → 1, 2, 3 ... (controls page order inside the book)
-// Type      → PYQ / Model Set / Practice Set / Special Set
-// Premium   → yes/no
-// Published → yes/no
-// PdfUrl    → Google Drive share link to the exam PDF (optional)
-// Content   → optional HTML notes shown above/below the PDF
-const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vS5svv38RZ1MJ54P73voMTXWZYuNZZeU6Hy4uWsXS95Z0BcydyeRsQINcY8gzVyKYNCeQoM8u3gs7E_/pub?output=csv";
+<!-- VIEWER MODAL -->
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-header-left">
+        <h2 id="modalTitle">Book</h2>
+        <span class="modal-sub" id="modalSub"></span>
+      </div>
+      <button class="modal-close" id="modalClose" aria-label="Close">✕</button>
+    </div>
+    <div class="modal-tabs" id="modalTabs"></div>
+    <div class="modal-body" id="modalBody">
+      <div class="modal-empty"><div class="spinner"></div></div>
+    </div>
+  </div>
+</div>
 
-function parseCSV(csv) {
-  var lines = csv.replace(/\r/g, "").trim().split("\n");
-  if (lines.length < 2) return [];
-  var headers = lines[0].split(",").map(function (h) { return h.replace(/"/g, "").trim(); });
-  return lines.slice(1).map(function (line) {
-    var cols = [], cur = "", inQ = false;
-    for (var i = 0; i < line.length; i++) {
-      var ch = line[i];
-      if (ch === '"') { inQ = !inQ; }
-      else if (ch === "," && !inQ) { cols.push(cur.trim()); cur = ""; }
-      else { cur += ch; }
+<footer>शिक्षित मित्र &mdash; Shikshit Mitra &copy; 2081 &bull; लोक सेवा आयोग तयारी</footer>
+
+<script>
+const SHEET_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS5svv38RZ1MJ54P73voMTXWZYuNZZeU6Hy4uWsXS95Z0BcydyeRsQINcY8gzVyKYNCeQoM8u3gs7E_/pub?output=csv';
+
+const BOOK_CONFIG = {
+  'second-paper': {
+    cssClass: 'book-second',
+    label: 'खरिदार',
+    title: 'दोस्रो पत्र\n(2nd Paper)',
+    displayName: 'Kharidar Second Paper',
+  },
+  'third-paper': {
+    cssClass: 'book-third',
+    label: 'खरिदार',
+    title: 'तेस्रो पत्र\n(3rd Paper)',
+    displayName: 'Kharidar Third Paper',
+  },
+  'officer-paper': {
+    cssClass: 'book-officer',
+    label: 'अफिसर',
+    title: 'लिखित\n(Written)',
+    displayName: 'Officer Written Paper',
+  },
+};
+
+function parseCSV(text) {
+  const lines = text.trim().split(/\r?\n/);
+  const headers = lines[0].split(',').map(h => h.replace(/^"|"$/g, '').trim());
+  return lines.slice(1).map(line => {
+    const cols = [];
+    let cur = '', inQ = false;
+    for (let i = 0; i < line.length; i++) {
+      if (line[i] === '"') { inQ = !inQ; }
+      else if (line[i] === ',' && !inQ) { cols.push(cur.trim()); cur = ''; }
+      else cur += line[i];
     }
     cols.push(cur.trim());
-    var obj = {};
-    headers.forEach(function (h, i) { obj[h] = (cols[i] || "").replace(/^"|"$/g, "").trim(); });
+    const obj = {};
+    headers.forEach((h, i) => obj[h] = (cols[i] || '').replace(/^"|"$/g, '').trim());
     return obj;
-  });
+  }).filter(r => r.Book);
 }
 
-// Turn a normal Google Drive "share" link into an embeddable preview link
-function driveToPreview(url) {
-  if (!url) return "";
-  var m = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
-  if (m && m[1]) return "https://drive.google.com/file/d/" + m[1] + "/preview";
-  return url;
-}
+let library = {};
 
-const TRUE_VALUES = ["yes", "true", "1", "y", "published", "premium"];
-function toBool(v, defaultTrue) {
-  if (v === undefined || v === null || String(v).trim() === "") return !!defaultTrue;
-  return TRUE_VALUES.indexOf(String(v).trim().toLowerCase()) !== -1;
-}
-function getField(row, names) {
-  for (var i = 0; i < names.length; i++) {
-    var key = Object.keys(row).find(function (k) { return k.trim().toLowerCase() === names[i].toLowerCase(); });
-    if (key !== undefined && row[key] !== undefined) return row[key];
-  }
-  return "";
-}
-
-async function loadExamsFromSheet() {
+async function init() {
+  const shelf = document.getElementById('shelfRow');
   try {
-    const res = await fetch(SHEET_CSV_URL + (SHEET_CSV_URL.indexOf("?") > -1 ? "&" : "?") + "t=" + Date.now());
-    if (!res.ok) throw new Error("HTTP " + res.status);
-    const rows = parseCSV(await res.text());
-    if (!rows.length) return null;
-
-    const grouped = {};
-    rows.forEach(function (r, idx) {
-      const book = getField(r, ["Book"]).trim();
-      const title = getField(r, ["Title"]).trim();
-      if (!book || !title) return;
-      if (!grouped[book]) grouped[book] = [];
-      const pageOrder = parseInt(getField(r, ["PageOrder", "Order"]), 10) || (grouped[book].length + 1);
-      grouped[book].push({
-        id: "sheet_" + book + "_" + idx,
-        title: title,
-        type: getField(r, ["Type"]).trim() || "Practice Set",
-        year: getField(r, ["Year"]).trim() || null,
-        pageOrder: pageOrder,
-        isPremium: toBool(getField(r, ["Premium"]), false),
-        isPublished: toBool(getField(r, ["Published"]), true),
-        pdfUrl: driveToPreview(getField(r, ["PdfUrl", "PDF", "PdfLink"]).trim()),
-        content: getField(r, ["Content"]).trim(),
-      });
+    const res = await fetch(SHEET_CSV);
+    if (!res.ok) throw new Error('Network error');
+    const text = await res.text();
+    const rows = parseCSV(text);
+    rows.forEach(row => {
+      if (!library[row.Book]) library[row.Book] = [];
+      library[row.Book].push(row);
     });
-
-    Object.keys(grouped).forEach(function (b) {
-      grouped[b].sort(function (a, b2) { return a.pageOrder - b2.pageOrder; });
-    });
-    return grouped;
+    renderShelf();
   } catch (e) {
-    console.warn("Sheet load failed, using mock data:", e);
-    return null;
+    shelf.innerHTML = '<div class="status-msg" style="color:#e05c3a">⚠️ Could not load library. Check your internet connection.</div>';
   }
 }
 
-// ─── SAMPLE DATA (fallback shown until/unless the Google Sheet loads) ──────
-const MOCK_BOOKS = {
-  "second-paper": {
-    id: "second-paper",
-    title: "Kharidar Second Paper",
-    subtitle: "खरिदार द्वितीय पत्र",
-    color: "#7C2D52",
-    accent: "#B5446E",
-    spine: "#5A1F3B",
-    emoji: "📕",
-  },
-  "third-paper": {
-    id: "third-paper",
-    title: "Kharidar Third Paper",
-    subtitle: "खरिदार तृतीय पत्र",
-    color: "#155C3A",
-    accent: "#1E8A57",
-    spine: "#0D3D27",
-    emoji: "📗",
-  },
-  "officer-paper": {
-    id: "officer-paper",
-    title: "Officer Written Paper",
-    subtitle: "अधिकृत लिखित पत्र",
-    color: "#1E3A6E",
-    accent: "#2563EB",
-    spine: "#0F1F3D",
-    emoji: "📘",
-  },
-};
-
-const MOCK_EXAMS = {
-  "second-paper": [
-    {
-      id: "e1", title: "Model Set 1", type: "Model Set", year: "2079",
-      pageOrder: 1, isPublished: true, isPremium: false,
-      content: `<h3>खण्ड-क: सामान्य ज्ञान</h3>
-<p><strong>प्र.१.</strong> नेपालको संविधान कहिले जारी भयो? <em>(२ अंक)</em></p>
-<p><strong>प्र.२.</strong> नेपालको राष्ट्रिय पशु के हो? <em>(१ अंक)</em></p>
-<p><strong>प्र.३.</strong> हालको नेपालको प्रधानमन्त्री को हुनुहुन्छ? <em>(१ अंक)</em></p>
-<hr/>
-<h3>खण्ड-ख: बौद्धिक परीक्षण</h3>
-<p><strong>प्र.४.</strong> यदि A = 1, B = 2, C = 3 भए MANGO को संख्यात्मक मान कति हुन्छ? <em>(२ अंक)</em></p>
-<p><strong>प्र.५.</strong> श्रृंखला पूरा गर्नुहोस्: 2, 4, 8, 16, ___? <em>(२ अंक)</em></p>
-<p><strong>प्र.६.</strong> एउटा काममा A ले ६ दिनमा र B ले ८ दिनमा सक्छ भने दुवै मिलेर कति दिनमा सक्छन्? <em>(३ अंक)</em></p>`,
-    },
-    {
-      id: "e2", title: "PYQ 2078", type: "PYQ", year: "2078",
-      pageOrder: 2, isPublished: true, isPremium: false,
-      content: `<h3>लोक सेवा आयोग — वि.सं. २०७८</h3>
-<p><strong>प्र.१.</strong> नेपालको सर्वोच्च अदालत कहाँ छ? <em>(१ अंक)</em></p>
-<p><strong>प्र.२.</strong> नेपालमा कति वटा प्रदेश छन्? <em>(१ अंक)</em></p>
-<p><strong>प्र.३.</strong> नेपालको राष्ट्रिय चरा के हो? <em>(१ अंक)</em></p>
-<p><strong>प्र.४.</strong> नेपालको सबैभन्दा अग्लो हिमाल कुन हो? <em>(१ अंक)</em></p>
-<hr/>
-<h3>बौद्धिक परीक्षण</h3>
-<p><strong>प्र.५.</strong> Odd one out: Apple, Mango, Carrot, Banana <em>(२ अंक)</em></p>
-<p><strong>प्र.६.</strong> 15 को 40% कति हो? <em>(२ अंक)</em></p>`,
-    },
-    {
-      id: "e3", title: "Special Set — Sarfaraz Sir", type: "Special Set", year: "2080",
-      pageOrder: 3, isPublished: true, isPremium: true,
-      content: `<h3>विशेष अभ्यास सेट — सरफराज सर</h3>
-<p><strong>प्र.१.</strong> लोक सेवा आयोगको स्थापना कहिले भयो? <em>(२ अंक)</em></p>
-<p><strong>प्र.२.</strong> नेपालको संघीय संसदमा कुल कति सदस्य छन्? <em>(२ अंक)</em></p>
-<p><strong>प्र.३.</strong> नेपालमा पहिलो आम निर्वाचन कहिले भयो? <em>(२ अंक)</em></p>
-<hr/>
-<p><strong>प्र.४.</strong> तार्किक श्रृंखला: A, C, E, G, ___? <em>(१ अंक)</em></p>
-<p><strong>प्र.५.</strong> यदि एउटा संख्याको दोब्बर ३० भए सो संख्या कति? <em>(१ अंक)</em></p>`,
-    },
-    {
-      id: "e4", title: "Practice Set 1", type: "Practice Set", year: null,
-      pageOrder: 4, isPublished: true, isPremium: false,
-      content: `<h3>अभ्यास सेट — १</h3>
-<p><strong>प्र.१.</strong> नेपालको राष्ट्रिय फूल के हो? <em>(१ अंक)</em></p>
-<p><strong>प्र.२.</strong> नेपालको सबैभन्दा लामो नदी कुन हो? <em>(१ अंक)</em></p>
-<p><strong>प्र.३.</strong> नेपालको मुद्रा के हो? <em>(१ अंक)</em></p>
-<p><strong>प्र.४.</strong> नेपालमा कति जिल्ला छन्? <em>(१ अंक)</em></p>
-<hr/>
-<h3>गणित</h3>
-<p><strong>प्र.५.</strong> ३ × ४ + ५ − २ = ? <em>(१ अंक)</em></p>
-<p><strong>प्र.६.</strong> एउटा आयतको लम्बाइ ८ र चौडाइ ५ भए क्षेत्रफल कति? <em>(२ अंक)</em></p>`,
-    },
-  ],
-  "third-paper": [
-    {
-      id: "e5", title: "PYQ 2079", type: "PYQ", year: "2079",
-      pageOrder: 1, isPublished: true, isPremium: false,
-      content: `<h3>लोक सेवा — तृतीय पत्र वि.सं. २०७९</h3>
-<p><strong>प्र.१.</strong> कार्यालय व्यवस्थापन भनेको के हो? <em>(५ अंक)</em></p>
-<p><strong>प्र.२.</strong> पत्राचारका प्रकारहरू उल्लेख गर्नुहोस्। <em>(५ अंक)</em></p>
-<p><strong>प्र.३.</strong> कम्प्युटरका आधारभूत भागहरू के-के हुन्? <em>(५ अंक)</em></p>`,
-    },
-    {
-      id: "e6", title: "Model Set 1", type: "Model Set", year: "2080",
-      pageOrder: 2, isPublished: true, isPremium: false,
-      content: `<h3>मोडल सेट — १ (तृतीय पत्र)</h3>
-<p><strong>प्र.१.</strong> नेपाल सरकारको संगठन संरचना बताउनुहोस्। <em>(१० अंक)</em></p>
-<p><strong>प्र.२.</strong> सूचना प्रविधिको प्रयोग कार्यालय व्यवस्थापनमा कसरी गर्न सकिन्छ? <em>(१० अंक)</em></p>
-<p><strong>प्र.३.</strong> सार्वजनिक सेवा प्रवाहमा सुधारका उपायहरू लेख्नुहोस्। <em>(१० अंक)</em></p>`,
-    },
-  ],
-  "officer-paper": [
-    {
-      id: "e7", title: "PYQ 2079", type: "PYQ", year: "2079",
-      pageOrder: 1, isPublished: true, isPremium: false,
-      content: `<h3>अधिकृत — लिखित परीक्षा वि.सं. २०७९</h3>
-<p><strong>प्र.१.</strong> सुशासनका आधारभूत तत्वहरू उल्लेख गर्नुहोस्। <em>(१० अंक)</em></p>
-<p><strong>प्र.२.</strong> नेपालमा लोकतन्त्रको विकासक्रम बताउनुहोस्। <em>(१० अंक)</em></p>`,
-    },
-  ],
-};
-
-// ─── TYPE BADGE CONFIG ─────────────────────────────────────────────────────
-const TYPE_CONFIG = {
-  "PYQ":          { bg: "#FEF3C7", text: "#92400E", border: "#FDE68A", dot: "#F59E0B" },
-  "Model Set":    { bg: "#DBEAFE", text: "#1E40AF", border: "#BFDBFE", dot: "#3B82F6" },
-  "Practice Set": { bg: "#D1FAE5", text: "#065F46", border: "#A7F3D0", dot: "#10B981" },
-  "Special Set":  { bg: "#EDE9FE", text: "#5B21B6", border: "#DDD6FE", dot: "#8B5CF6" },
-};
-
-// ─── ADMIN PASSWORD ────────────────────────────────────────────────────────
-const ADMIN_PASSWORD = "shikshitmitra2024";
-
-// ═══════════════════════════════════════════════════════════════════════════
-// MAIN APP
-// ═══════════════════════════════════════════════════════════════════════════
-function App() {
-  const [view, setView] = useState("library");
-  const [selectedBook, setSelectedBook] = useState(null);
-  const [exams, setExams] = useState(MOCK_EXAMS);
-  const [usingSheet, setUsingSheet] = useState(false);
-  const [sheetLoading, setSheetLoading] = useState(true);
-  const [bookmarks, setBookmarks] = useState(() => {
-    try { return JSON.parse(localStorage.getItem("sm_bookmarks") || "{}"); } catch { return {}; }
+function renderShelf() {
+  const shelf = document.getElementById('shelfRow');
+  const bookKeys = Object.keys(library);
+  if (!bookKeys.length) {
+    shelf.innerHTML = '<div class="status-msg">No books found.</div>';
+    return;
+  }
+  shelf.innerHTML = '';
+  bookKeys.forEach(key => {
+    const pages = library[key];
+    const cfg = BOOK_CONFIG[key] || { cssClass: 'book-default', label: '', title: key, displayName: key };
+    const pubCount = pages.filter(p => p.Published === 'yes').length;
+    const hasPro = pages.some(p => p.Premium === 'yes');
+    const firstYear = pages.find(p => p.Year)?.Year || '';
+    const wrap = document.createElement('div');
+    wrap.className = 'book-wrap';
+    wrap.setAttribute('role', 'button');
+    wrap.setAttribute('tabindex', '0');
+    wrap.setAttribute('aria-label', 'Open ' + cfg.displayName);
+    const titleLines = cfg.title.split('\n');
+    wrap.innerHTML = `
+      <div class="book ${cfg.cssClass}" title="${cfg.displayName}">
+        <div class="book-gloss"></div>
+        <div>
+          <div class="book-label-top">${cfg.label}</div>
+          <div class="book-title-text">${titleLines[0]}<br><span style="opacity:0.8;font-size:11px">${titleLines[1]||''}</span></div>
+        </div>
+        <div class="book-bottom">
+          <span class="book-year">${firstYear}</span>
+          ${hasPro ? '<span class="book-pro-badge">PRO</span>' : ''}
+          <span class="book-pages-badge">${pubCount} ch</span>
+        </div>
+      </div>
+      <div class="book-name">${cfg.displayName.replace(' Paper','<br>Paper')}</div>
+      <div class="book-type">${pubCount} chapter${pubCount !== 1 ? 's' : ''}</div>
+    `;
+    wrap.onclick = () => openBook(key);
+    wrap.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') openBook(key); };
+    shelf.appendChild(wrap);
   });
-  const [lastPage, setLastPage] = useState(() => {
-    try { return JSON.parse(localStorage.getItem("sm_lastpage") || "{}"); } catch { return {}; }
-  });
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [darkMode, setDarkMode] = useState(() => {
-    try { return localStorage.getItem("sm_dark") === "1"; } catch { return false; }
-  });
-  const [toast, setToast] = useState(null);
-
-  // Load exam pages from the published Google Sheet on mount
-  const loadFromSheet = useCallback(async () => {
-    setSheetLoading(true);
-    const sheetData = await loadExamsFromSheet();
-    if (sheetData && Object.keys(sheetData).length > 0) {
-      setExams(prev => ({ ...prev, ...sheetData }));
-      setUsingSheet(true);
-    } else {
-      setUsingSheet(false);
-    }
-    setSheetLoading(false);
-  }, []);
-
-  useEffect(() => { loadFromSheet(); }, [loadFromSheet]);
-
-  const showToast = (msg, type = "success") => {
-    setToast({ msg, type });
-    setTimeout(() => setToast(null), 2500);
-  };
-
-  const toggleDark = () => {
-    setDarkMode(d => {
-      const next = !d;
-      localStorage.setItem("sm_dark", next ? "1" : "0");
-      return next;
-    });
-  };
-
-  const saveBookmark = (bookId, pageIdx) => {
-    const next = { ...bookmarks, [`${bookId}_${pageIdx}`]: true };
-    setBookmarks(next);
-    localStorage.setItem("sm_bookmarks", JSON.stringify(next));
-  };
-
-  const removeBookmark = (bookId, pageIdx) => {
-    const next = { ...bookmarks };
-    delete next[`${bookId}_${pageIdx}`];
-    setBookmarks(next);
-    localStorage.setItem("sm_bookmarks", JSON.stringify(next));
-  };
-
-  const saveLastPage = (bookId, pageIdx) => {
-    const next = { ...lastPage, [bookId]: pageIdx };
-    setLastPage(next);
-    localStorage.setItem("sm_lastpage", JSON.stringify(next));
-  };
-
-  // ── Local-only CRUD (session preview; the Google Sheet is the source of truth) ──
-  const addExam = async (bookId, exam) => {
-    const newExam = { ...exam, id: "local_" + Date.now().toString() };
-    setExams(prev => ({
-      ...prev,
-      [bookId]: [...(prev[bookId] || []), newExam].sort((a, b) => a.pageOrder - b.pageOrder),
-    }));
-    showToast("Added (preview only — add a row in your Sheet to make it permanent) ✓");
-  };
-
-  const updateExam = async (bookId, examId, data) => {
-    setExams(prev => ({
-      ...prev,
-      [bookId]: prev[bookId].map(e => e.id === examId ? { ...e, ...data } : e)
-        .sort((a, b) => a.pageOrder - b.pageOrder),
-    }));
-    showToast("Updated (preview only — edit your Sheet to make it permanent) ✓");
-  };
-
-  const deleteExam = async (bookId, examId) => {
-    setExams(prev => ({
-      ...prev,
-      [bookId]: prev[bookId].filter(e => e.id !== examId),
-    }));
-    showToast("Removed from preview", "danger");
-  };
-
-  const styles = getStyles(darkMode);
-
-  return (
-    <div style={styles.app}>
-      {/* Toast */}
-      {toast && (
-        <div style={{
-          position: "fixed", top: 16, left: "50%", transform: "translateX(-50%)",
-          background: toast.type === "danger" ? "#EF4444" : "#10B981",
-          color: "#fff", padding: "10px 20px", borderRadius: 10,
-          fontSize: 13, fontWeight: 700, zIndex: 9999,
-          boxShadow: "0 4px 20px rgba(0,0,0,0.2)",
-          animation: "fadeInDown 0.3s ease",
-          textAlign: "center", maxWidth: "90%",
-        }}>
-          {toast.msg}
-        </div>
-      )}
-
-      {view === "library" && (
-        <Library
-          books={MOCK_BOOKS}
-          exams={exams}
-          onOpen={(id) => { setSelectedBook(id); setView("book"); }}
-          onAdmin={() => setView("admin")}
-          darkMode={darkMode}
-          onToggleDark={toggleDark}
-          styles={styles}
-          lastPage={lastPage}
-          bookmarks={bookmarks}
-          usingSheet={usingSheet}
-          sheetLoading={sheetLoading}
-        />
-      )}
-      {view === "book" && selectedBook && (
-        <BookReader
-          book={MOCK_BOOKS[selectedBook]}
-          exams={(exams[selectedBook] || []).filter(e => e.isPublished)}
-          onClose={() => setView("library")}
-          darkMode={darkMode}
-          styles={styles}
-          lastPage={lastPage[selectedBook] || 0}
-          onPageChange={(p) => saveLastPage(selectedBook, p)}
-          bookmarks={bookmarks}
-          onBookmark={(p) => saveBookmark(selectedBook, p)}
-          onUnbookmark={(p) => removeBookmark(selectedBook, p)}
-        />
-      )}
-      {view === "admin" && (
-        <AdminPanel
-          isAdmin={isAdmin}
-          onLogin={() => setIsAdmin(true)}
-          onBack={() => setView("library")}
-          exams={exams}
-          books={MOCK_BOOKS}
-          onAdd={addExam}
-          onUpdate={updateExam}
-          onDelete={deleteExam}
-          styles={styles}
-          darkMode={darkMode}
-          usingSheet={usingSheet}
-          onRefresh={loadFromSheet}
-        />
-      )}
-
-      <style>{`
-        @keyframes fadeInDown {
-          from { opacity: 0; transform: translateX(-50%) translateY(-10px); }
-          to   { opacity: 1; transform: translateX(-50%) translateY(0); }
-        }
-        @keyframes pageFlip {
-          0%   { transform: rotateY(0deg); }
-          50%  { transform: rotateY(-20deg) scale(0.96); }
-          100% { transform: rotateY(0deg); }
-        }
-        * { box-sizing: border-box; }
-        html, body { margin: 0; padding: 0; }
-        .exam-content h3 { font-size: 15px; font-weight: 700; color: #374151; margin: 0 0 12px; padding-bottom: 8px; border-bottom: 1px dashed #E5E7EB; }
-        .exam-content p  { margin: 8px 0; line-height: 1.9; }
-        .exam-content hr { border: none; border-top: 1px solid #E5E7EB; margin: 16px 0; }
-        .exam-content strong { font-weight: 700; }
-        .exam-content em { color: #6B7280; font-style: italic; }
-        .exam-content ul { padding-left: 20px; }
-        .exam-content li { margin: 6px 0; line-height: 1.7; }
-        .dark .exam-content h3 { color: #E2E8F0; border-color: #334155; }
-        .dark .exam-content hr { border-color: #334155; }
-        .dark .exam-content em { color: #94A3B8; }
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 4px; }
-        .hide-scrollbar::-webkit-scrollbar { display: none; }
-        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        .books-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0 48px; justify-items: center; }
-        @media (max-width: 900px) { .books-grid { grid-template-columns: repeat(2, 1fr); gap: 0 32px; } }
-        @media (max-width: 520px) { .books-grid { grid-template-columns: repeat(2, 1fr); gap: 0 20px; } }
-      `}</style>
-    </div>
-  );
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// LIBRARY VIEW — FULL WIDTH 4-COLUMN GRID
-// ═══════════════════════════════════════════════════════════════════════════
-function Library({ books, exams, onOpen, onAdmin, darkMode, onToggleDark, styles, lastPage, bookmarks, usingSheet, sheetLoading }) {
-  const [opening, setOpening] = useState(null);
-  const [hovered, setHovered] = useState(null);
-  const dark = darkMode;
-
-  const handleOpen = (bookId) => {
-    setOpening(bookId);
-    setTimeout(() => { setOpening(null); onOpen(bookId); }, 700);
-  };
-
-  const bg = dark ? "#0F172A" : "#F4F1EA";
-  const card = dark ? "#1E293B" : "#FFFFFF";
-  const text = dark ? "#F1F5F9" : "#1F2937";
-  const muted = dark ? "#64748B" : "#6B7280";
-  const border = dark ? "#1E293B" : "#E5E7EB";
-
-  const bookList = Object.values(books);
-
-  return (
-    <div style={{ minHeight: "100vh", background: bg, color: text }} className={dark ? "dark" : ""}>
-      {/* Header — full width */}
-      <div style={{
-        display: "flex", justifyContent: "space-between", alignItems: "center",
-        padding: "16px 32px", background: card, borderBottom: `1px solid ${border}`,
-      }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-          <span style={{ fontSize: 26 }}>📚</span>
-          <div>
-            <div style={{ fontSize: 20, fontWeight: 800, color: text, lineHeight: 1 }}>Written Exam</div>
-            <div style={{ fontSize: 11, color: muted, marginTop: 3 }}>लिखित परीक्षा पुस्तकालय · Shikshit Mitra</div>
-          </div>
-        </div>
-        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          {!sheetLoading && (
-            <div style={{
-              fontSize: 10, fontWeight: 700,
-              color: usingSheet ? "#10B981" : "#F59E0B",
-              background: usingSheet ? "#D1FAE5" : "#FEF3C7",
-              padding: "4px 10px", borderRadius: 99,
-              border: `1px solid ${usingSheet ? "#A7F3D0" : "#FDE68A"}`,
-            }}>{usingSheet ? "📊 Live Sheet" : "📦 Sample Data"}</div>
-          )}
-          <button style={styles.iconBtn} onClick={onToggleDark} title="Toggle dark mode">{dark ? "☀️" : "🌙"}</button>
-          <button style={styles.iconBtn} onClick={onAdmin} title="Admin">⚙️</button>
-        </div>
-      </div>
-
-      {/* FULL-WIDTH WOODEN SHELF */}
-      <div style={{ padding: "32px 40px 0" }}>
-        <div style={{
-          fontSize: 11, fontWeight: 700, color: muted,
-          marginBottom: 24, textTransform: "uppercase", letterSpacing: 1.4,
-        }}>Your Library</div>
-
-        {/* Shelf backdrop */}
-        <div style={{
-          position: "relative",
-          background: dark
-            ? "linear-gradient(180deg, #1A0F06 0%, #2D1A0A 100%)"
-            : "linear-gradient(180deg, #8B6914 0%, #6B4F0F 100%)",
-          borderRadius: "12px 12px 0 0",
-          paddingTop: 36,
-          paddingLeft: 40,
-          paddingRight: 40,
-          boxShadow: dark
-            ? "0 8px 32px rgba(0,0,0,0.6), inset 0 2px 8px rgba(0,0,0,0.5)"
-            : "0 8px 32px rgba(0,0,0,0.22), inset 0 2px 8px rgba(0,0,0,0.12)",
-        }}>
-          {/* 4-column grid of books */}
-          <div className="books-grid">
-            {bookList.map(book => {
-              const bookExams = (exams[book.id] || []).filter(e => e.isPublished);
-              const bmCount = Object.keys(bookmarks).filter(k => k.startsWith(book.id)).length;
-              return (
-                <BookCover3D
-                  key={book.id}
-                  book={book}
-                  examCount={bookExams.length}
-                  isOpening={opening === book.id}
-                  isHovered={hovered === book.id}
-                  lastPage={lastPage[book.id] || 0}
-                  bmCount={bmCount}
-                  onClick={() => handleOpen(book.id)}
-                  onHover={(v) => setHovered(v ? book.id : null)}
-                  dark={dark}
-                />
-              );
-            })}
-          </div>
-
-          {/* Shelf plank */}
-          <div style={{
-            height: 26,
-            marginTop: 0,
-            background: dark
-              ? "linear-gradient(180deg, #3D2410 0%, #2A1808 100%)"
-              : "linear-gradient(180deg, #5C3D0A 0%, #3E2906 100%)",
-            borderRadius: "0 0 0 0",
-            boxShadow: "0 8px 0 rgba(0,0,0,0.35), inset 0 2px 0 rgba(255,255,255,0.07)",
-            position: "relative", overflow: "hidden",
-          }}>
-            {Array.from({ length: 40 }, (_, i) => i * 28 + 10).map(x => (
-              <div key={x} style={{
-                position: "absolute", top: 7, left: x,
-                width: 1, height: 12, background: "rgba(0,0,0,0.13)",
-              }} />
-            ))}
-          </div>
-        </div>
-
-        {/* Shadow beneath shelf */}
-        <div style={{
-          height: 12,
-          background: "linear-gradient(180deg, rgba(0,0,0,0.18) 0%, transparent 100%)",
-          borderRadius: "0 0 8px 8px",
-          marginBottom: 32,
-        }} />
-      </div>
-
-      {/* Bookmarks summary — only show if any */}
-      {Object.keys(bookmarks).length > 0 && (
-        <div style={{ padding: "0 40px 24px" }}>
-          <div style={{
-            background: dark ? "#1E293B" : "#FFF8E1",
-            border: `1px solid ${dark ? "#334155" : "#FDE68A"}`,
-            borderRadius: 10, padding: "12px 18px", display: "inline-flex",
-            alignItems: "center", gap: 8,
-            fontSize: 13, color: dark ? "#FCD34D" : "#92400E",
-          }}>
-            🔖 {Object.keys(bookmarks).length} bookmarked page{Object.keys(bookmarks).length > 1 ? "s" : ""} saved
-          </div>
-        </div>
-      )}
-
-      <div style={{
-        textAlign: "center", fontSize: 11, color: muted,
-        padding: "16px 40px 24px",
-        borderTop: `1px solid ${border}`,
-      }}>
-        Shikshit Mitra · सफलताको साथी
-        {usingSheet && <span style={{ color: "#10B981", marginLeft: 8 }}>· Synced with Google Sheet</span>}
-      </div>
-    </div>
-  );
-}
-
-// ─── 3D BOOK COVER ─────────────────────────────────────────────────────────
-function BookCover3D({ book, examCount, isOpening, isHovered, lastPage, bmCount, onClick, onHover, dark }) {
-  const BOOK_W = 160;
-  const BOOK_H = 230;
-  const SPINE_W = 18;
-  const PAGES_W = 12;
-
-  const lift = isHovered && !isOpening;
-
-  return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        paddingBottom: 18,
-        cursor: "pointer",
-        userSelect: "none",
-        width: "100%",
-      }}
-      onClick={onClick}
-      onMouseEnter={() => onHover(true)}
-      onMouseLeave={() => onHover(false)}
-      onTouchStart={() => onHover(true)}
-      onTouchEnd={() => onHover(false)}
-    >
-      {/* 3D book wrapper */}
-      <div style={{
-        perspective: 1000,
-        perspectiveOrigin: "50% 50%",
-        marginBottom: 16,
-      }}>
-        <div style={{
-          position: "relative",
-          width: BOOK_W + SPINE_W + PAGES_W,
-          height: BOOK_H,
-          transformStyle: "preserve-3d",
-          transition: "transform 0.5s cubic-bezier(0.23, 1, 0.32, 1), filter 0.5s ease",
-          transform: isOpening
-            ? "rotateY(-45deg) translateX(-14px) scale(1.08)"
-            : lift
-              ? "rotateY(-22deg) translateY(-14px)"
-              : "rotateY(-10deg)",
-          filter: lift || isOpening
-            ? `drop-shadow(0 24px 32px rgba(0,0,0,0.5))`
-            : `drop-shadow(0 10px 18px rgba(0,0,0,0.32))`,
-        }}>
-          {/* SPINE */}
-          <div style={{
-            position: "absolute",
-            left: 0, top: 0,
-            width: SPINE_W,
-            height: BOOK_H,
-            background: `linear-gradient(to right, ${book.spine} 0%, ${book.color} 60%, ${book.spine} 100%)`,
-            borderRadius: "3px 0 0 3px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            overflow: "hidden",
-          }}>
-            <div style={{
-              writingMode: "vertical-rl",
-              textOrientation: "mixed",
-              transform: "rotate(180deg)",
-              fontSize: 9, fontWeight: 800, color: "rgba(255,255,255,0.85)",
-              letterSpacing: 1.2, textTransform: "uppercase",
-              maxHeight: BOOK_H - 20,
-              overflow: "hidden",
-              whiteSpace: "nowrap",
-            }}>
-              {book.title}
-            </div>
-          </div>
-
-          {/* COVER FACE */}
-          <div style={{
-            position: "absolute",
-            left: SPINE_W, top: 0,
-            width: BOOK_W,
-            height: BOOK_H,
-            background: `linear-gradient(150deg, ${book.color} 0%, ${book.accent} 55%, ${book.color} 100%)`,
-            borderRadius: "0 5px 5px 0",
-            overflow: "hidden",
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "space-between",
-            padding: "20px 14px 14px",
-          }}>
-            {/* Decorative blobs */}
-            <div style={{ position: "absolute", top: -35, right: -35, width: 130, height: 130, borderRadius: "50%", background: "rgba(255,255,255,0.08)", pointerEvents: "none" }} />
-            <div style={{ position: "absolute", bottom: -25, left: -25, width: 110, height: 110, borderRadius: "50%", background: "rgba(255,255,255,0.05)", pointerEvents: "none" }} />
-            <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 4, background: "rgba(255,255,255,0.18)" }} />
-            <div style={{ position: "absolute", top: 62, left: 0, right: 0, height: 1, background: "rgba(255,255,255,0.1)" }} />
-
-            {/* Top: label + title */}
-            <div style={{ position: "relative" }}>
-              <div style={{ fontSize: 30, marginBottom: 10 }}>{book.emoji}</div>
-              <div style={{ color: "rgba(255,255,255,0.6)", fontSize: 8, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 4 }}>
-                लोक सेवा आयोग
-              </div>
-              <div style={{ color: "#fff", fontWeight: 800, fontSize: 13, lineHeight: 1.3 }}>Kharidar</div>
-              <div style={{ color: "#fff", fontWeight: 800, fontSize: 16, lineHeight: 1.25, marginTop: 2 }}>
-                {book.title.replace("Kharidar ", "")}
-              </div>
-            </div>
-
-            {/* Bottom: page count + badges */}
-            <div style={{ position: "relative" }}>
-              <div style={{ fontSize: 9, color: "rgba(255,255,255,0.5)", marginBottom: 6 }}>{book.subtitle}</div>
-              <div style={{
-                color: "rgba(255,255,255,0.95)", fontSize: 10, fontWeight: 700,
-                background: "rgba(0,0,0,0.25)", borderRadius: 6,
-                padding: "4px 9px", display: "inline-block", marginBottom: 6,
-              }}>
-                {examCount} Pages
-              </div>
-              <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
-                {lastPage > 0 && (
-                  <span style={{ fontSize: 9, color: "#fff", fontWeight: 700, background: "rgba(255,255,255,0.2)", borderRadius: 99, padding: "2px 7px" }}>📖 p.{lastPage + 1}</span>
-                )}
-                {bmCount > 0 && (
-                  <span style={{ fontSize: 9, color: "#fff", fontWeight: 700, background: "rgba(255,255,255,0.2)", borderRadius: 99, padding: "2px 7px" }}>🔖 {bmCount}</span>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* PAGES EDGE */}
-          <div style={{
-            position: "absolute",
-            left: SPINE_W + BOOK_W, top: 2,
-            width: PAGES_W,
-            height: BOOK_H - 4,
-            background: dark
-              ? "repeating-linear-gradient(to bottom, #374151 0px, #4B5563 2px, #374151 4px)"
-              : "repeating-linear-gradient(to bottom, #F9F9F0 0px, #E8E2D0 2px, #F9F9F0 4px)",
-            borderRadius: "0 3px 3px 0",
-          }} />
-        </div>
-      </div>
-
-      {/* Label below */}
-      <div style={{
-        fontSize: 11, color: dark ? "#64748B" : "#9CA3AF",
-        fontWeight: 600, letterSpacing: 0.3, textAlign: "center",
-      }}>
-        {isOpening ? "Opening…" : "Tap to open"}
-      </div>
-    </div>
-  );
-}
-
-
-
-// ═══════════════════════════════════════════════════════════════════════════
-// BOOK READER
-// ═══════════════════════════════════════════════════════════════════════════
-function BookReader({ book, exams, onClose, darkMode, styles, lastPage, onPageChange, bookmarks, onBookmark, onUnbookmark }) {
-  const [currentPage,  setCurrentPage]  = useState(lastPage || 0);
-  const [animDir,      setAnimDir]      = useState(null); // "next" | "prev" | null
-  const [showTOC,      setShowTOC]      = useState(false);
-  const [isFullscreen, setIsFullscreen] = useState(false);
-  const [uiVisible,    setUiVisible]    = useState(true);
-  const hideTimer  = useRef(null);
-  const touchStart = useRef(null);
-  const dark       = darkMode;
-  const totalPages = exams.length + 1; // 0 = cover, 1..n = exams
-
-  // ── Auto-hide UI ─────────────────────────────────────────────────────────
-  const resetHide = useCallback(() => {
-    setUiVisible(true);
-    clearTimeout(hideTimer.current);
-    hideTimer.current = setTimeout(() => setUiVisible(false), 4500);
-  }, []);
-  useEffect(() => { resetHide(); return () => clearTimeout(hideTimer.current); }, [resetHide]);
-
-  // ── Fullscreen ────────────────────────────────────────────────────────────
-  const toggleFS = () => {
-    const el = document.documentElement;
-    if (!document.fullscreenElement) {
-      (el.requestFullscreen || el.webkitRequestFullscreen || (() => {})).call(el);
-      setIsFullscreen(true);
-    } else {
-      (document.exitFullscreen || document.webkitExitFullscreen || (() => {})).call(document);
-      setIsFullscreen(false);
-    }
-    resetHide();
-  };
-  useEffect(() => {
-    const h = () => setIsFullscreen(!!document.fullscreenElement);
-    document.addEventListener("fullscreenchange", h);
-    return () => document.removeEventListener("fullscreenchange", h);
-  }, []);
-
-  // ── Navigation with flip animation ───────────────────────────────────────
-  const goTo = useCallback((dir) => {
-    if (animDir) return; // already animating
-    if (dir === "next" && currentPage >= totalPages - 1) return;
-    if (dir === "prev" && currentPage <= 0) return;
-    setAnimDir(dir);
-    resetHide();
-    setTimeout(() => {
-      const next = dir === "next" ? currentPage + 1 : currentPage - 1;
-      setCurrentPage(next);
-      onPageChange(next);
-      setAnimDir(null);
-    }, 350);
-  }, [animDir, currentPage, totalPages, onPageChange, resetHide]);
-
-  // ── Keyboard ──────────────────────────────────────────────────────────────
-  useEffect(() => {
-    const h = (e) => {
-      if (e.key === "ArrowRight" || e.key === "ArrowDown") goTo("next");
-      if (e.key === "ArrowLeft"  || e.key === "ArrowUp")   goTo("prev");
-      if (e.key === "Escape") { if (showTOC) setShowTOC(false); else onClose(); }
-    };
-    window.addEventListener("keydown", h);
-    return () => window.removeEventListener("keydown", h);
-  }, [goTo, showTOC, onClose]);
-
-  // ── Touch swipe ───────────────────────────────────────────────────────────
-  const onTouchStart = (e) => { touchStart.current = e.touches[0].clientX; };
-  const onTouchEnd   = (e) => {
-    if (touchStart.current === null) return;
-    const diff = touchStart.current - e.changedTouches[0].clientX;
-    if (Math.abs(diff) > 45) goTo(diff > 0 ? "next" : "prev");
-    touchStart.current = null;
-  };
-
-  const jumpTo = (pg) => {
-    setCurrentPage(pg); onPageChange(pg); setShowTOC(false); resetHide();
-  };
-
-  const currentExam  = currentPage === 0 ? null : exams[currentPage - 1];
-  const isBookmarked = bookmarks[`${book.id}_${currentPage}`];
-  const progressPct  = totalPages > 1 ? Math.round((currentPage / (totalPages - 1)) * 100) : 0;
-  const dark2 = dark;
-
-  // ── Page flip animation style ─────────────────────────────────────────────
-  const flipStyle = {
-    transition: animDir ? "transform 0.35s cubic-bezier(0.4,0,0.2,1), opacity 0.35s ease" : "none",
-    transform: animDir === "next"
-      ? "perspective(1200px) rotateY(-25deg) scale(0.94) translateX(-3%)"
-      : animDir === "prev"
-        ? "perspective(1200px) rotateY(25deg) scale(0.94) translateX(3%)"
-        : "perspective(1200px) rotateY(0deg) scale(1) translateX(0)",
-    opacity: animDir ? 0.4 : 1,
-    transformOrigin: animDir === "next" ? "left center" : "right center",
-  };
-
-  const pageBg   = dark ? "#1E293B" : "#FFFEF9";
-  const pageText = dark ? "#CBD5E1" : "#1F2937";
-  const pageBorder = dark ? "#334155" : "#E5E7EB";
-
-  const barStyle = {
-    display: "flex", alignItems: "center", padding: "0 14px", height: 52, flexShrink: 0,
-    background: dark ? "rgba(15,23,42,0.98)" : book.color,
-    borderBottom: "1px solid rgba(255,255,255,0.1)",
-    transition: "opacity 0.3s",
-  };
-
-  const barBtn = (extra = {}) => ({
-    background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.18)",
-    color: "#fff", borderRadius: 8, cursor: "pointer", fontWeight: 700,
-    fontSize: 12, padding: "6px 12px", flexShrink: 0,
-    display: "inline-flex", alignItems: "center", gap: 4,
-    ...extra,
-  });
-
-  return (
-    <div
-      style={{
-        position: "fixed", inset: 0, zIndex: 500,
-        display: "flex", flexDirection: "column",
-        background: dark ? "#0F172A" : "#1a1a2a",
-        fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif",
-        userSelect: "none",
-      }}
-      onMouseMove={resetHide}
-    >
-      {/* ══ TOP BAR ════════════════════════════════════════════════════════ */}
-      <div style={{ ...barStyle, opacity: uiVisible ? 1 : 0, pointerEvents: uiVisible ? "auto" : "none", zIndex: 10 }}>
-        <button style={barBtn()} onClick={onClose}>← Library</button>
-
-        <div style={{ flex: 1, textAlign: "center", margin: "0 10px" }}>
-          <div style={{ fontSize: 13, fontWeight: 800, color: "#fff", lineHeight: 1 }}>{book.title}</div>
-          <div style={{ fontSize: 10, color: "rgba(255,255,255,0.55)", fontWeight: 600, marginTop: 2 }}>
-            {currentPage === 0 ? "Cover" : `Page ${currentPage} of ${totalPages - 1}`}
-          </div>
-        </div>
-
-        <div style={{ display: "flex", gap: 6 }}>
-          <button style={barBtn({ background: showTOC ? "rgba(255,255,255,0.25)" : "rgba(255,255,255,0.12)" })}
-            onClick={() => { setShowTOC(t => !t); resetHide(); }}>⊞</button>
-          {currentPage > 0 && (
-            <button style={barBtn({ color: isBookmarked ? "#FCD34D" : "#fff" })}
-              onClick={() => { isBookmarked ? onUnbookmark(currentPage) : onBookmark(currentPage); resetHide(); }}>🔖</button>
-          )}
-          <button style={barBtn()} onClick={toggleFS}>{isFullscreen ? "⊡" : "⛶"}</button>
-        </div>
-      </div>
-
-      {/* ══ PROGRESS ════════════════════════════════════════════════════════ */}
-      <div style={{ height: 3, background: "rgba(255,255,255,0.08)", flexShrink: 0 }}>
-        <div style={{ height: "100%", width: `${progressPct}%`, background: book.color, transition: "width 0.4s ease" }} />
-      </div>
-
-      {/* ══ TOC OVERLAY ════════════════════════════════════════════════════ */}
-      {showTOC && (
-        <div style={{
-          position: "absolute", top: 55, left: 0, right: 0, zIndex: 200,
-          background: dark ? "#0F172A" : "#fff",
-          borderBottom: `1px solid ${pageBorder}`,
-          maxHeight: "60vh", overflowY: "auto",
-          boxShadow: "0 8px 30px rgba(0,0,0,0.35)",
-        }}>
-          <div style={{ padding: "12px 16px" }}>
-            <div style={{ fontSize: 10, fontWeight: 800, color: dark ? "#475569" : "#9CA3AF", marginBottom: 8, textTransform: "uppercase", letterSpacing: 1 }}>
-              Table of Contents
-            </div>
-            {[{ label: "Cover Page", type: null, page: 0 }, ...exams.map((e, i) => ({ label: e.title, type: e.type, page: i + 1 }))].map(({ label, type, page }) => (
-              <button key={page} onClick={() => jumpTo(page)} style={{
-                display: "flex", alignItems: "center", gap: 8, width: "100%",
-                padding: "9px 10px", borderRadius: 8, border: "none", cursor: "pointer",
-                background: currentPage === page ? `${book.color}18` : (dark ? "#1E293B" : "#F9FAFB"),
-                color: dark ? "#E2E8F0" : "#1F2937", marginBottom: 3, textAlign: "left",
-              }}>
-                <span style={{ fontSize: 11, fontWeight: 800, color: book.color, minWidth: 24 }}>{page === 0 ? "C" : page}</span>
-                <span style={{ flex: 1, fontSize: 13, fontWeight: 600 }}>{label}</span>
-                {type && <span style={{ fontSize: 9, fontWeight: 700, padding: "2px 7px", borderRadius: 5, background: `${book.color}15`, color: book.color }}>{type}</span>}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* ══ BOOK STAGE ══════════════════════════════════════════════════════ */}
-      <div
-        style={{
-          flex: 1, display: "flex", alignItems: "center", justifyContent: "center",
-          overflow: "hidden", position: "relative",
-          background: "radial-gradient(ellipse at center, #3a3a4a 0%, #1a1a2a 100%)",
-        }}
-        onTouchStart={onTouchStart}
-        onTouchEnd={onTouchEnd}
-      >
-        {/* ── Single page card ── */}
-        <div style={{
-          width: "min(520px, 90vw)",
-          height: "min(760px, calc(100vh - 130px))",
-          ...flipStyle,
-          position: "relative",
-          borderRadius: 4,
-          boxShadow: "0 20px 60px rgba(0,0,0,0.7), 4px 4px 0 rgba(0,0,0,0.4), 8px 8px 0 rgba(0,0,0,0.2)",
-          overflow: "hidden",
-        }}>
-
-          {currentPage === 0 ? (
-            /* ── COVER ── */
-            <div style={{
-              height: "100%", background: `linear-gradient(160deg, ${book.color} 0%, ${book.color}bb 100%)`,
-              display: "flex", flexDirection: "column",
-              alignItems: "center", justifyContent: "center",
-              padding: "32px 28px", textAlign: "center", position: "relative",
-            }}>
-              <div style={{ fontSize: 52, marginBottom: 18, filter: "drop-shadow(0 4px 12px rgba(0,0,0,0.3))" }}>📚</div>
-              <div style={{ fontSize: 11, fontWeight: 800, color: "rgba(255,255,255,0.65)", letterSpacing: 2, textTransform: "uppercase", marginBottom: 10 }}>
-                लोक सेवा आयोग
-              </div>
-              <div style={{ fontSize: 26, fontWeight: 900, color: "#fff", lineHeight: 1.25, marginBottom: 8 }}>
-                {book.title}
-              </div>
-              <div style={{ fontSize: 14, color: "rgba(255,255,255,0.7)", fontWeight: 600, marginBottom: 28 }}>
-                {book.subtitle}
-              </div>
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "center" }}>
-                {[...new Set(exams.map(e => e.type))].map(t => (
-                  <span key={t} style={{
-                    fontSize: 11, fontWeight: 700, padding: "4px 12px", borderRadius: 99,
-                    background: "rgba(255,255,255,0.18)", color: "#fff",
-                    border: "1px solid rgba(255,255,255,0.3)",
-                  }}>{t}</span>
-                ))}
-              </div>
-              <div style={{ position: "absolute", bottom: 22, fontSize: 11, color: "rgba(255,255,255,0.45)", fontWeight: 600 }}>
-                Shikshit Mitra &nbsp;·&nbsp; {exams.length} Pages
-              </div>
-              {/* Page corner fold */}
-              <div style={{ position: "absolute", bottom: 0, right: 0, width: 0, height: 0, borderStyle: "solid", borderWidth: "0 0 30px 30px", borderColor: "transparent transparent rgba(0,0,0,0.2) transparent" }} />
-            </div>
-
-          ) : currentExam ? (
-            /* ── EXAM PAGE ── */
-            <div style={{ height: "100%", background: pageBg, overflowY: "auto", padding: "22px 20px 30px", position: "relative" }}>
-              {/* Page corner fold */}
-              <div style={{ position: "absolute", bottom: 0, right: 0, width: 0, height: 0, borderStyle: "solid", borderWidth: "0 0 28px 28px", borderColor: `transparent transparent ${dark ? "#334155" : "#D1D5DB"} transparent` }} />
-
-              {/* Type + Year badges */}
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
-                <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
-                  {(() => { const tc = TYPE_CONFIG[currentExam.type] || {}; return (
-                    <span style={{ fontSize: 10, fontWeight: 800, padding: "3px 9px", borderRadius: 6, background: tc.bg || "#F3F4F6", color: tc.text || "#374151", border: `1px solid ${tc.border || "#E5E7EB"}` }}>
-                      {currentExam.type}
-                    </span>
-                  ); })()}
-                  {currentExam.year && (
-                    <span style={{ fontSize: 10, fontWeight: 700, padding: "3px 9px", borderRadius: 6, background: dark ? "#1E293B" : "#F3F4F6", color: dark ? "#94A3B8" : "#6B7280", border: `1px solid ${pageBorder}` }}>
-                      {currentExam.year}
-                    </span>
-                  )}
-                </div>
-                <span style={{ fontSize: 10, fontWeight: 700, color: dark ? "#334155" : "#CBD5E1" }}>p.{currentPage}</span>
-              </div>
-
-              {/* Title */}
-              <h2 style={{ fontSize: 17, fontWeight: 900, color: book.color, margin: "0 0 14px", paddingBottom: 10, borderBottom: `2px solid ${book.color}25`, lineHeight: 1.3 }}>
-                {currentExam.title}
-              </h2>
-
-              {/* Content */}
-              {currentExam.content && currentExam.content.trim() ? (
-                <div
-                  className={`exam-content${dark ? " dark" : ""}`}
-                  style={{ fontSize: 13, lineHeight: 1.85, color: pageText }}
-                  dangerouslySetInnerHTML={{ __html: currentExam.content }}
-                />
-              ) : (
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "60%", gap: 12, color: dark ? "#334155" : "#D1D5DB", textAlign: "center" }}>
-                  <div style={{ fontSize: 40 }}>📄</div>
-                  <div style={{ fontSize: 12, fontWeight: 700, lineHeight: 1.6 }}>
-                    Content coming soon<br />
-                    <span style={{ fontSize: 11, fontWeight: 500 }}>Add content via Google Sheet or Admin panel</span>
-                  </div>
-                </div>
-              )}
-
-              {/* Page number footer */}
-              <div style={{ textAlign: "center", color: dark ? "#1E293B" : "#E5E7EB", fontSize: 10, marginTop: 18, paddingTop: 10, borderTop: `1px solid ${pageBorder}` }}>
-                — {currentPage} —
-              </div>
-            </div>
-          ) : null}
-        </div>
-
-        {/* ── Left arrow ── */}
-        <button
-          onClick={() => goTo("prev")}
-          disabled={currentPage === 0}
-          style={{
-            position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)",
-            width: 44, height: 70, borderRadius: 12,
-            background: "rgba(0,0,0,0.6)", border: "1px solid rgba(255,255,255,0.14)",
-            color: "#fff", fontSize: 26, cursor: "pointer", zIndex: 20,
-            display: "flex", alignItems: "center", justifyContent: "center",
-            opacity: currentPage === 0 ? 0 : uiVisible ? 1 : 0,
-            transition: "opacity 0.3s",
-            pointerEvents: currentPage === 0 || !uiVisible ? "none" : "auto",
-            backdropFilter: "blur(6px)",
-          }}
-        >‹</button>
-
-        {/* ── Right arrow ── */}
-        <button
-          onClick={() => goTo("next")}
-          disabled={currentPage >= totalPages - 1}
-          style={{
-            position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)",
-            width: 44, height: 70, borderRadius: 12,
-            background: "rgba(0,0,0,0.6)", border: "1px solid rgba(255,255,255,0.14)",
-            color: "#fff", fontSize: 26, cursor: "pointer", zIndex: 20,
-            display: "flex", alignItems: "center", justifyContent: "center",
-            opacity: currentPage >= totalPages - 1 ? 0 : uiVisible ? 1 : 0,
-            transition: "opacity 0.3s",
-            pointerEvents: currentPage >= totalPages - 1 || !uiVisible ? "none" : "auto",
-            backdropFilter: "blur(6px)",
-          }}
-        >›</button>
-      </div>
-
-      {/* ══ BOTTOM NAV ══════════════════════════════════════════════════════ */}
-      <div style={{
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-        padding: "0 20px", height: 58, flexShrink: 0,
-        background: dark ? "rgba(15,23,42,0.98)" : book.color,
-        borderTop: "1px solid rgba(255,255,255,0.1)",
-        opacity: uiVisible ? 1 : 0, transition: "opacity 0.3s",
-        pointerEvents: uiVisible ? "auto" : "none",
-      }}>
-        <button
-          onClick={() => goTo("prev")}
-          disabled={currentPage === 0 || !!animDir}
-          style={{
-            padding: "8px 18px", borderRadius: 10,
-            background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.2)",
-            color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer",
-            opacity: currentPage === 0 ? 0.3 : 1,
-          }}
-        >← Prev</button>
-
-        <div style={{ textAlign: "center" }}>
-          <div style={{ fontSize: 15, fontWeight: 800, color: "#fff" }}>{currentPage} / {totalPages - 1}</div>
-          <div style={{ fontSize: 9, color: "rgba(255,255,255,0.5)", fontWeight: 600 }}>swipe or tap</div>
-        </div>
-
-        <button
-          onClick={() => goTo("next")}
-          disabled={currentPage >= totalPages - 1 || !!animDir}
-          style={{
-            padding: "8px 18px", borderRadius: 10,
-            background: currentPage >= totalPages - 1 ? "rgba(255,255,255,0.08)" : "#fff",
-            border: "none", color: currentPage >= totalPages - 1 ? "rgba(255,255,255,0.3)" : book.color,
-            fontSize: 13, fontWeight: 800, cursor: "pointer",
-            opacity: currentPage >= totalPages - 1 ? 0.4 : 1,
-          }}
-        >Next →</button>
-      </div>
-    </div>
-  );
-}
-
-
-function CoverPage({ book, exams, dark }) {
-  const types = [...new Set(exams.map(e => e.type))];
-  return (
-    <div style={{ padding: "28px 20px 40px" }}>
-      <div style={{
-        background: `linear-gradient(150deg, ${book.color} 0%, ${book.accent} 60%, ${book.color} 100%)`,
-        borderRadius: 14, padding: "36px 24px", color: "#fff", textAlign: "center", marginBottom: 22,
-      }}>
-        <div style={{ fontSize: 52, marginBottom: 14 }}>{book.emoji}</div>
-        <div style={{ fontSize: 11, opacity: 0.7, letterSpacing: 2, textTransform: "uppercase", marginBottom: 6 }}>
-          लोक सेवा आयोग · Nepal
-        </div>
-        <div style={{ fontSize: 22, fontWeight: 800, marginBottom: 6, letterSpacing: 0.3 }}>{book.title}</div>
-        <div style={{ fontSize: 14, opacity: 0.7 }}>{book.subtitle}</div>
-        <div style={{
-          marginTop: 18, background: "rgba(0,0,0,0.2)",
-          borderRadius: 8, padding: "8px 16px", display: "inline-block",
-          fontSize: 12, fontWeight: 700,
-        }}>
-          {exams.length} Exam Pages Inside
-        </div>
-      </div>
-      <div style={{ display: "flex", gap: 7, flexWrap: "wrap", justifyContent: "center", marginBottom: 18 }}>
-        {types.map(t => {
-          const tc = TYPE_CONFIG[t] || {};
-          return (
-            <span key={t} style={{
-              fontSize: 11, fontWeight: 700, padding: "4px 10px", borderRadius: 7,
-              background: tc.bg || "#F3F4F6", color: tc.text || "#374151",
-              border: `1px solid ${tc.border || "#E5E7EB"}`,
-            }}>{t}</span>
-          );
-        })}
-      </div>
-      <div style={{
-        background: dark ? "#1E293B" : "#F8F7F2",
-        borderRadius: 10, padding: "12px 16px", fontSize: 12,
-        color: dark ? "#94A3B8" : "#6B7280", lineHeight: 1.7,
-      }}>
-        👆 Swipe right to turn pages &nbsp;·&nbsp; Use buttons below &nbsp;·&nbsp; 📋 TOC in top bar
-      </div>
-      <div style={{
-        textAlign: "center", fontSize: 11,
-        color: dark ? "#475569" : "#9CA3AF", marginTop: 20,
-      }}>
-        Shikshit Mitra · सफलताको साथी
-      </div>
-    </div>
-  );
-}
-
-function ExamPage({ exam, book, pageNum, dark, styles }) {
-  const tc = TYPE_CONFIG[exam.type] || {};
-  const [pdfOpen, setPdfOpen] = useState(false);
-
-  // Auto-open PDF reader immediately if this exam has a PDF
-  useEffect(() => {
-    if (exam.pdfUrl) setPdfOpen(true);
-  }, [exam.id]);
-
-  return (
-    <div style={{ padding: "24px 20px 44px" }}>
-      {/* Book-style PDF reader */}
-      {pdfOpen && exam.pdfUrl && (
-        <PdfViewer
-          url={exam.pdfUrl}
-          dark={dark}
-          accent={book.color}
-          examTitle={exam.title}
-          examId={exam.id}
-          onClose={() => setPdfOpen(false)}
-        />
-      )}
-
-      {/* Header row */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 14 }}>
-        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-          <span style={{
-            fontSize: 10, fontWeight: 700, padding: "3px 9px", borderRadius: 6,
-            background: tc.bg || "#F3F4F6", color: tc.text || "#374151",
-            border: `1px solid ${tc.border || "#E5E7EB"}`,
-          }}>{exam.type}</span>
-          {exam.year && (
-            <span style={{
-              fontSize: 10, fontWeight: 700, padding: "3px 9px", borderRadius: 6,
-              background: dark ? "#1E293B" : "#F3F4F6",
-              color: dark ? "#94A3B8" : "#6B7280",
-              border: `1px solid ${dark ? "#334155" : "#E5E7EB"}`,
-            }}>{exam.year}</span>
-          )}
-          {exam.isPremium && (
-            <span style={{
-              fontSize: 10, fontWeight: 700, padding: "3px 9px", borderRadius: 6,
-              background: "#FEF9C3", color: "#A16207", border: "1px solid #FDE047",
-            }}>⭐ Premium</span>
-          )}
-        </div>
-        <span style={{ fontSize: 10, fontWeight: 700, color: dark ? "#475569" : "#9CA3AF" }}>p.{pageNum}</span>
-      </div>
-
-      {/* Title */}
-      <h2 style={{
-        fontSize: 17, fontWeight: 800, color: book.color,
-        margin: "0 0 18px", paddingBottom: 12,
-        borderBottom: `2px solid ${book.color}22`,
-      }}>
-        {exam.title}
-      </h2>
-
-      {/* If PDF exists but not open yet (e.g. user closed it), show re-open button */}
-      {exam.pdfUrl && !pdfOpen && (
-        <button
-          onClick={() => setPdfOpen(true)}
-          style={{
-            display: "flex", alignItems: "center", gap: 10, width: "100%",
-            padding: "14px 18px", borderRadius: 12, border: "none",
-            background: book.color, color: "#fff",
-            fontSize: 14, fontWeight: 800, cursor: "pointer", marginBottom: 20,
-            boxShadow: `0 4px 18px ${book.color}55`,
-          }}
-        >
-          <span style={{ fontSize: 20 }}>📖</span>
-          <span>Open Book Reader</span>
-        </button>
-      )}
-
-      {/* Content (optional typed questions) */}
-      {exam.content && exam.content.trim() && (
-        <div
-          className={`exam-content ${dark ? "dark" : ""}`}
-          style={{ fontSize: 14, lineHeight: 1.85, color: dark ? "#CBD5E1" : "#1F2937" }}
-          dangerouslySetInnerHTML={{ __html: exam.content }}
-        />
-      )}
-
-      {/* Page number */}
-      <div style={{
-        textAlign: "center", color: dark ? "#334155" : "#D1D5DB",
-        fontSize: 12, marginTop: 30, paddingTop: 14,
-        borderTop: `1px solid ${dark ? "#1E293B" : "#F3F4F6"}`,
-      }}>
-        — {pageNum} —
-      </div>
-    </div>
-  );
-}
-
-// ═══════════════════════════════════════════════════════════════════════════
-// FLIPBOOK PDF VIEWER  (StPageFlip + PDF.js)
-// ═══════════════════════════════════════════════════════════════════════════
-function PdfViewer({ url, dark, accent, examTitle, onClose, examId }) {
-  const bookContainerRef = useRef(null);
-  const pageFlipRef      = useRef(null);
-  const pdfDocRef        = useRef(null);
-  const renderQueueRef   = useRef([]);
-  const isRenderingRef   = useRef(false);
-  const canvasEls        = useRef({});    // pageNum → <canvas>
-  const pageEls          = useRef({});    // pageNum → div (fed to StPageFlip)
-
-  const [totalPages,   setTotalPages]   = useState(0);
-  const [currentPage,  setCurrentPage]  = useState(1);
-  const [zoom,         setZoom]         = useState(1.0);
-  const [loading,      setLoading]      = useState(true);
-  const [error,        setError]        = useState(null);
-  const [pdfReady,     setPdfReady]     = useState(false);
-  const [flipReady,    setFlipReady]    = useState(false);
-  const [uiVisible,    setUiVisible]    = useState(true);
-  const [showThumbs,   setShowThumbs]   = useState(false);
-  const [thumbs,       setThumbs]       = useState({});
-  const [isFullscreen, setIsFullscreen] = useState(false);
-  const [editingPage,  setEditingPage]  = useState(false);
-  const [pageInput,    setPageInput]    = useState("");
-  const hideTimer      = useRef(null);
-  const touchStartX    = useRef(null);
-  const col            = accent || "#1a6b3c";
-
-  // ── Lock body scroll ────────────────────────────────────────────────────
-  useEffect(() => {
-    document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = ""; };
-  }, []);
-
-  // ── Restore last page ───────────────────────────────────────────────────
-  const getSavedPage = () => {
-    try { return JSON.parse(localStorage.getItem("sm_pdf_lastpage") || "{}")[examId] || 1; }
-    catch { return 1; }
-  };
-  const saveLastPage = (n) => {
-    try {
-      const d = JSON.parse(localStorage.getItem("sm_pdf_lastpage") || "{}");
-      d[examId] = n; localStorage.setItem("sm_pdf_lastpage", JSON.stringify(d));
-    } catch {}
-  };
-
-  // ── Auto-hide UI ────────────────────────────────────────────────────────
-  const resetHide = useCallback(() => {
-    setUiVisible(true);
-    clearTimeout(hideTimer.current);
-    hideTimer.current = setTimeout(() => setUiVisible(false), 3500);
-  }, []);
-  useEffect(() => { resetHide(); return () => clearTimeout(hideTimer.current); }, [resetHide]);
-
-  // ── Fullscreen toggle ───────────────────────────────────────────────────
-  const toggleFullscreen = () => {
-    const el = document.documentElement;
-    if (!document.fullscreenElement) {
-      el.requestFullscreen?.() || el.webkitRequestFullscreen?.();
-      setIsFullscreen(true);
-    } else {
-      document.exitFullscreen?.() || document.webkitExitFullscreen?.();
-      setIsFullscreen(false);
-    }
-    resetHide();
-  };
-  useEffect(() => {
-    const handler = () => setIsFullscreen(!!document.fullscreenElement);
-    document.addEventListener("fullscreenchange", handler);
-    return () => document.removeEventListener("fullscreenchange", handler);
-  }, []);
-
-  // ── Init PDF.js ─────────────────────────────────────────────────────────
-  useEffect(() => {
-    if (window.pdfjsLib) {
-      window.pdfjsLib.GlobalWorkerOptions.workerSrc =
-        "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
-      setPdfReady(true); return;
-    }
-    const s = document.createElement("script");
-    s.src = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";
-    s.onload = () => {
-      window.pdfjsLib.GlobalWorkerOptions.workerSrc =
-        "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
-      setPdfReady(true);
-    };
-    s.onerror = () => setError("pdf_load_failed");
-    document.head.appendChild(s);
-  }, []);
-
-  // ── Load PDF document ───────────────────────────────────────────────────
-  useEffect(() => {
-    if (!pdfReady || !url) return;
-    const m = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
-    const fetchUrl = m ? `https://drive.google.com/uc?export=download&id=${m[1]}` : url;
-    setLoading(true); setError(null);
-    window.pdfjsLib.getDocument({ url: fetchUrl, withCredentials: false }).promise
-      .then(doc => {
-        pdfDocRef.current = doc;
-        setTotalPages(doc.numPages);
-        setLoading(false);
-      })
-      .catch(() => { setError("cors_fallback"); setLoading(false); });
-  }, [pdfReady, url]);
-
-  // ── Render a single PDF page onto a canvas at given width ───────────────
-  const renderPageToCanvas = useCallback(async (pageNum, canvas, widthPx) => {
-    const doc = pdfDocRef.current;
-    if (!doc || !canvas || pageNum < 1 || pageNum > doc.numPages) return;
-    try {
-      const page = await doc.getPage(pageNum);
-      const vp0  = page.getViewport({ scale: 1 });
-      const scale = (widthPx / vp0.width) * zoom;
-      const vp   = page.getViewport({ scale });
-      const dpr  = window.devicePixelRatio || 1;
-      canvas.width  = Math.round(vp.width  * dpr);
-      canvas.height = Math.round(vp.height * dpr);
-      canvas.style.width  = vp.width  + "px";
-      canvas.style.height = vp.height + "px";
-      const ctx = canvas.getContext("2d");
-      ctx.scale(dpr, dpr);
-      ctx.fillStyle = "#fff";
-      ctx.fillRect(0, 0, vp.width, vp.height);
-      await page.render({ canvasContext: ctx, viewport: vp }).promise;
-    } catch {}
-  }, [zoom]);
-
-  // ── Queue-based renderer so we don't overwhelm PDF.js ──────────────────
-  const enqueueRender = useCallback((pageNums) => {
-    renderQueueRef.current.push(...pageNums);
-    if (isRenderingRef.current) return;
-    const processQueue = async () => {
-      isRenderingRef.current = true;
-      while (renderQueueRef.current.length) {
-        const n = renderQueueRef.current.shift();
-        const canvas = canvasEls.current[n];
-        const w = bookContainerRef.current ? Math.floor(bookContainerRef.current.offsetWidth / 2) - 4 : 400;
-        if (canvas) await renderPageToCanvas(n, canvas, w);
-      }
-      isRenderingRef.current = false;
-    };
-    processQueue();
-  }, [renderPageToCanvas]);
-
-  // ── Build StPageFlip once PDF is ready ──────────────────────────────────
-  useEffect(() => {
-    if (loading || error || totalPages === 0 || !bookContainerRef.current) return;
-    if (typeof PageFlip === "undefined") { setError("pageflip_not_loaded"); return; }
-
-    // Brief delay so React can render all page divs first
-    const timer = setTimeout(() => {
-      const container = bookContainerRef.current;
-      if (!container) return;
-
-      const W = Math.min(container.offsetWidth / 2, 520);
-      const H = Math.round(W * 1.414); // A4 ratio
-
-      const pf = new PageFlip(container, {
-        width:  W,
-        height: H,
-        size:   "stretch",
-        minWidth: 100, maxWidth: 900,
-        minHeight: 100, maxHeight: 1800,
-        showCover: true,
-        drawShadow: true,
-        flippingTime: 700,
-        usePortrait: window.innerWidth < 700,
-        startZIndex: 10,
-        autoSize: true,
-        mobileScrollSupport: true,
-        clickEventForward: true,
-        swipeDistance: 30,
-        showPageCorners: true,
-        disableFlipByClick: false,
-      });
-
-      // Load all page elements
-      const els = Object.values(pageEls.current).filter(Boolean);
-      pf.loadFromHTML(els);
-
-      pf.on("flip", (e) => {
-        const n = e.data + 1; // StPageFlip is 0-indexed
-        setCurrentPage(n);
-        saveLastPage(n);
-        resetHide();
-        // Pre-render the next spread
-        const toRender = [n, n + 1, n + 2, n - 1].filter(x => x >= 1 && x <= totalPages);
-        enqueueRender(toRender);
-      });
-
-      pageFlipRef.current = pf;
-      setFlipReady(true);
-
-      // Restore last page & render first spread
-      const saved = getSavedPage();
-      if (saved > 1) { try { pf.turnToPage(saved - 1); } catch {} }
-      enqueueRender([1, 2, 3]);
-    }, 120);
-
-    return () => clearTimeout(timer);
-  }, [loading, error, totalPages, enqueueRender, resetHide]);
-
-  // ── Re-render all visible pages when zoom changes ───────────────────────
-  useEffect(() => {
-    if (!flipReady) return;
-    const toRender = [currentPage - 1, currentPage, currentPage + 1, currentPage + 2]
-      .filter(n => n >= 1 && n <= totalPages);
-    enqueueRender(toRender);
-  }, [zoom, flipReady]);
-
-  // ── Navigation helpers ──────────────────────────────────────────────────
-  const goNext = () => { pageFlipRef.current?.flipNext(); resetHide(); };
-  const goPrev = () => { pageFlipRef.current?.flipPrev(); resetHide(); };
-  const goToPage = (n) => {
-    if (n < 1 || n > totalPages) return;
-    try { pageFlipRef.current?.turnToPage(n - 1); } catch {}
-    resetHide();
-  };
-
-  // ── Keyboard nav ─────────────────────────────────────────────────────
-  useEffect(() => {
-    const h = (e) => {
-      if (editingPage) return;
-      if (e.key === "ArrowRight" || e.key === "PageDown") goNext();
-      if (e.key === "ArrowLeft"  || e.key === "PageUp")   goPrev();
-      if (e.key === "Escape") onClose?.();
-    };
-    window.addEventListener("keydown", h);
-    return () => window.removeEventListener("keydown", h);
-  }, [editingPage, onClose]);
-
-  // ── Touch swipe (outside the book itself) ─────────────────────────────
-  const onTouchStart = (e) => { touchStartX.current = e.touches[0].clientX; };
-  const onTouchEnd   = (e) => {
-    if (touchStartX.current === null) return;
-    const diff = touchStartX.current - e.changedTouches[0].clientX;
-    if (Math.abs(diff) > 55) diff > 0 ? goNext() : goPrev();
-    touchStartX.current = null;
-  };
-
-  // ── Thumbnail generation ────────────────────────────────────────────────
-  useEffect(() => {
-    if (!showThumbs || !pdfDocRef.current || totalPages === 0) return;
-    const gen = async () => {
-      for (let i = 1; i <= totalPages; i++) {
-        if (thumbs[i]) continue;
-        try {
-          const page = await pdfDocRef.current.getPage(i);
-          const vp   = page.getViewport({ scale: 0.18 });
-          const c    = document.createElement("canvas");
-          c.width = vp.width; c.height = vp.height;
-          const ctx = c.getContext("2d");
-          ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, c.width, c.height);
-          await page.render({ canvasContext: ctx, viewport: vp }).promise;
-          setThumbs(t => ({ ...t, [i]: c.toDataURL() }));
-        } catch {}
-      }
-    };
-    gen();
-  }, [showThumbs, totalPages]);
-
-  // ── Shared button style ─────────────────────────────────────────────────
-  const tb = (extra = {}) => ({
-    background: "rgba(255,255,255,0.13)", border: "1px solid rgba(255,255,255,0.2)",
-    color: "#fff", borderRadius: 8, cursor: "pointer", fontWeight: 700,
-    fontSize: 13, padding: "6px 13px", backdropFilter: "blur(8px)",
-    transition: "all 0.15s", flexShrink: 0, display: "inline-flex",
-    alignItems: "center", justifyContent: "center", gap: 4,
-    ...extra,
-  });
-
-  const m2 = url?.match(/\/d\/([a-zA-Z0-9_-]+)/);
-  const openLink = m2 ? `https://drive.google.com/file/d/${m2[1]}/view` : url;
-  const progress = totalPages > 1 ? ((currentPage - 1) / (totalPages - 1)) * 100 : 0;
-
-  // ── CORS / load error — iframe fallback ─────────────────────────────────
-  if (error === "cors_fallback") {
-    const iframeUrl = url?.includes("drive.google.com")
-      ? url.replace(/\/uc\?.*/, "/preview").replace(/\/view.*/, "/preview")
-      : url;
-    return (
-      <div style={{ position: "fixed", inset: 0, zIndex: 1000, background: "#111827", display: "flex", flexDirection: "column" }}>
-        <div style={{
-          display: "flex", alignItems: "center", gap: 10, padding: "10px 16px",
-          background: "rgba(0,0,0,0.9)", borderBottom: "1px solid rgba(255,255,255,0.08)",
-          flexShrink: 0,
-        }}>
-          <button style={tb()} onClick={onClose}>✕ Close</button>
-          <div style={{ flex: 1, textAlign: "center", fontSize: 13, fontWeight: 700, color: "#E2E8F0" }}>{examTitle}</div>
-          <a href={openLink} target="_blank" rel="noopener noreferrer" style={{ ...tb(), textDecoration: "none" }}>Open ↗</a>
-        </div>
-        <iframe src={iframeUrl} title="Exam PDF" style={{ flex: 1, border: "none", background: "#fff" }} allow="autoplay" />
-      </div>
-    );
+function openBook(key) {
+  const pages = library[key];
+  const cfg = BOOK_CONFIG[key] || { displayName: key };
+  const published = pages
+    .filter(p => p.Published === 'yes' && p.PdfUrl)
+    .sort((a, b) => parseInt(a['Page Order'] || 0) - parseInt(b['Page Order'] || 0));
+
+  document.getElementById('modalTitle').textContent = cfg.displayName;
+  document.getElementById('modalSub').textContent = published.length + ' published chapter' + (published.length !== 1 ? 's' : '');
+
+  const tabsEl = document.getElementById('modalTabs');
+  const bodyEl = document.getElementById('modalBody');
+  tabsEl.innerHTML = '';
+  bodyEl.innerHTML = '';
+
+  if (!published.length) {
+    bodyEl.innerHTML = `<div class="modal-empty"><svg width="48" height="48" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg><span>No published chapters yet.</span></div>`;
+    document.getElementById('overlay').classList.add('open');
+    return;
   }
 
-  return (
-    <div
-      style={{ position: "fixed", inset: 0, zIndex: 1000, background: "#1a1a2e", display: "flex", flexDirection: "column", userSelect: "none" }}
-      onMouseMove={resetHide}
-      onTouchStart={onTouchStart}
-      onTouchEnd={onTouchEnd}
-    >
-
-      {/* ══ TOP BAR ══════════════════════════════════════════════════════ */}
-      <div style={{
-        display: "flex", alignItems: "center", gap: 8, padding: "0 12px", height: 52, flexShrink: 0,
-        background: "rgba(8,8,20,0.95)", backdropFilter: "blur(20px)",
-        borderBottom: "1px solid rgba(255,255,255,0.07)", zIndex: 20,
-        transition: "opacity 0.3s", opacity: uiVisible ? 1 : 0, pointerEvents: uiVisible ? "auto" : "none",
-      }}>
-        <button style={tb({ padding: "5px 10px" })} onClick={onClose} title="Close (Esc)">✕</button>
-
-        <div style={{ flex: 1, textAlign: "center", fontSize: 13, fontWeight: 700, color: "#E2E8F0",
-          overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-          {examTitle}
-        </div>
-
-        {/* Thumbnails */}
-        <button
-          style={tb({ padding: "5px 10px", background: showThumbs ? "rgba(255,255,255,0.22)" : undefined })}
-          onClick={() => { setShowThumbs(t => !t); resetHide(); }} title="Thumbnails"
-        >⊞</button>
-
-        {/* Fullscreen */}
-        <button style={tb({ padding: "5px 10px" })} onClick={toggleFullscreen} title="Fullscreen">
-          {isFullscreen ? "⊡" : "⛶"}
-        </button>
-
-        {/* Open externally */}
-        <a href={openLink} target="_blank" rel="noopener noreferrer"
-          style={{ ...tb({ padding: "5px 10px", textDecoration: "none" }) }}>↗</a>
-      </div>
-
-      {/* ══ PROGRESS BAR ═════════════════════════════════════════════════ */}
-      <div style={{ height: 3, background: "rgba(255,255,255,0.06)", flexShrink: 0 }}>
-        <div style={{ height: "100%", width: `${progress}%`, background: col, transition: "width 0.4s ease" }} />
-      </div>
-
-      {/* ══ BODY: thumbs sidebar + book ═════════════════════════════════ */}
-      <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
-
-        {/* ── Thumbnail sidebar ── */}
-        {showThumbs && (
-          <div style={{
-            width: 96, flexShrink: 0, overflowY: "auto", padding: "8px 6px",
-            background: "rgba(0,0,0,0.55)", borderRight: "1px solid rgba(255,255,255,0.07)",
-            display: "flex", flexDirection: "column", gap: 8,
-          }}>
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map(n => (
-              <div key={n} onClick={() => goToPage(n)} style={{
-                cursor: "pointer", borderRadius: 4, overflow: "hidden", background: "#fff",
-                border: n === currentPage ? `2px solid ${col}` : "2px solid rgba(255,255,255,0.1)",
-                transform: n === currentPage ? "scale(1.04)" : "scale(1)",
-                transition: "all 0.2s", position: "relative",
-              }}>
-                {thumbs[n]
-                  ? <img src={thumbs[n]} alt={`p${n}`} style={{ display: "block", width: "100%" }} />
-                  : <div style={{ height: 56, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                      <div style={{ width: 14, height: 14, borderRadius: "50%", border: `2px solid ${col}`, borderTopColor: "transparent", animation: "sm-spin 0.8s linear infinite" }} />
-                    </div>
-                }
-                <div style={{
-                  position: "absolute", bottom: 0, left: 0, right: 0, textAlign: "center",
-                  background: n === currentPage ? col : "rgba(0,0,0,0.55)",
-                  color: "#fff", fontSize: 9, fontWeight: 700, padding: "2px 0",
-                }}>{n}</div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* ── FLIPBOOK STAGE ── */}
-        <div style={{
-          flex: 1, display: "flex", alignItems: "center", justifyContent: "center",
-          overflow: "hidden", padding: "20px 10px 80px",
-          background: "radial-gradient(ellipse at center, #2a2a3e 0%, #111827 100%)",
-          position: "relative",
-        }}>
-
-          {/* Initial loading */}
-          {loading && (
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
-              <div style={{
-                width: 48, height: 48, borderRadius: "50%",
-                border: `3px solid rgba(255,255,255,0.1)`, borderTopColor: col,
-                animation: "sm-spin 0.8s linear infinite",
-              }} />
-              <div style={{ color: "#94A3B8", fontSize: 13, fontWeight: 600 }}>Loading PDF…</div>
-            </div>
-          )}
-
-          {/* StPageFlip container — hidden page divs rendered into it */}
-          {!loading && !error && (
-            <div
-              ref={bookContainerRef}
-              style={{ width: "100%", height: "100%", position: "relative" }}
-            >
-              {/* Hidden page elements that StPageFlip reads */}
-              <div style={{ display: "none" }}>
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map(n => (
-                  <div
-                    key={n}
-                    ref={el => { if (el) pageEls.current[n] = el; }}
-                    className="page"
-                    style={{ background: "#fff", width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}
-                  >
-                    <canvas
-                      ref={el => { if (el) canvasEls.current[n] = el; }}
-                      style={{ display: "block", maxWidth: "100%", maxHeight: "100%" }}
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Left arrow */}
-          {flipReady && currentPage > 1 && (
-            <button
-              onClick={goPrev}
-              style={{
-                ...tb({ fontSize: 24, padding: "14px 10px", borderRadius: 12,
-                  background: "rgba(0,0,0,0.6)", border: "1px solid rgba(255,255,255,0.14)",
-                  position: "absolute", left: 8, top: "50%", transform: "translateY(-50%)",
-                  zIndex: 20 }),
-                opacity: uiVisible ? 1 : 0, transition: "opacity 0.3s",
-              }}
-            >‹</button>
-          )}
-          {flipReady && currentPage < totalPages && (
-            <button
-              onClick={goNext}
-              style={{
-                ...tb({ fontSize: 24, padding: "14px 10px", borderRadius: 12,
-                  background: "rgba(0,0,0,0.6)", border: "1px solid rgba(255,255,255,0.14)",
-                  position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)",
-                  zIndex: 20 }),
-                opacity: uiVisible ? 1 : 0, transition: "opacity 0.3s",
-              }}
-            >›</button>
-          )}
-        </div>
-      </div>
-
-      {/* ══ BOTTOM TOOLBAR ═══════════════════════════════════════════════ */}
-      <div
-        onClick={e => e.stopPropagation()}
-        style={{
-          position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 30,
-          display: "flex", alignItems: "center", justifyContent: "center",
-          flexWrap: "wrap", gap: 6, padding: "10px 14px",
-          background: "rgba(8,8,20,0.92)", backdropFilter: "blur(20px)",
-          borderTop: "1px solid rgba(255,255,255,0.07)",
-          transition: "opacity 0.3s",
-          opacity: uiVisible ? 1 : 0, pointerEvents: uiVisible ? "auto" : "none",
-        }}
-      >
-        {/* Zoom − */}
-        <button style={tb({ padding: "5px 11px", fontSize: 18 })}
-          onClick={() => { setZoom(z => Math.max(0.4, +(z - 0.15).toFixed(2))); resetHide(); }}>−</button>
-        <span style={{ fontSize: 11, fontWeight: 700, color: "#94A3B8", minWidth: 38, textAlign: "center" }}>
-          {Math.round(zoom * 100)}%
-        </span>
-        {/* Zoom + */}
-        <button style={tb({ padding: "5px 11px", fontSize: 18 })}
-          onClick={() => { setZoom(z => Math.min(3.5, +(z + 0.15).toFixed(2))); resetHide(); }}>+</button>
-        {/* Reset */}
-        <button style={tb({ padding: "5px 10px", fontSize: 11 })}
-          onClick={() => { setZoom(1.0); resetHide(); }}>Reset</button>
-
-        <div style={{ width: 1, height: 20, background: "rgba(255,255,255,0.1)", margin: "0 3px" }} />
-
-        {/* Prev */}
-        <button style={{ ...tb({ padding: "5px 12px" }), opacity: currentPage <= 1 ? 0.3 : 1 }}
-          onClick={goPrev} disabled={currentPage <= 1}>← Prev</button>
-
-        {/* Page number / jump */}
-        {editingPage ? (
-          <input
-            autoFocus type="number" min={1} max={totalPages} value={pageInput}
-            onChange={e => setPageInput(e.target.value)}
-            onKeyDown={e => {
-              if (e.key === "Enter") { goToPage(parseInt(pageInput,10)); setEditingPage(false); setPageInput(""); }
-              if (e.key === "Escape") { setEditingPage(false); setPageInput(""); }
-            }}
-            onBlur={() => { goToPage(parseInt(pageInput,10)||currentPage); setEditingPage(false); setPageInput(""); }}
-            style={{
-              width: 54, padding: "4px 6px", borderRadius: 7,
-              border: "1px solid rgba(255,255,255,0.3)",
-              background: "rgba(255,255,255,0.15)", color: "#fff",
-              fontSize: 12, fontWeight: 700, textAlign: "center", outline: "none",
-            }}
-          />
-        ) : (
-          <span
-            onClick={() => { setEditingPage(true); setPageInput(String(currentPage)); resetHide(); }}
-            style={{
-              fontSize: 12, fontWeight: 700, color: "#E2E8F0",
-              minWidth: 62, textAlign: "center", cursor: "pointer",
-              background: "rgba(255,255,255,0.1)", padding: "5px 10px",
-              borderRadius: 8, border: "1px solid rgba(255,255,255,0.15)",
-            }}
-            title="Tap to jump to page"
-          >
-            पेज {currentPage} / {totalPages}
-          </span>
-        )}
-
-        {/* Next */}
-        <button style={{ ...tb({ padding: "5px 12px", background: `${col}99` }), opacity: currentPage >= totalPages ? 0.3 : 1 }}
-          onClick={goNext} disabled={currentPage >= totalPages}>Next →</button>
-
-        <div style={{ width: 1, height: 20, background: "rgba(255,255,255,0.1)", margin: "0 3px" }} />
-
-        {/* Open in Drive */}
-        <a href={openLink} target="_blank" rel="noopener noreferrer"
-          style={{ ...tb({ padding: "5px 10px", textDecoration: "none", fontSize: 11 }) }}>
-          📄 Open
-        </a>
-      </div>
-    </div>
-  );
-}
-
-
-// ═══════════════════════════════════════════════════════════════════════════
-// RICH TEXT EDITOR
-// ═══════════════════════════════════════════════════════════════════════════
-function RichEditor({ value, onChange, dark }) {
-  const editorRef = useRef(null);
-  const [mode, setMode] = useState("visual"); // visual | html
-
-  const exec = (cmd, val = null) => {
-    editorRef.current?.focus();
-    document.execCommand(cmd, false, val);
-    syncFromEditor();
-  };
-
-  const syncFromEditor = () => {
-    if (editorRef.current) onChange(editorRef.current.innerHTML);
-  };
-
-  useEffect(() => {
-    if (editorRef.current && mode === "visual") {
-      if (editorRef.current.innerHTML !== value) {
-        editorRef.current.innerHTML = value || "";
-      }
-    }
-  }, [mode]);
-
-  const toolbarBtnStyle = (active) => ({
-    padding: "4px 8px", fontSize: 12, borderRadius: 5, cursor: "pointer",
-    border: `1px solid ${dark ? "#334155" : "#E5E7EB"}`,
-    background: active ? (dark ? "#334155" : "#E5E7EB") : "transparent",
-    color: dark ? "#E2E8F0" : "#374151",
-    fontWeight: 600,
+  published.forEach((page, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'modal-tab' + (i === 0 ? ' active' : '');
+    btn.textContent = page.Title || (page.Type ? page.Type.toUpperCase() : 'Chapter ' + (i + 1));
+    if (page.Year) btn.textContent += ' ' + page.Year;
+    btn.onclick = () => {
+      document.querySelectorAll('.modal-tab').forEach(t => t.classList.remove('active'));
+      btn.classList.add('active');
+      loadFrame(page.PdfUrl, bodyEl, cfg.displayName);
+    };
+    tabsEl.appendChild(btn);
   });
 
-  return (
-    <div style={{ border: `1px solid ${dark ? "#334155" : "#E5E7EB"}`, borderRadius: 8, overflow: "hidden" }}>
-      {/* Toolbar */}
-      <div style={{
-        display: "flex", gap: 4, padding: "8px 10px", flexWrap: "wrap",
-        background: dark ? "#1E293B" : "#F9FAFB",
-        borderBottom: `1px solid ${dark ? "#334155" : "#E5E7EB"}`,
-        alignItems: "center",
-      }}>
-        <button style={toolbarBtnStyle(false)} onMouseDown={e => { e.preventDefault(); exec("bold"); }} title="Bold"><strong>B</strong></button>
-        <button style={toolbarBtnStyle(false)} onMouseDown={e => { e.preventDefault(); exec("italic"); }} title="Italic"><em>I</em></button>
-        <button style={toolbarBtnStyle(false)} onMouseDown={e => { e.preventDefault(); exec("underline"); }} title="Underline"><u>U</u></button>
-        <div style={{ width: 1, height: 20, background: dark ? "#334155" : "#E5E7EB", margin: "0 2px" }} />
-        <button style={toolbarBtnStyle(false)} onMouseDown={e => { e.preventDefault(); exec("formatBlock", "h3"); }} title="Heading">H3</button>
-        <button style={toolbarBtnStyle(false)} onMouseDown={e => { e.preventDefault(); exec("formatBlock", "p"); }} title="Paragraph">¶</button>
-        <div style={{ width: 1, height: 20, background: dark ? "#334155" : "#E5E7EB", margin: "0 2px" }} />
-        <button style={toolbarBtnStyle(false)} onMouseDown={e => { e.preventDefault(); exec("insertUnorderedList"); }} title="List">• List</button>
-        <button style={toolbarBtnStyle(false)} onMouseDown={e => { e.preventDefault(); exec("insertHorizontalRule"); }} title="Divider">─</button>
-        <div style={{ flex: 1 }} />
-        <button
-          style={{ ...toolbarBtnStyle(mode === "html"), fontSize: 10 }}
-          onClick={() => {
-            if (mode === "visual") {
-              setMode("html");
-            } else {
-              setMode("visual");
-            }
-          }}
-        >
-          {mode === "visual" ? "</> HTML" : "Visual"}
-        </button>
-      </div>
-
-      {/* Editor area */}
-      {mode === "visual" ? (
-        <div
-          ref={editorRef}
-          contentEditable
-          suppressContentEditableWarning
-          onInput={syncFromEditor}
-          style={{
-            minHeight: 200, padding: "14px", outline: "none",
-            fontSize: 14, lineHeight: 1.8,
-            color: dark ? "#E2E8F0" : "#1F2937",
-            background: dark ? "#0F172A" : "#fff",
-          }}
-        />
-      ) : (
-        <textarea
-          value={value}
-          onChange={e => onChange(e.target.value)}
-          style={{
-            width: "100%", minHeight: 200, padding: "14px",
-            border: "none", outline: "none", resize: "vertical",
-            fontFamily: "monospace", fontSize: 12, lineHeight: 1.6,
-            color: dark ? "#E2E8F0" : "#374151",
-            background: dark ? "#0F172A" : "#fff",
-          }}
-        />
-      )}
-
-      {/* Preview */}
-      {value && (
-        <div style={{
-          borderTop: `1px solid ${dark ? "#1E293B" : "#F3F4F6"}`,
-          padding: "10px 14px",
-          background: dark ? "#0F172A" : "#FEFDF8",
-        }}>
-          <div style={{ fontSize: 10, fontWeight: 700, color: dark ? "#475569" : "#9CA3AF", marginBottom: 8, textTransform: "uppercase", letterSpacing: 1 }}>
-            Preview
-          </div>
-          <div
-            className={`exam-content ${dark ? "dark" : ""}`}
-            style={{ fontSize: 13, lineHeight: 1.8, color: dark ? "#CBD5E1" : "#374151" }}
-            dangerouslySetInnerHTML={{ __html: value }}
-          />
-        </div>
-      )}
-    </div>
-  );
+  loadFrame(published[0].PdfUrl, bodyEl, cfg.displayName);
+  document.getElementById('overlay').classList.add('open');
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// ADMIN PANEL
-// ═══════════════════════════════════════════════════════════════════════════
-function AdminPanel({ isAdmin, onLogin, onBack, exams, books, onAdd, onUpdate, onDelete, styles, darkMode, usingSheet, onRefresh }) {
-  const [pw, setPw] = useState("");
-  const [err, setErr] = useState("");
-  const [adminView, setAdminView] = useState("list");
-  const [editingExam, setEditingExam] = useState(null);
-  const [selectedBook, setSelectedBook] = useState("second-paper");
-  const [form, setForm] = useState({
-    title: "", type: "Model Set", year: "", content: "", pdfUrl: "",
-    pageOrder: 1, isPremium: false, isPublished: true,
-  });
-  const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
-  const [deleteConfirm, setDeleteConfirm] = useState(null);
-  const dark = darkMode;
-
-  const handleLogin = () => {
-    if (pw === ADMIN_PASSWORD) { onLogin(); setErr(""); }
-    else setErr("Incorrect password. Try again.");
-  };
-
-  const openAdd = () => {
-    const bookExams = exams[selectedBook] || [];
-    setForm({
-      title: "", type: "Model Set", year: "",
-      content: "<p><strong>प्र.१.</strong> Question here <em>(marks)</em></p>",
-      pdfUrl: "",
-      pageOrder: bookExams.length + 1,
-      isPremium: false, isPublished: true,
-    });
-    setEditingExam(null);
-    setAdminView("form");
-  };
-
-  const openEdit = (exam) => {
-    setForm({ ...exam });
-    setEditingExam(exam.id);
-    setAdminView("form");
-  };
-
-  const handleSave = async () => {
-    if (!form.title.trim()) return;
-    setSaving(true);
-    if (editingExam) await onUpdate(selectedBook, editingExam, form);
-    else await onAdd(selectedBook, form);
-    setSaving(false);
-    setSaved(true);
-    setTimeout(() => { setSaved(false); setAdminView("list"); }, 900);
-  };
-
-  const handleDelete = async (examId) => {
-    await onDelete(selectedBook, examId);
-    setDeleteConfirm(null);
-  };
-
-  const inputStyle = {
-    width: "100%", padding: "10px 12px", borderRadius: 8,
-    border: `1px solid ${dark ? "#334155" : "#E5E7EB"}`,
-    background: dark ? "#1E293B" : "#fff",
-    color: dark ? "#E2E8F0" : "#1F2937",
-    fontSize: 14, outline: "none",
-  };
-  const selectStyle = { ...inputStyle };
-  const labelStyle = {
-    display: "block", fontSize: 11, fontWeight: 700,
-    color: dark ? "#64748B" : "#9CA3AF",
-    marginBottom: 5, textTransform: "uppercase", letterSpacing: 0.5,
-  };
-
-  if (!isAdmin) {
-    return (
-      <div style={{ minHeight: "100vh", background: dark ? "#0F172A" : "#F8F7F2", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <div style={{
-          width: 320, background: dark ? "#1E293B" : "#fff",
-          borderRadius: 16, padding: "36px 28px", textAlign: "center",
-          boxShadow: "0 8px 32px rgba(0,0,0,0.12)",
-          border: `1px solid ${dark ? "#334155" : "#E5E7EB"}`,
-        }}>
-          <div style={{ fontSize: 36, marginBottom: 12 }}>🔐</div>
-          <div style={{ fontSize: 20, fontWeight: 800, color: dark ? "#F1F5F9" : "#1F2937", marginBottom: 6 }}>Admin Access</div>
-          <div style={{ fontSize: 13, color: dark ? "#64748B" : "#9CA3AF", marginBottom: 24 }}>
-            Enter admin password to manage books
-          </div>
-          <input
-            type="password"
-            value={pw}
-            onChange={e => setPw(e.target.value)}
-            onKeyDown={e => e.key === "Enter" && handleLogin()}
-            placeholder="Admin password"
-            style={{ ...inputStyle, marginBottom: 8 }}
-          />
-          {err && <div style={{ color: "#EF4444", fontSize: 13, marginBottom: 10 }}>{err}</div>}
-          <button
-            style={{ width: "100%", padding: "12px", borderRadius: 8, border: "none", background: "#1A6B3C", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", marginTop: 4 }}
-            onClick={handleLogin}
-          >Login →</button>
-          <button
-            style={{ width: "100%", padding: "10px", borderRadius: 8, border: `1px solid ${dark ? "#334155" : "#E5E7EB"}`, background: "transparent", color: dark ? "#94A3B8" : "#6B7280", fontSize: 13, cursor: "pointer", marginTop: 8 }}
-            onClick={onBack}
-          >← Back to Library</button>
-        </div>
-      </div>
-    );
-  }
-
-  // Form view
-  if (adminView === "form") {
-    return (
-      <div style={{ minHeight: "100vh", background: dark ? "#0F172A" : "#F8F7F2" }} className={dark ? "dark" : ""}>
-        {/* Header */}
-        <div style={{
-          display: "flex", justifyContent: "space-between", alignItems: "center",
-          padding: "14px 16px", background: dark ? "#1E293B" : "#fff",
-          borderBottom: `1px solid ${dark ? "#334155" : "#E5E7EB"}`,
-          position: "sticky", top: 0, zIndex: 10,
-        }}>
-          <button style={styles.backBtn} onClick={() => setAdminView("list")}>← Back</button>
-          <div style={{ fontWeight: 700, color: dark ? "#F1F5F9" : "#1F2937" }}>
-            {editingExam ? "✏️ Edit Exam" : "➕ Add New Exam"}
-          </div>
-          <div style={{ fontSize: 10, color: dark ? "#64748B" : "#9CA3AF" }}>
-            📝 Preview only
-          </div>
-        </div>
-
-        <div style={{ padding: "16px", maxWidth: 480 }}>
-          {/* Book selector */}
-          <div style={{ marginBottom: 14 }}>
-            <label style={labelStyle}>Book</label>
-            <select style={selectStyle} value={selectedBook} onChange={e => setSelectedBook(e.target.value)}>
-              <option value="second-paper">📕 Kharidar Second Paper</option>
-              <option value="third-paper">📗 Kharidar Third Paper</option>
-            </select>
-          </div>
-
-          <div style={{ marginBottom: 14 }}>
-            <label style={labelStyle}>Exam Title</label>
-            <input
-              style={inputStyle}
-              value={form.title}
-              onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
-              placeholder="e.g. Model Set 15 or PYQ 2080"
-            />
-          </div>
-
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 14 }}>
-            <div>
-              <label style={labelStyle}>Type</label>
-              <select style={selectStyle} value={form.type} onChange={e => setForm(f => ({ ...f, type: e.target.value }))}>
-                <option>PYQ</option>
-                <option>Model Set</option>
-                <option>Practice Set</option>
-                <option>Special Set</option>
-              </select>
-            </div>
-            <div>
-              <label style={labelStyle}>Year (optional)</label>
-              <input
-                style={inputStyle}
-                value={form.year || ""}
-                onChange={e => setForm(f => ({ ...f, year: e.target.value }))}
-                placeholder="e.g. 2079"
-              />
-            </div>
-          </div>
-
-          <div style={{ marginBottom: 14 }}>
-            <label style={labelStyle}>PDF URL (optional)</label>
-            <input
-              style={inputStyle}
-              value={form.pdfUrl || ""}
-              onChange={e => setForm(f => ({ ...f, pdfUrl: e.target.value }))}
-              placeholder="Google Drive share link to the exam PDF"
-            />
-            <div style={{ fontSize: 10, color: dark ? "#475569" : "#9CA3AF", marginTop: 5 }}>
-              Paste a normal Google Drive "share" link — it'll be converted to an embeddable preview automatically.
-            </div>
-          </div>
-
-          <div style={{ marginBottom: 14 }}>
-            <label style={labelStyle}>Content (optional notes)</label>
-            <RichEditor
-              value={form.content}
-              onChange={content => setForm(f => ({ ...f, content }))}
-              dark={dark}
-            />
-            <div style={{ fontSize: 10, color: dark ? "#475569" : "#9CA3AF", marginTop: 5 }}>
-              Tip: Use H3 for sections, Bold for question numbers, Italic for marks. Leave empty if you're only embedding a PDF.
-            </div>
-          </div>
-
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginBottom: 20 }}>
-            <div>
-              <label style={labelStyle}>Page Order</label>
-              <input
-                type="number"
-                style={inputStyle}
-                value={form.pageOrder}
-                onChange={e => setForm(f => ({ ...f, pageOrder: parseInt(e.target.value) || 1 }))}
-              />
-            </div>
-            <div>
-              <label style={labelStyle}>Premium</label>
-              <select style={selectStyle} value={form.isPremium ? "yes" : "no"} onChange={e => setForm(f => ({ ...f, isPremium: e.target.value === "yes" }))}>
-                <option value="no">Free</option>
-                <option value="yes">⭐ Premium</option>
-              </select>
-            </div>
-            <div>
-              <label style={labelStyle}>Status</label>
-              <select style={selectStyle} value={form.isPublished ? "pub" : "draft"} onChange={e => setForm(f => ({ ...f, isPublished: e.target.value === "pub" }))}>
-                <option value="pub">✅ Published</option>
-                <option value="draft">📝 Draft</option>
-              </select>
-            </div>
-          </div>
-
-          <button
-            style={{
-              width: "100%", padding: "13px", borderRadius: 8, border: "none",
-              background: saved ? "#10B981" : "#1A6B3C",
-              color: "#fff", fontSize: 14, fontWeight: 700,
-              cursor: saving || saved ? "default" : "pointer",
-              transition: "background 0.3s",
-            }}
-            onClick={handleSave}
-            disabled={saving || saved}
-          >
-            {saving ? "Saving to Firestore..." : saved ? "✅ Saved!" : editingExam ? "Update Exam" : "Save New Exam"}
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  // List view
-  const bookExams = exams[selectedBook] || [];
-  const book = books[selectedBook];
-
-  return (
-    <div style={{ minHeight: "100vh", background: dark ? "#0F172A" : "#F8F7F2" }} className={dark ? "dark" : ""}>
-      {/* Header */}
-      <div style={{
-        display: "flex", justifyContent: "space-between", alignItems: "center",
-        padding: "14px 16px", background: dark ? "#1E293B" : "#fff",
-        borderBottom: `1px solid ${dark ? "#334155" : "#E5E7EB"}`,
-        position: "sticky", top: 0, zIndex: 10,
-      }}>
-        <button style={styles.backBtn} onClick={onBack}>← Library</button>
-        <div style={{ fontWeight: 700, color: dark ? "#F1F5F9" : "#1F2937" }}>📋 Admin</div>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <div style={{ fontSize: 10, color: usingSheet ? "#10B981" : "#F59E0B", fontWeight: 700 }}>
-            {usingSheet ? "📊 Sheet" : "📦 Sample Data"}
-          </div>
-          <button
-            onClick={onRefresh}
-            title="Reload from Google Sheet"
-            style={{ ...styles.iconBtn, width: 28, height: 28, fontSize: 12 }}
-          >🔄</button>
-        </div>
-      </div>
-
-      <div style={{ padding: "12px 16px 0" }}>
-        <div style={{
-          fontSize: 11, lineHeight: 1.6, padding: "10px 12px", borderRadius: 8,
-          background: dark ? "#1E293B" : "#FFF8E1",
-          border: `1px solid ${dark ? "#334155" : "#FDE68A"}`,
-          color: dark ? "#FCD34D" : "#92400E",
-        }}>
-          📊 Exam pages are loaded from your Google Sheet. Edits below are a <strong>local preview only</strong> — to make permanent changes, edit the Sheet and tap 🔄 Refresh.
-        </div>
-      </div>
-
-      <div style={{ padding: "16px 16px 0" }}>
-        {/* Book tabs */}
-        <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
-          {Object.values(books).map(b => (
-            <button key={b.id} onClick={() => setSelectedBook(b.id)} style={{
-              flex: 1, padding: "9px 10px", borderRadius: 8, cursor: "pointer",
-              border: `2px solid ${selectedBook === b.id ? b.color : (dark ? "#334155" : "#E5E7EB")}`,
-              background: selectedBook === b.id ? `${b.color}15` : (dark ? "#1E293B" : "#F9FAFB"),
-              color: selectedBook === b.id ? b.color : (dark ? "#94A3B8" : "#6B7280"),
-              fontSize: 11, fontWeight: 700,
-            }}>
-              {b.emoji} {b.title.replace("Kharidar ", "")}
-            </button>
-          ))}
-        </div>
-
-        {/* Stats row */}
-        <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
-          {[
-            { label: "Total", val: bookExams.length, color: book.color },
-            { label: "Published", val: bookExams.filter(e => e.isPublished).length, color: "#10B981" },
-            { label: "Premium", val: bookExams.filter(e => e.isPremium).length, color: "#F59E0B" },
-            { label: "Draft", val: bookExams.filter(e => !e.isPublished).length, color: "#6B7280" },
-          ].map(s => (
-            <div key={s.label} style={{
-              flex: 1, textAlign: "center", padding: "8px 4px",
-              background: dark ? "#1E293B" : "#fff",
-              borderRadius: 8, border: `1px solid ${dark ? "#334155" : "#E5E7EB"}`,
-            }}>
-              <div style={{ fontSize: 18, fontWeight: 800, color: s.color }}>{s.val}</div>
-              <div style={{ fontSize: 9, color: dark ? "#64748B" : "#9CA3AF", fontWeight: 600 }}>{s.label}</div>
-            </div>
-          ))}
-        </div>
-
-        <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 12 }}>
-          <button
-            style={{
-              padding: "9px 16px", borderRadius: 8, border: "none",
-              background: book.color, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer",
-            }}
-            onClick={openAdd}
-          >
-            + Add New Exam Page
-          </button>
-        </div>
-      </div>
-
-      {/* Exam list */}
-      <div style={{ padding: "0 16px 80px" }}>
-        {bookExams.length === 0 ? (
-          <div style={{ textAlign: "center", padding: 48, color: dark ? "#475569" : "#9CA3AF" }}>
-            <div style={{ fontSize: 36, marginBottom: 12 }}>📄</div>
-            <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 6 }}>No exam pages yet</div>
-            <div style={{ fontSize: 13 }}>Add your first exam page above</div>
-          </div>
-        ) : bookExams.map(exam => {
-          const tc = TYPE_CONFIG[exam.type] || {};
-          return (
-            <div key={exam.id} style={{
-              background: dark ? "#1E293B" : "#fff",
-              border: `1px solid ${dark ? "#334155" : "#E5E7EB"}`,
-              borderRadius: 10, padding: "12px", marginBottom: 10,
-              borderLeft: `3px solid ${tc.dot || book.color}`,
-            }}>
-              {/* Delete confirm */}
-              {deleteConfirm === exam.id ? (
-                <div style={{ textAlign: "center", padding: "8px 0" }}>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: "#EF4444", marginBottom: 10 }}>
-                    Delete "{exam.title}"?
-                  </div>
-                  <div style={{ display: "flex", gap: 8 }}>
-                    <button style={{ flex: 1, padding: "8px", borderRadius: 7, border: "none", background: "#EF4444", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer" }} onClick={() => handleDelete(exam.id)}>
-                      Yes, Delete
-                    </button>
-                    <button style={{ flex: 1, padding: "8px", borderRadius: 7, border: `1px solid ${dark ? "#334155" : "#E5E7EB"}`, background: "transparent", color: dark ? "#94A3B8" : "#6B7280", fontSize: 13, cursor: "pointer" }} onClick={() => setDeleteConfirm(null)}>
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <>
-                  <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
-                    <div style={{
-                      width: 30, height: 30, borderRadius: 7, flexShrink: 0,
-                      background: `${book.color}20`, color: book.color,
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      fontWeight: 800, fontSize: 12,
-                    }}>{exam.pageOrder}</div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontWeight: 700, fontSize: 14, color: dark ? "#F1F5F9" : "#1F2937", marginBottom: 5 }}>
-                        {exam.title}
-                      </div>
-                      <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
-                        <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 5, background: tc.bg || "#F3F4F6", color: tc.text || "#374151", border: `1px solid ${tc.border || "#E5E7EB"}` }}>{exam.type}</span>
-                        {exam.year && <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 5, background: dark ? "#0F172A" : "#F3F4F6", color: dark ? "#94A3B8" : "#6B7280", border: `1px solid ${dark ? "#1E293B" : "#E5E7EB"}` }}>{exam.year}</span>}
-                        <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 5, background: exam.isPublished ? "#D1FAE5" : "#FEF3C7", color: exam.isPublished ? "#065F46" : "#92400E", border: `1px solid ${exam.isPublished ? "#A7F3D0" : "#FDE68A"}` }}>
-                          {exam.isPublished ? "✅ Published" : "📝 Draft"}
-                        </span>
-                        {exam.isPremium && <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 5, background: "#FEF9C3", color: "#A16207", border: "1px solid #FDE047" }}>⭐ Premium</span>}
-                      </div>
-                    </div>
-                  </div>
-                  <div style={{ display: "flex", gap: 6, marginTop: 10 }}>
-                    <button style={{ flex: 1, padding: "7px 6px", borderRadius: 7, border: `1px solid ${dark ? "#334155" : "#E5E7EB"}`, background: "transparent", color: dark ? "#94A3B8" : "#6B7280", fontSize: 11, cursor: "pointer", fontWeight: 600 }}
-                      onClick={() => onUpdate(selectedBook, exam.id, { isPublished: !exam.isPublished })}>
-                      {exam.isPublished ? "Unpublish" : "Publish"}
-                    </button>
-                    <button style={{ flex: 1, padding: "7px 6px", borderRadius: 7, border: `1px solid ${dark ? "#334155" : "#E5E7EB"}`, background: "transparent", color: dark ? "#94A3B8" : "#6B7280", fontSize: 11, cursor: "pointer", fontWeight: 600 }}
-                      onClick={() => onUpdate(selectedBook, exam.id, { isPremium: !exam.isPremium })}>
-                      {exam.isPremium ? "Make Free" : "★ Premium"}
-                    </button>
-                    <button style={{ flex: 1, padding: "7px 6px", borderRadius: 7, border: `1px solid ${dark ? "#334155" : "#E5E7EB"}`, background: "transparent", color: "#2563EB", fontSize: 11, cursor: "pointer", fontWeight: 700 }}
-                      onClick={() => openEdit(exam)}>
-                      Edit
-                    </button>
-                    <button style={{ padding: "7px 10px", borderRadius: 7, border: `1px solid ${dark ? "#334155" : "#E5E7EB"}`, background: "transparent", color: "#EF4444", fontSize: 13, cursor: "pointer" }}
-                      onClick={() => setDeleteConfirm(exam.id)}>
-                      🗑
-                    </button>
-                  </div>
-                </>
-              )}
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
+function loadFrame(url, container, title) {
+  container.innerHTML = '<div class="modal-empty"><div class="spinner"></div></div>';
+  const iframe = document.createElement('iframe');
+  iframe.src = url;
+  iframe.title = title;
+  iframe.allow = 'fullscreen';
+  iframe.onload = () => {};
+  iframe.onerror = () => showFallback(url, container);
+  container.innerHTML = '';
+  container.appendChild(iframe);
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// STYLES
-// ═══════════════════════════════════════════════════════════════════════════
-function getStyles(dark) {
-  const bg = dark ? "#0F172A" : "#F4F1EA";
-  const card = dark ? "#1E293B" : "#FFFFFF";
-  const text = dark ? "#F1F5F9" : "#1F2937";
-  const muted = dark ? "#64748B" : "#6B7280";
-  const border = dark ? "#1E293B" : "#E5E7EB";
-  const pageBg = dark ? "#111827" : "#FEFDF8";
-
-  return {
-    app: {
-      minHeight: "100vh", background: bg, color: text,
-      fontFamily: "'Plus Jakarta Sans', system-ui, -apple-system, sans-serif",
-      width: "100%", position: "relative",
-    },
-    library: { minHeight: "100vh", background: bg },
-    libraryHeader: {
-      display: "flex", justifyContent: "space-between", alignItems: "center",
-      padding: "18px 20px 14px",
-      background: card, borderBottom: `1px solid ${border}`,
-    },
-    libraryTitle: { fontSize: 19, fontWeight: 800, color: text },
-    librarySubtitle: { fontSize: 11, color: muted, marginTop: 2 },
-    shelfWrap: { padding: "24px 20px 20px" },
-    shelfLabel: {
-      fontSize: 11, fontWeight: 700, color: muted,
-      marginBottom: 18, textTransform: "uppercase", letterSpacing: 1.2,
-    },
-    shelf: {
-      background: dark ? "#1A0F08" : "#7A5C20",
-      borderRadius: 14, padding: "28px 24px 0", minHeight: 270,
-      position: "relative",
-      boxShadow: dark
-        ? "inset 0 2px 8px rgba(0,0,0,0.5)"
-        : "inset 0 2px 8px rgba(0,0,0,0.2), 0 4px 16px rgba(0,0,0,0.15)",
-    },
-    shelfPlank: {
-      position: "absolute", bottom: 0, left: 0, right: 0, height: 20,
-      background: dark ? "#2D1A0A" : "#5C4010",
-      borderRadius: "0 0 14px 14px",
-      boxShadow: "0 4px 0 rgba(0,0,0,0.3)",
-    },
-    booksRow: {
-      display: "flex", gap: 22, justifyContent: "center", flexWrap: "wrap",
-    },
-    infoGrid: {
-      display: "grid", gridTemplateColumns: "1fr 1fr",
-      gap: 12, padding: "0 20px", marginTop: 4,
-    },
-    infoCard: {
-      background: card, border: `1px solid ${border}`,
-      borderRadius: 12, padding: "14px",
-    },
-    openBtn: {
-      width: "100%", padding: "8px 0", borderRadius: 8,
-      border: "none", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer",
-    },
-    footer: {
-      textAlign: "center", fontSize: 11, color: muted,
-      marginTop: 20, padding: "14px 20px",
-      borderTop: `1px solid ${border}`,
-    },
-    readerWrap: {
-      minHeight: "100vh", background: bg,
-      display: "flex", flexDirection: "column", position: "relative",
-    },
-    readerBar: {
-      display: "flex", justifyContent: "space-between", alignItems: "center",
-      padding: "11px 14px", background: card,
-      borderBottom: `1px solid ${border}`,
-      position: "sticky", top: 0, zIndex: 20, flexShrink: 0,
-    },
-    pageContainer: {
-      flex: 1, display: "flex", alignItems: "flex-start",
-      justifyContent: "center", padding: "16px",
-      overflowY: "auto", perspective: "1000px",
-    },
-    page: {
-      width: "100%", maxWidth: 440,
-      background: pageBg, borderRadius: 3,
-      minHeight: 520, position: "relative",
-      borderLeft: `4px solid ${dark ? "#334155" : "#DDD6C0"}`,
-      boxShadow: dark
-        ? "6px 6px 24px rgba(0,0,0,0.5), inset 0 0 0 0.5px rgba(255,255,255,0.04)"
-        : "4px 4px 20px rgba(0,0,0,0.1), 8px 0 16px rgba(0,0,0,0.04)",
-    },
-    navBar: {
-      display: "flex", justifyContent: "space-between", alignItems: "center",
-      padding: "12px 16px", background: card,
-      borderTop: `1px solid ${border}`,
-      position: "sticky", bottom: 0, flexShrink: 0,
-    },
-    navBtn: {
-      padding: "10px 16px", borderRadius: 8,
-      border: `1px solid ${border}`,
-      background: card, color: text,
-      fontSize: 13, fontWeight: 700, cursor: "pointer",
-    },
-    backBtn: {
-      padding: "6px 12px", borderRadius: 7,
-      border: `1px solid ${border}`,
-      background: "transparent", color: text,
-      fontSize: 12, cursor: "pointer", fontWeight: 600,
-    },
-    iconBtn: {
-      width: 34, height: 34, borderRadius: 8,
-      border: `1px solid ${border}`, background: "transparent",
-      cursor: "pointer", fontSize: 15,
-      display: "flex", alignItems: "center", justifyContent: "center",
-    },
-  };
+function showFallback(url, container) {
+  container.innerHTML = `<div class="modal-empty">
+    <svg width="48" height="48" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+    <span>Cannot embed this content.</span>
+    <a class="open-link-btn" href="${url}" target="_blank" rel="noopener">Open in New Tab ↗</a>
+  </div>`;
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// MOUNT
-// ═══════════════════════════════════════════════════════════════════════════
-const root = ReactDOM.createRoot(document.getElementById("root"));
-root.render(<App />);
+document.getElementById('modalClose').onclick = closeModal;
+document.getElementById('overlay').onclick = function(e) { if (e.target === this) closeModal(); };
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+function closeModal() {
+  document.getElementById('overlay').classList.remove('open');
+  document.getElementById('modalBody').innerHTML = '';
+}
 
+init();
 </script>
-
 </body>
 </html>
