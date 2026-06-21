@@ -50,7 +50,7 @@ self.addEventListener('notificationclick', function(event) {
   event.notification.close();
   var url = (event.notification.data && event.notification.data.url)
     ? event.notification.data.url
-    : 'https://sarfarajaalam90-dev.github.io/ShikshitMitra/';
+    : 'https://shikshitmitra.vercel.app/';
 
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(clientList) {
