@@ -34,9 +34,9 @@ messaging.onBackgroundMessage(function(payload) {
   return self.registration.showNotification(title, {
     body: body,
     // Large icon shown on the RIGHT side of notification (full app logo)
-    icon: 'https://sarfarajaalam90-dev.github.io/ShikshitMitra/icon-192.png',
+    icon: 'https://shikshitmitra.vercel.app/icon-192.png',
     // Small monochrome badge on the LEFT/status bar (white logo shape on transparent)
-    badge: 'https://sarfarajaalam90-dev.github.io/ShikshitMitra/icon-badge-96.png',
+    badge: 'https://shikshitmitra.vercel.app/icon-badge-96.png',
     vibrate: [200, 100, 200],
     tag: 'shikshit-mitra-notif',
     renotify: true,
