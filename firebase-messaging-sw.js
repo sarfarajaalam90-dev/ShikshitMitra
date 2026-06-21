@@ -29,7 +29,7 @@ messaging.onBackgroundMessage(function(payload) {
     || 'नयाँ अपडेट आयो!';
 
   var url = (payload.data && payload.data.url)
-    || 'https://sarfarajaalam90-dev.github.io/ShikshitMitra/';
+    || 'https://shikshitmitra.vercel.app/';
 
   return self.registration.showNotification(title, {
     body: body,
