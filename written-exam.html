@@ -1,471 +1,675 @@
 <!DOCTYPE html>
 <html lang="ne">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>शिक्षित मित्र — Shikshit Mitra</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>पुस्तक | Shikshit Mitra</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Devanagari:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
-  :root {
-    --bg: #0f0e17;
-    --surface: #1a1927;
-    --surface2: #23213a;
-    --border: rgba(255,255,255,0.08);
-    --border2: rgba(255,255,255,0.14);
-    --text: #fffffe;
-    --text2: #a7a3c0;
-    --text3: #6b6882;
-    --accent: #6c63d5;
-    --accent2: #8b84f0;
-    --gold: #f2c94c;
-    --teal: #1db37a;
-    --coral: #e05c3a;
-  }
+:root{
+  --bg:#0f1018;
+  --surface:#1a1b26;
+  --border:rgba(255,255,255,0.07);
+  --text:#e8e9f0;
+  --muted:#888;
+  --accent:#8c6ed6;
+  --page-bg:#fffef8;
+  --page-line:#e8e4d8;
+  --page-text:#1a1a2e;
+  --page-head:#3d1f7a;
+  --spine:#2d1f5e;
+}
 
-  body {
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
+html,body{height:100%;width:100%;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;overflow:hidden}
 
-  /* HEADER */
-  header {
-    padding: 1.25rem 2rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border-bottom: 1px solid var(--border);
-    position: sticky;
-    top: 0;
-    background: rgba(15,14,23,0.92);
-    backdrop-filter: blur(12px);
-    z-index: 100;
-  }
-  .logo {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .logo-icon {
-    width: 36px; height: 36px;
-    background: var(--accent);
-    border-radius: 10px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 18px;
-  }
-  .logo-text { font-size: 18px; font-weight: 700; letter-spacing: -0.02em; }
-  .logo-sub { font-size: 11px; color: var(--text2); letter-spacing: 0.04em; text-transform: uppercase; }
+.app{display:flex;flex-direction:column;height:100vh;width:100vw}
 
-  .header-right { display: flex; gap: 8px; align-items: center; }
-  .tag-pill {
-    font-size: 11px; padding: 4px 10px; border-radius: 20px;
-    background: rgba(108,99,213,0.15); color: var(--accent2);
-    border: 1px solid rgba(108,99,213,0.3);
-  }
+/* ── Topbar ── */
+.topbar{
+  display:flex;align-items:center;gap:12px;
+  padding:0 16px;height:52px;
+  background:var(--surface);border-bottom:1px solid var(--border);
+  flex-shrink:0;z-index:10;
+}
+.topbar-title{flex:1;font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:'Noto Serif Devanagari',serif}
+.topbar-page{font-size:13px;color:var(--muted);white-space:nowrap}
+.topbar-page__sep{margin:0 2px}
 
-  /* HERO */
-  .hero {
-    padding: 3rem 2rem 2rem;
-    text-align: center;
-    max-width: 600px;
-    margin: 0 auto;
-  }
-  .hero h1 {
-    font-size: clamp(1.8rem, 4vw, 2.8rem);
-    font-weight: 800;
-    letter-spacing: -0.03em;
-    line-height: 1.15;
-    margin-bottom: 0.75rem;
-  }
-  .hero h1 span { color: var(--accent2); }
-  .hero p { font-size: 15px; color: var(--text2); line-height: 1.6; }
+/* ── Stage ── */
+.stage{
+  flex:1;display:flex;align-items:center;justify-content:center;
+  position:relative;overflow:hidden;
+  background:radial-gradient(ellipse at center, #1e1f2e 0%, #0f1018 100%);
+}
 
-  /* SHELF SECTION */
-  .shelf-section { padding: 2rem; max-width: 960px; margin: 0 auto; }
-  .section-eyebrow {
-    font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em;
-    color: var(--text3); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 8px;
-  }
-  .section-eyebrow::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+/* ── Nav arrows ── */
+.nav{
+  position:absolute;top:50%;transform:translateY(-50%);
+  width:40px;height:40px;
+  background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);
+  border-radius:50%;color:var(--text);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  z-index:5;transition:background .15s;flex-shrink:0;
+}
+.nav:hover{background:rgba(255,255,255,0.14)}
+.nav:disabled{opacity:.2;cursor:default;pointer-events:none}
+.nav svg{width:20px;height:20px}
+.nav--left{left:12px}
+.nav--right{right:12px}
 
-  /* BOOKS HORIZONTAL */
-  .books-row {
-    display: flex;
-    gap: 24px;
-    padding-bottom: 1rem;
-    overflow-x: auto;
-    scrollbar-width: thin;
-    scrollbar-color: var(--border2) transparent;
-  }
+/* ── Book wrapper ── */
+.book-wrap{
+  perspective:2000px;
+  display:flex;align-items:center;justify-content:center;
+  position:relative;
+}
 
-  .book-wrap {
-    display: flex; flex-direction: column; align-items: center;
-    gap: 12px; cursor: pointer; flex-shrink: 0;
-  }
+/* ── The book ── */
+.book{
+  position:relative;
+  display:flex;
+  transform-style:preserve-3d;
+  filter:drop-shadow(0 24px 48px rgba(0,0,0,0.6));
+}
 
-  .book {
-    width: 120px; height: 168px;
-    border-radius: 4px 12px 12px 4px;
-    display: flex; flex-direction: column;
-    justify-content: space-between;
-    padding: 14px 10px;
-    position: relative;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    border-left: 7px solid rgba(0,0,0,0.25);
-    cursor: pointer;
-  }
-  .book:hover { transform: translateY(-10px) rotate(-1deg); }
-  .book-second { background: linear-gradient(145deg, #534AB7, #3C3489); box-shadow: 6px 6px 20px rgba(83,74,183,0.35); }
-  .book-third  { background: linear-gradient(145deg, #0F6E56, #085041); box-shadow: 6px 6px 20px rgba(15,110,86,0.35); }
-  .book-officer{ background: linear-gradient(145deg, #993C1D, #712B13); box-shadow: 6px 6px 20px rgba(153,60,29,0.35); }
-  .book-default{ background: linear-gradient(145deg, #185FA5, #0C447C); box-shadow: 6px 6px 20px rgba(24,95,165,0.35); }
+/* ── Page ── */
+.page{
+  width:var(--pw);height:var(--ph);
+  background:var(--page-bg);
+  position:relative;overflow:hidden;
+  flex-shrink:0;
+}
 
-  .book-gloss {
-    position: absolute; inset: 0;
-    background: linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 60%);
-    border-radius: 4px 12px 12px 4px;
-    pointer-events: none;
-  }
-  .book-label-top { font-size: 9px; text-transform: uppercase; letter-spacing: 0.08em; opacity: 0.7; color: #fff; }
-  .book-title-text { font-size: 13px; font-weight: 700; color: #fff; line-height: 1.3; }
-  .book-bottom { display: flex; justify-content: space-between; align-items: flex-end; }
-  .book-year { font-size: 10px; color: rgba(255,255,255,0.6); }
-  .book-pro-badge {
-    font-size: 8px; padding: 2px 5px; border-radius: 3px;
-    background: var(--gold); color: #1a1200; font-weight: 700; letter-spacing: 0.05em;
-  }
-  .book-pages-badge {
-    font-size: 9px; padding: 2px 6px; border-radius: 3px;
-    background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.8);
-  }
+/* Left page — slightly darker */
+.page--left{
+  border-radius:4px 0 0 4px;
+  background:linear-gradient(to right, #f5f3ec, #fffef8);
+  border-right:1px solid var(--page-line);
+}
 
-  .book-name {
-    font-size: 13px; font-weight: 600; text-align: center;
-    color: var(--text); line-height: 1.3; max-width: 110px;
-  }
-  .book-type { font-size: 11px; color: var(--text3); text-align: center; }
+/* Right page */
+.page--right{
+  border-radius:0 4px 4px 0;
+  background:var(--page-bg);
+}
 
-  /* SHELF PLANK */
-  .shelf-plank {
-    height: 14px;
-    background: linear-gradient(180deg, #6B4C2A 0%, #3e2a12 100%);
-    border-radius: 2px;
-    margin-top: 4px;
-    box-shadow: 0 6px 12px rgba(0,0,0,0.4);
-  }
+/* Spine shadow on left page */
+.page--left::after{
+  content:'';position:absolute;top:0;right:0;width:32px;height:100%;
+  background:linear-gradient(to left, rgba(0,0,0,0.08), transparent);
+  pointer-events:none;
+}
 
-  /* LOADING / ERROR */
-  .status-msg {
-    padding: 2rem; text-align: center; color: var(--text2); font-size: 14px;
-    display: flex; align-items: center; justify-content: center; gap: 8px;
-  }
-  .spinner {
-    width: 18px; height: 18px; border: 2px solid var(--border2);
-    border-top-color: var(--accent); border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
+/* Spine shadow on right page */
+.page--right::before{
+  content:'';position:absolute;top:0;left:0;width:32px;height:100%;
+  background:linear-gradient(to right, rgba(0,0,0,0.06), transparent);
+  pointer-events:none;z-index:1;
+}
 
-  /* VIEWER MODAL */
-  .overlay {
-    display: none; position: fixed; inset: 0;
-    background: rgba(0,0,0,0.8); z-index: 999;
-    align-items: center; justify-content: center;
-    padding: 16px;
-    backdrop-filter: blur(4px);
-  }
-  .overlay.open { display: flex; }
-  .modal {
-    background: var(--surface);
-    border: 1px solid var(--border2);
-    border-radius: 16px;
-    width: 100%; max-width: 880px;
-    height: 90vh;
-    display: flex; flex-direction: column;
-    overflow: hidden;
-  }
-  .modal-header {
-    padding: 14px 18px;
-    border-bottom: 1px solid var(--border);
-    display: flex; align-items: center; justify-content: space-between;
-    flex-shrink: 0;
-  }
-  .modal-header-left { display: flex; flex-direction: column; gap: 2px; }
-  .modal-header h2 { font-size: 16px; font-weight: 700; }
-  .modal-header .modal-sub { font-size: 12px; color: var(--text2); }
-  .modal-close {
-    width: 32px; height: 32px; border-radius: 8px;
-    border: 1px solid var(--border2); background: transparent;
-    color: var(--text2); cursor: pointer; font-size: 18px;
-    display: flex; align-items: center; justify-content: center;
-    transition: background 0.15s;
-  }
-  .modal-close:hover { background: var(--surface2); color: var(--text); }
+/* Spine */
+.spine{
+  width:12px;height:var(--ph);
+  background:linear-gradient(to bottom, #4a2d8a, var(--spine), #2a1a50);
+  flex-shrink:0;
+  box-shadow:inset -2px 0 4px rgba(0,0,0,0.3), inset 2px 0 4px rgba(0,0,0,0.3);
+}
 
-  .modal-tabs {
-    display: flex; gap: 6px; padding: 10px 18px;
-    border-bottom: 1px solid var(--border);
-    overflow-x: auto; flex-shrink: 0;
-    scrollbar-width: thin; scrollbar-color: var(--border2) transparent;
-  }
-  .modal-tab {
-    padding: 6px 14px; font-size: 12px; border-radius: 8px;
-    border: 1px solid var(--border2); background: transparent;
-    color: var(--text2); cursor: pointer; white-space: nowrap;
-    flex-shrink: 0; transition: all 0.15s;
-  }
-  .modal-tab:hover { background: var(--surface2); color: var(--text); }
-  .modal-tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+/* Page content */
+.page-inner{
+  padding:32px 0 24px;
+  height:100%;display:flex;flex-direction:column;
+  position:relative;z-index:2;
+}
 
-  .modal-body { flex: 1; overflow: hidden; position: relative; }
-  .modal-body iframe { width: 100%; height: 100%; border: none; display: block; }
-  .modal-empty {
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    height: 100%; gap: 12px; color: var(--text2); font-size: 14px;
-  }
-  .modal-empty svg { opacity: 0.3; }
-  .open-link-btn {
-    margin-top: 8px; padding: 8px 18px; border-radius: 8px;
-    background: var(--accent); color: #fff; border: none; cursor: pointer;
-    font-size: 13px; font-weight: 600; text-decoration: none; display: inline-block;
-  }
+/* Ruled lines */
+.page-inner::before{
+  content:'';position:absolute;
+  top:72px;left:0;right:0;bottom:24px;
+  background-image:repeating-linear-gradient(
+    to bottom,
+    transparent 0px,
+    transparent 27px,
+    var(--page-line) 27px,
+    var(--page-line) 28px
+  );
+  pointer-events:none;
+}
 
-  /* FOOTER */
-  footer {
-    padding: 2rem; text-align: center;
-    font-size: 12px; color: var(--text3);
-    border-top: 1px solid var(--border); margin-top: 3rem;
-  }
+/* Red margin line on BOTH pages */
+.page-inner::after{
+  content:'';position:absolute;
+  top:0;left:56px;width:1.5px;height:100%;
+  background:rgba(220,80,80,0.25);
+  pointer-events:none;
+}
 
-  @media (max-width: 600px) {
-    header { padding: 1rem; }
-    .hero { padding: 2rem 1rem 1rem; }
-    .shelf-section { padding: 1rem; }
-    .book { width: 96px; height: 136px; }
-    .modal { height: 95vh; border-radius: 12px; }
-  }
+.page-head{
+  font-family:'Noto Serif Devanagari',serif;
+  font-size:13px;font-weight:600;
+  color:var(--page-head);
+  text-transform:uppercase;letter-spacing:.06em;
+  margin-bottom:16px;padding-bottom:8px;
+  border-bottom:1.5px solid var(--accent);
+  opacity:.7;
+  position:relative;z-index:3;
+  padding-left:72px;padding-right:24px;
+}
+
+.page-title{
+  font-family:'Noto Serif Devanagari',serif;
+  font-size:18px;font-weight:700;
+  color:var(--page-head);
+  margin-bottom:16px;line-height:1.4;
+  position:relative;z-index:3;
+  padding-left:72px;padding-right:24px;
+}
+
+.page-body{
+  font-family:'Noto Serif Devanagari',serif;
+  font-size:14px;line-height:28px;
+  color:var(--page-text);
+  flex:1;overflow:hidden;
+  position:relative;z-index:3;
+  white-space:pre-wrap;word-break:break-word;
+  padding-left:72px;padding-right:24px;
+}
+
+.page-num{
+  font-size:11px;color:var(--muted);
+  text-align:center;margin-top:8px;
+  position:relative;z-index:3;letter-spacing:.05em;
+  padding-left:0;padding-right:24px;
+}
+
+/* ── Flip animation ── */
+.flip-container{
+  position:absolute;top:0;
+  width:var(--pw);height:var(--ph);
+  transform-style:preserve-3d;
+  pointer-events:none;
+  z-index:10;
+}
+.flip-container.is-right{left:50%;transform-origin:left center}
+.flip-container.is-left{right:50%;transform-origin:right center}
+
+.flip-face{
+  position:absolute;inset:0;
+  backface-visibility:hidden;
+  -webkit-backface-visibility:hidden;
+  overflow:hidden;
+}
+.flip-face--back{transform:rotateY(180deg)}
+
+/* ── Overlays ── */
+.overlay{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:14px;background:var(--bg);z-index:30;border-radius:6px;
+}
+.overlay.is-hidden{display:none}
+
+.spinner{
+  width:34px;height:34px;
+  border:3px solid rgba(255,255,255,0.08);
+  border-top-color:var(--accent);
+  border-radius:50%;animation:spin .8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.overlay-text{font-size:14px;color:var(--muted)}
+.retry-btn{
+  padding:8px 20px;background:var(--accent);color:#fff;
+  border:none;border-radius:6px;font-size:13px;cursor:pointer;
+  font-family:'Noto Serif Devanagari',serif;
+}
+
+/* ── Toolbar ── */
+.toolbar{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  height:44px;background:var(--surface);border-top:1px solid var(--border);
+  flex-shrink:0;
+}
+.tbtn{
+  width:34px;height:34px;background:transparent;border:none;border-radius:6px;
+  color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:background .15s,color .15s;
+}
+.tbtn:hover{background:rgba(255,255,255,0.07);color:var(--text)}
+.tbtn svg{width:17px;height:17px}
+.tdiv{width:1px;height:18px;background:var(--border);margin:0 4px}
+
+/* ── Toast ── */
+.toast{
+  position:fixed;bottom:56px;left:50%;
+  transform:translateX(-50%) translateY(10px);
+  background:#2a2b38;color:var(--text);font-size:13px;
+  padding:8px 18px;border-radius:20px;
+  opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;
+  white-space:nowrap;z-index:999;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ── Single page mode (mobile) ── */
+.book.single .page--left{display:none}
+.book.single .spine{display:none}
+.book.single .page--right{border-radius:4px}
+
+@media(max-width:600px){
+  .nav--left{left:4px}
+  .nav--right{right:4px}
+}
 </style>
 </head>
 <body>
+<div class="app">
 
-<header>
-  <div class="logo">
-    <div class="logo-icon">📚</div>
-    <div>
-      <div class="logo-text">शिक्षित मित्र</div>
-      <div class="logo-sub">Civil Service Prep</div>
+  <header class="topbar">
+    <button class="tbtn" id="backBtn" aria-label="back">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+    <div class="topbar-title" id="bookTitle">शिक्षित मित्र</div>
+    <div class="topbar-page">
+      <span id="pageCurrent">–</span><span class="topbar-page__sep">/</span><span id="pageTotal">–</span>
     </div>
-  </div>
-  <div class="header-right">
-    <span class="tag-pill">लोक सेवा</span>
-  </div>
-</header>
+  </header>
 
-<div class="hero">
-  <h1>Your <span>Study Library</span><br>for Civil Service</h1>
-  <p>Click any book below to read chapters, past questions, and study materials.</p>
-</div>
+  <main class="stage" id="stage">
 
-<div class="shelf-section">
-  <div class="section-eyebrow">पुस्तकहरू &mdash; Books</div>
-  <div id="shelfRow" class="books-row">
-    <div class="status-msg"><div class="spinner"></div> Loading library...</div>
-  </div>
-  <div class="shelf-plank"></div>
-</div>
+    <button class="nav nav--left" id="prevBtn" aria-label="prev">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
 
-<!-- VIEWER MODAL -->
-<div class="overlay" id="overlay">
-  <div class="modal">
-    <div class="modal-header">
-      <div class="modal-header-left">
-        <h2 id="modalTitle">Book</h2>
-        <span class="modal-sub" id="modalSub"></span>
+    <div class="book-wrap" id="bookWrap">
+      <div class="book" id="book">
+        <div class="page page--left" id="pageLeft">
+          <div class="page-inner">
+            <div class="page-head" id="leftHead"></div>
+            <div class="page-title" id="leftTitle"></div>
+            <div class="page-body" id="leftBody"></div>
+            <div class="page-num" id="leftNum"></div>
+          </div>
+        </div>
+        <div class="spine"></div>
+        <div class="page page--right" id="pageRight">
+          <div class="page-inner">
+            <div class="page-head" id="rightHead"></div>
+            <div class="page-title" id="rightTitle"></div>
+            <div class="page-body" id="rightBody"></div>
+            <div class="page-num" id="rightNum"></div>
+          </div>
+        </div>
+
+        <!-- Flip leaf (injected during animation) -->
+        <div class="flip-container" id="flipLeaf" style="display:none">
+          <div class="flip-face flip-face--front" id="flipFront"></div>
+          <div class="flip-face flip-face--back"  id="flipBack"></div>
+        </div>
       </div>
-      <button class="modal-close" id="modalClose" aria-label="Close">✕</button>
-    </div>
-    <div class="modal-tabs" id="modalTabs"></div>
-    <div class="modal-body" id="modalBody">
-      <div class="modal-empty"><div class="spinner"></div></div>
-    </div>
-  </div>
-</div>
 
-<footer>शिक्षित मित्र &mdash; Shikshit Mitra &copy; 2081 &bull; लोक सेवा आयोग तयारी</footer>
+      <!-- Loading / error overlays -->
+      <div class="overlay" id="overlayLoad">
+        <div class="spinner"></div>
+        <p class="overlay-text">पाना लोड हुँदैछ…</p>
+      </div>
+      <div class="overlay is-hidden" id="overlayErr">
+        <p class="overlay-text" id="errMsg">लोड गर्न सकिएन</p>
+        <button class="retry-btn" id="retryBtn">फेरि प्रयास गर्नुहोस्</button>
+      </div>
+    </div>
+
+    <button class="nav nav--right" id="nextBtn" aria-label="next">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+    </button>
+
+  </main>
+
+  <footer class="toolbar">
+    <button class="tbtn" id="fullBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M16 3h3a2 2 0 0 1 2 2v3"/>
+        <path d="M8 21H5a2 2 0 0 1-2-2v-3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/>
+      </svg>
+    </button>
+  </footer>
+
+  <div class="toast" id="toast"></div>
+</div>
 
 <script>
-const SHEET_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS5svv38RZ1MJ54P73voMTXWZYuNZZeU6Hy4uWsXS95Z0BcydyeRsQINcY8gzVyKYNCeQoM8u3gs7E_/pub?output=csv';
+(function(){
+"use strict";
 
-const BOOK_CONFIG = {
-  'second-paper': {
-    cssClass: 'book-second',
-    label: 'खरिदार',
-    title: 'दोस्रो पत्र\n(2nd Paper)',
-    displayName: 'Kharidar Second Paper',
-  },
-  'third-paper': {
-    cssClass: 'book-third',
-    label: 'खरिदार',
-    title: 'तेस्रो पत्र\n(3rd Paper)',
-    displayName: 'Kharidar Third Paper',
-  },
-  'officer-paper': {
-    cssClass: 'book-officer',
-    label: 'अफिसर',
-    title: 'लिखित\n(Written)',
-    displayName: 'Officer Written Paper',
-  },
+/* ── Config ── */
+var SHEET_URL =
+  "https://docs.google.com/spreadsheets/d/e/" +
+  "2PACX-1vS5svv38RZ1MJ54P73voMTXWZYuNZZeU6Hy4uWsXS95Z0BcydyeRsQINcY8gzVyKYNCeQoM8u3gs7E_" +
+  "/pub?output=csv";
+
+var params      = new URLSearchParams(window.location.search);
+var BOOK_FILTER = (params.get("book") || "second").toLowerCase().trim();
+var FLIP_MS     = 550;
+
+var state = {
+  title:   params.get("title") || "शिक्षित मित्र",
+  pages:   [],   // [{title,content,pageLabel}]
+  cur:     1,    // 1-based, always the RIGHT page index
+  single:  false,
+  flipping:false
 };
 
-function parseCSV(text) {
-  const lines = text.trim().split(/\r?\n/);
-  const headers = lines[0].split(',').map(h => h.replace(/^"|"$/g, '').trim());
-  return lines.slice(1).map(line => {
-    const cols = [];
-    let cur = '', inQ = false;
-    for (let i = 0; i < line.length; i++) {
-      if (line[i] === '"') { inQ = !inQ; }
-      else if (line[i] === ',' && !inQ) { cols.push(cur.trim()); cur = ''; }
-      else cur += line[i];
+/* ── Refs ── */
+var $ = function(id){ return document.getElementById(id); };
+var el = {
+  bookTitle:$("bookTitle"), pageCurrent:$("pageCurrent"), pageTotal:$("pageTotal"),
+  stage:$("stage"), bookWrap:$("bookWrap"), book:$("book"),
+  pageLeft:$("pageLeft"), pageRight:$("pageRight"),
+  leftHead:$("leftHead"), leftTitle:$("leftTitle"), leftBody:$("leftBody"), leftNum:$("leftNum"),
+  rightHead:$("rightHead"), rightTitle:$("rightTitle"), rightBody:$("rightBody"), rightNum:$("rightNum"),
+  flipLeaf:$("flipLeaf"), flipFront:$("flipFront"), flipBack:$("flipBack"),
+  overlayLoad:$("overlayLoad"), overlayErr:$("overlayErr"), errMsg:$("errMsg"),
+  prevBtn:$("prevBtn"), nextBtn:$("nextBtn"), retryBtn:$("retryBtn"),
+  backBtn:$("backBtn"), fullBtn:$("fullBtn"), toast:$("toast")
+};
+
+/* ── Toast ── */
+var _tt;
+function toast(msg){
+  el.toast.textContent = msg;
+  el.toast.classList.add("show");
+  clearTimeout(_tt);
+  _tt = setTimeout(function(){ el.toast.classList.remove("show"); }, 1800);
+}
+
+/* ── CSV parser ── */
+function parseCSV(text){
+  var rows=[], lines=text.split(/\r?\n/);
+  lines.forEach(function(line){
+    if(!line.trim()) return;
+    var cols=[],cur="",inQ=false;
+    for(var i=0;i<line.length;i++){
+      var ch=line[i];
+      if(inQ){ if(ch==='"'){ if(line[i+1]==='"'){cur+='"';i++;}else inQ=false; } else cur+=ch; }
+      else{ if(ch==='"') inQ=true; else if(ch===','){cols.push(cur.trim());cur="";} else cur+=ch; }
     }
     cols.push(cur.trim());
-    const obj = {};
-    headers.forEach((h, i) => obj[h] = (cols[i] || '').replace(/^"|"$/g, '').trim());
-    return obj;
-  }).filter(r => r.Book);
+    rows.push(cols);
+  });
+  return rows;
 }
 
-let library = {};
+/* ── Fetch pages from sheet ── */
+function fetchPages(){
+  return fetch(SHEET_URL)
+    .then(function(r){ if(!r.ok) throw new Error(r.status); return r.text(); })
+    .then(function(csv){
+      var rows = parseCSV(csv);
+      if(rows.length < 2) throw new Error("empty");
+      var h    = rows[0].map(function(x){ return x.toLowerCase().trim(); });
+      var cBook    = h.indexOf("book");
+      var cTitle   = h.indexOf("title");
+      var cContent = h.indexOf("content");
+      var cOrder   = h.indexOf("order");
+      if(cBook<0) throw new Error("no book column");
 
-async function init() {
-  const shelf = document.getElementById('shelfRow');
-  try {
-    const res = await fetch(SHEET_CSV);
-    if (!res.ok) throw new Error('Network error');
-    const text = await res.text();
-    const rows = parseCSV(text);
-    rows.forEach(row => {
-      if (!library[row.Book]) library[row.Book] = [];
-      library[row.Book].push(row);
+      var out=[];
+      for(var r=1;r<rows.length;r++){
+        var row=rows[r];
+        if(!row[cBook]) continue;
+        if(row[cBook].toLowerCase().trim() !== BOOK_FILTER) continue;
+        out.push({
+          title:   cTitle>=0   ? row[cTitle]||""   : "",
+          content: cContent>=0 ? row[cContent]||"" : "",
+          order:   cOrder>=0   ? parseInt(row[cOrder],10)||9999 : 9999
+        });
+      }
+      out.sort(function(a,b){return a.order-b.order;});
+      // Add page numbers
+      out.forEach(function(p,i){ p.pageNum = i+1; });
+      return out;
     });
-    renderShelf();
-  } catch (e) {
-    shelf.innerHTML = '<div class="status-msg" style="color:#e05c3a">⚠️ Could not load library. Check your internet connection.</div>';
-  }
 }
 
-function renderShelf() {
-  const shelf = document.getElementById('shelfRow');
-  const bookKeys = Object.keys(library);
-  if (!bookKeys.length) {
-    shelf.innerHTML = '<div class="status-msg">No books found.</div>';
+/* ── Layout ── */
+function layout(){
+  var sw = el.stage.clientWidth  - 32;
+  var sh = el.stage.clientHeight - 16;
+  var A4 = 210/297;
+  state.single = sw < 520;
+
+  var ph, pw;
+  if(state.single){
+    ph = Math.min(sh, sw / A4);
+    pw = Math.min(sw, ph * A4);
+    ph = pw / A4;
+  } else {
+    ph = Math.min(sh, (sw/2) / A4);
+    pw = Math.min(sw, ph * A4 * 2);
+    ph = (pw/2) / A4;
+  }
+  pw = Math.floor(state.single ? pw : pw/2);
+  ph = Math.floor(ph);
+
+  el.book.style.setProperty("--pw", pw+"px");
+  el.book.style.setProperty("--ph", ph+"px");
+  el.book.classList.toggle("single", state.single);
+}
+
+/* ── Fill a page element ── */
+function fillPage(headEl, titleEl, bodyEl, numEl, pageData, sectionTitle){
+  if(!pageData){
+    headEl.textContent = "";
+    titleEl.textContent = "";
+    bodyEl.textContent = "";
+    numEl.textContent = "";
     return;
   }
-  shelf.innerHTML = '';
-  bookKeys.forEach(key => {
-    const pages = library[key];
-    const cfg = BOOK_CONFIG[key] || { cssClass: 'book-default', label: '', title: key, displayName: key };
-    const pubCount = pages.filter(p => p.Published === 'yes').length;
-    const hasPro = pages.some(p => p.Premium === 'yes');
-    const firstYear = pages.find(p => p.Year)?.Year || '';
-    const wrap = document.createElement('div');
-    wrap.className = 'book-wrap';
-    wrap.setAttribute('role', 'button');
-    wrap.setAttribute('tabindex', '0');
-    wrap.setAttribute('aria-label', 'Open ' + cfg.displayName);
-    const titleLines = cfg.title.split('\n');
-    wrap.innerHTML = `
-      <div class="book ${cfg.cssClass}" title="${cfg.displayName}">
-        <div class="book-gloss"></div>
-        <div>
-          <div class="book-label-top">${cfg.label}</div>
-          <div class="book-title-text">${titleLines[0]}<br><span style="opacity:0.8;font-size:11px">${titleLines[1]||''}</span></div>
-        </div>
-        <div class="book-bottom">
-          <span class="book-year">${firstYear}</span>
-          ${hasPro ? '<span class="book-pro-badge">PRO</span>' : ''}
-          <span class="book-pages-badge">${pubCount} ch</span>
-        </div>
-      </div>
-      <div class="book-name">${cfg.displayName.replace(' Paper','<br>Paper')}</div>
-      <div class="book-type">${pubCount} chapter${pubCount !== 1 ? 's' : ''}</div>
-    `;
-    wrap.onclick = () => openBook(key);
-    wrap.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') openBook(key); };
-    shelf.appendChild(wrap);
+  headEl.textContent  = sectionTitle || state.title;
+  titleEl.textContent = pageData.title || "";
+  bodyEl.textContent  = pageData.content || "";
+  numEl.textContent   = pageData.pageNum;
+}
+
+/* ── Render spread (no animation) ── */
+function renderSpread(rightIdx){
+  state.cur = rightIdx;
+  var leftIdx = rightIdx - 1;
+  var rightPage = state.pages[rightIdx - 1] || null;
+  var leftPage  = (!state.single && leftIdx >= 1) ? state.pages[leftIdx - 1] : null;
+
+  fillPage(el.rightHead, el.rightTitle, el.rightBody, el.rightNum, rightPage, state.title);
+  fillPage(el.leftHead,  el.leftTitle,  el.leftBody,  el.leftNum,  leftPage,  state.title);
+
+  el.pageCurrent.textContent = rightIdx;
+  el.pageTotal.textContent   = TOTAL_PAGES;
+  el.prevBtn.disabled = rightIdx <= 1;
+  el.nextBtn.disabled = rightIdx >= TOTAL_PAGES;
+}
+
+/* ── Clone a page side for flip animation ── */
+function clonePageHTML(pageData, isRight){
+  var div = document.createElement("div");
+  div.className = "page " + (isRight ? "page--right" : "page--left");
+  div.style.cssText = "width:100%;height:100%;position:absolute;inset:0;";
+  var inner = document.createElement("div");
+  inner.className = "page-inner";
+  var h = document.createElement("div"); h.className="page-head"; h.textContent = state.title;
+  var t = document.createElement("div"); t.className="page-title"; t.textContent = pageData ? pageData.title : "";
+  var b = document.createElement("div"); b.className="page-body";  b.textContent = pageData ? pageData.content : "";
+  var n = document.createElement("div"); n.className="page-num";   n.textContent = pageData ? pageData.pageNum : "";
+  inner.appendChild(h); inner.appendChild(t); inner.appendChild(b); inner.appendChild(n);
+  div.appendChild(inner);
+  return div.outerHTML;
+}
+
+/* ── Animate flip ── */
+function animateFlip(toRight, toIdx, done){
+  if(state.flipping) return;
+  state.flipping = true;
+
+  var leaf  = el.flipLeaf;
+  var front = el.flipFront;
+  var back  = el.flipBack;
+
+  // Decide pages for front/back faces
+  var frontPageIdx, backPageIdx;
+  if(toRight){ // going next: leaf comes from right side
+    frontPageIdx = state.cur;       // current right page
+    backPageIdx  = toIdx;           // next page
+    leaf.className = "flip-container is-right";
+  } else {     // going prev: leaf comes from left side
+    frontPageIdx = state.cur - 1;  // current left page
+    backPageIdx  = toIdx - 1;      // prev spread left page
+    leaf.className = "flip-container is-left";
+  }
+
+  front.innerHTML = clonePageHTML(state.pages[frontPageIdx-1]||null, !toRight);
+  back.innerHTML  = clonePageHTML(state.pages[backPageIdx-1]||null,  toRight);
+
+  leaf.style.display = "block";
+  leaf.style.transform = "rotateY(0deg)";
+  leaf.style.transition = "none";
+
+  // Force reflow
+  leaf.getBoundingClientRect();
+
+  var startAngle = 0;
+  var endAngle   = toRight ? -180 : 180;
+  var startTime  = null;
+
+  function ease(t){ return t<.5 ? 4*t*t*t : 1-Math.pow(-2*t+2,3)/2; }
+
+  function tick(ts){
+    if(!startTime) startTime = ts;
+    var t = Math.min((ts-startTime)/FLIP_MS, 1);
+    var angle = startAngle + (endAngle - startAngle) * ease(t);
+    leaf.style.transform = "rotateY("+angle+"deg)";
+    if(t < 1){ requestAnimationFrame(tick); }
+    else{
+      leaf.style.display = "none";
+      state.flipping = false;
+      done();
+    }
+  }
+  requestAnimationFrame(tick);
+}
+
+/* ── Navigation ── */
+function goNext(){
+  if(state.flipping || state.cur >= TOTAL_PAGES) return;
+  var toIdx = state.cur + 1;
+  animateFlip(true, toIdx, function(){ renderSpread(toIdx); });
+}
+
+function goPrev(){
+  if(state.flipping || state.cur <= 1) return;
+  var toIdx = state.cur - 1;
+  animateFlip(false, toIdx, function(){ renderSpread(toIdx); });
+}
+
+/* ── Swipe ── */
+var _sx=0, _sy=0, _st=0;
+el.stage.addEventListener("touchstart", function(e){
+  var t=e.touches[0]; _sx=t.clientX; _sy=t.clientY; _st=Date.now();
+}, {passive:true});
+el.stage.addEventListener("touchend", function(e){
+  var t=e.changedTouches[0];
+  var dx=t.clientX-_sx, dy=t.clientY-_sy, dt=Date.now()-_st;
+  if(Math.abs(dx)>Math.abs(dy) && Math.abs(dx)>40 && dt<400){
+    if(dx<0) goNext(); else goPrev();
+  }
+}, {passive:true});
+
+/* ── Keyboard ── */
+document.addEventListener("keydown", function(e){
+  if(e.key==="ArrowRight"||e.key==="ArrowDown") goNext();
+  if(e.key==="ArrowLeft" ||e.key==="ArrowUp")   goPrev();
+});
+
+/* ── Back ── */
+el.backBtn.addEventListener("click", function(){
+  if(window.history.length>1) window.history.back();
+  else window.location.href="index.html";
+});
+
+/* ── Fullscreen ── */
+el.fullBtn.addEventListener("click", function(){
+  var isFull = document.fullscreenElement || document.webkitFullscreenElement;
+  if(!isFull){
+    var req = document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen;
+    if(req) req.call(document.documentElement);
+  } else {
+    (document.exitFullscreen||document.webkitExitFullscreen).call(document);
+  }
+});
+
+/* ── Nav buttons ── */
+el.prevBtn.addEventListener("click", goPrev);
+el.nextBtn.addEventListener("click", goNext);
+el.retryBtn.addEventListener("click", load);
+
+/* ── Resize ── */
+var _rt;
+window.addEventListener("resize", function(){
+  clearTimeout(_rt);
+  _rt = setTimeout(function(){ layout(); renderSpread(state.cur); }, 200);
+});
+
+/* ── Overlays ── */
+function showLoad(){ el.overlayLoad.classList.remove("is-hidden"); el.overlayErr.classList.add("is-hidden"); }
+function showErr(msg){ el.overlayLoad.classList.add("is-hidden"); el.overlayErr.classList.remove("is-hidden"); el.errMsg.textContent=msg||"लोड गर्न सकिएन"; }
+function hideOverlays(){ el.overlayLoad.classList.add("is-hidden"); el.overlayErr.classList.add("is-hidden"); }
+
+/* ── Load ── */
+var TOTAL_PAGES = 10;
+
+function load(){
+  showLoad();
+  state.pages = [];
+  state.cur   = 1;
+  el.bookTitle.textContent = state.title;
+
+  fetchPages().then(function(sheetPages){
+    // Build a map of order → page data from sheet
+    var dataMap = {};
+    sheetPages.forEach(function(p){
+      if(p.order >= 1 && p.order <= TOTAL_PAGES) dataMap[p.order] = p;
+    });
+
+    // Always create exactly TOTAL_PAGES pages; fill blanks where no sheet data
+    var pages = [];
+    for(var i = 1; i <= TOTAL_PAGES; i++){
+      if(dataMap[i]){
+        pages.push(dataMap[i]);
+      } else {
+        pages.push({ title: "", content: "", order: i, pageNum: i });
+      }
+    }
+    // Ensure pageNum is set correctly
+    pages.forEach(function(p, idx){ p.pageNum = idx + 1; });
+
+    state.pages = pages;
+    layout();
+    hideOverlays();
+    renderSpread(1);
+  }).catch(function(err){
+    console.error(err);
+    // Even on error, show blank 10-page book
+    var pages = [];
+    for(var i = 1; i <= TOTAL_PAGES; i++){
+      pages.push({ title: "", content: "", order: i, pageNum: i });
+    }
+    state.pages = pages;
+    layout();
+    hideOverlays();
+    renderSpread(1);
   });
 }
 
-function openBook(key) {
-  const pages = library[key];
-  const cfg = BOOK_CONFIG[key] || { displayName: key };
-  const published = pages
-    .filter(p => p.Published === 'yes' && p.PdfUrl)
-    .sort((a, b) => parseInt(a['Page Order'] || 0) - parseInt(b['Page Order'] || 0));
-
-  document.getElementById('modalTitle').textContent = cfg.displayName;
-  document.getElementById('modalSub').textContent = published.length + ' published chapter' + (published.length !== 1 ? 's' : '');
-
-  const tabsEl = document.getElementById('modalTabs');
-  const bodyEl = document.getElementById('modalBody');
-  tabsEl.innerHTML = '';
-  bodyEl.innerHTML = '';
-
-  if (!published.length) {
-    bodyEl.innerHTML = `<div class="modal-empty"><svg width="48" height="48" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg><span>No published chapters yet.</span></div>`;
-    document.getElementById('overlay').classList.add('open');
-    return;
-  }
-
-  published.forEach((page, i) => {
-    const btn = document.createElement('button');
-    btn.className = 'modal-tab' + (i === 0 ? ' active' : '');
-    btn.textContent = page.Title || (page.Type ? page.Type.toUpperCase() : 'Chapter ' + (i + 1));
-    if (page.Year) btn.textContent += ' ' + page.Year;
-    btn.onclick = () => {
-      document.querySelectorAll('.modal-tab').forEach(t => t.classList.remove('active'));
-      btn.classList.add('active');
-      loadFrame(page.PdfUrl, bodyEl, cfg.displayName);
-    };
-    tabsEl.appendChild(btn);
-  });
-
-  loadFrame(published[0].PdfUrl, bodyEl, cfg.displayName);
-  document.getElementById('overlay').classList.add('open');
-}
-
-function loadFrame(url, container, title) {
-  container.innerHTML = '<div class="modal-empty"><div class="spinner"></div></div>';
-  const iframe = document.createElement('iframe');
-  iframe.src = url;
-  iframe.title = title;
-  iframe.allow = 'fullscreen';
-  iframe.onload = () => {};
-  iframe.onerror = () => showFallback(url, container);
-  container.innerHTML = '';
-  container.appendChild(iframe);
-}
-
-function showFallback(url, container) {
-  container.innerHTML = `<div class="modal-empty">
-    <svg width="48" height="48" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-    <span>Cannot embed this content.</span>
-    <a class="open-link-btn" href="${url}" target="_blank" rel="noopener">Open in New Tab ↗</a>
-  </div>`;
-}
-
-document.getElementById('modalClose').onclick = closeModal;
-document.getElementById('overlay').onclick = function(e) { if (e.target === this) closeModal(); };
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
-function closeModal() {
-  document.getElementById('overlay').classList.remove('open');
-  document.getElementById('modalBody').innerHTML = '';
-}
-
-init();
+document.addEventListener("DOMContentLoaded", load);
+})();
 </script>
 </body>
 </html>
