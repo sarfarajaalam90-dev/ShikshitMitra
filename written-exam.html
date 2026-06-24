@@ -20,6 +20,7 @@
   --page-text:#1a1a2e;
   --page-head:#3d1f7a;
   --spine:#2d1f5e;
+  --margin-w:40px;
 }
 
 html,body{height:100%;width:100%;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;overflow:hidden}
@@ -119,7 +120,7 @@ html,body{height:100%;width:100%;background:var(--bg);color:var(--text);font-fam
 
 /* Page content */
 .page-inner{
-  padding:32px 0 24px;
+  padding:32px 28px 24px calc(var(--margin-w) + 14px);
   height:100%;display:flex;flex-direction:column;
   position:relative;z-index:2;
 }
@@ -131,18 +132,18 @@ html,body{height:100%;width:100%;background:var(--bg);color:var(--text);font-fam
   background-image:repeating-linear-gradient(
     to bottom,
     transparent 0px,
-    transparent 27px,
-    var(--page-line) 27px,
-    var(--page-line) 28px
+    transparent 23px,
+    var(--page-line) 23px,
+    var(--page-line) 24px
   );
   pointer-events:none;
 }
 
-/* Red margin line on BOTH pages */
-.page-inner::after{
+/* Red margin line on left */
+.page--right .page-inner::after{
   content:'';position:absolute;
-  top:0;left:56px;width:1.5px;height:100%;
-  background:rgba(220,80,80,0.25);
+  top:0;left:var(--margin-w);width:1px;height:100%;
+  background:rgba(220,80,80,0.2);
   pointer-events:none;
 }
 
@@ -155,7 +156,6 @@ html,body{height:100%;width:100%;background:var(--bg);color:var(--text);font-fam
   border-bottom:1.5px solid var(--accent);
   opacity:.7;
   position:relative;z-index:3;
-  padding-left:72px;padding-right:24px;
 }
 
 .page-title{
@@ -164,7 +164,6 @@ html,body{height:100%;width:100%;background:var(--bg);color:var(--text);font-fam
   color:var(--page-head);
   margin-bottom:16px;line-height:1.4;
   position:relative;z-index:3;
-  padding-left:72px;padding-right:24px;
 }
 
 .page-body{
@@ -174,14 +173,12 @@ html,body{height:100%;width:100%;background:var(--bg);color:var(--text);font-fam
   flex:1;overflow:hidden;
   position:relative;z-index:3;
   white-space:pre-wrap;word-break:break-word;
-  padding-left:72px;padding-right:24px;
 }
 
 .page-num{
   font-size:11px;color:var(--muted);
   text-align:center;margin-top:8px;
   position:relative;z-index:3;letter-spacing:.05em;
-  padding-left:0;padding-right:24px;
 }
 
 /* ── Flip animation ── */
@@ -434,7 +431,7 @@ function fetchPages(){
 
 /* ── Layout ── */
 function layout(){
-  var sw = el.stage.clientWidth  - 32;
+  var sw = el.stage.clientWidth  - 96;
   var sh = el.stage.clientHeight - 16;
   var A4 = 210/297;
   state.single = sw < 520;
