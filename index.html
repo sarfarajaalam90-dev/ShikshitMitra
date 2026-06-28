@@ -10,23 +10,26 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Shikshit Mitra">
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="https://shikshitmitra.vercel.app/icons/icon-192.png">
-<link rel="apple-touch-icon" sizes="152x152" href="icons/icon-152.png">
-<link rel="apple-touch-icon" sizes="144x144" href="icons/icon-144.png">
-<link rel="apple-touch-icon" sizes="120x120" href="icons/icon-128.png">
-<link rel="icon" type="image/png" sizes="32x32" href="https://shikshitmitra.vercel.app/icons/icon-96.png">
-<link rel="icon" type="image/png" sizes="16x16" href="https://shikshitmitra.vercel.app/icons/icon-72.png">
+<link rel="apple-touch-icon" href="https://shikshitmitra.vercel.app/icon-192.png">
+<link rel="apple-touch-icon" sizes="152x152" href="icon-144.png">
+<link rel="apple-touch-icon" sizes="144x144" href="icon-144.png">
+<link rel="apple-touch-icon" sizes="120x120" href="icon-96.png">
+<link rel="apple-touch-icon" sizes="72x72" href="icon-72.png">
+<link rel="icon" type="image/png" sizes="48x48" href="https://shikshitmitra.vercel.app/icon-48.png">
+<link rel="icon" type="image/png" sizes="96x96" href="https://shikshitmitra.vercel.app/icon-96.png">
+<link rel="icon" type="image/png" sizes="192x192" href="https://shikshitmitra.vercel.app/icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="https://shikshitmitra.vercel.app/icon-512.png">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="application-name" content="Shikshit Mitra">
 <meta name="msapplication-TileColor" content="#1a6b3c">
-<meta name="msapplication-TileImage" content="icons/icon-144.png">
+<meta name="msapplication-TileImage" content="icon-144.png">
 <meta name="msapplication-config" content="none">
 <meta name="robots" content="index, follow, max-image-preview:large">
 <meta name="description" content="लोकसेवा खरिदार र अन्य सरकारी परीक्षाको तयारीको लागि नि:शुल्क नोटहरू र अभ्यास सामग्रीहरू। शिक्षित मित्र - सफलताको साथी।">
 <meta name="keywords" content="Shikshit Mitra, Loksewa preparation, Kharidar notes, Nepal Education App">
 <meta property="og:title" content="Shikshit Mitra">
 <meta property="og:description" content="सफलताको साथी - सिक्षित मित्र">
-<meta property="og:image" content="https://shikshitmitra.vercel.app/icons/icon-512.png">
+<meta property="og:image" content="https://shikshitmitra.vercel.app/icon-512.png">
 <meta property="og:image:width" content="512">
 <meta property="og:image:height" content="512">
 <meta property="og:image:type" content="image/png">
@@ -36,7 +39,7 @@
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Shikshit Mitra">
 <meta name="twitter:description" content="सफलताको साथी - सिक्षित मित्र">
-<meta name="twitter:image" content="https://shikshitmitra.vercel.app/icons/icon-512.png">
+<meta name="twitter:image" content="https://shikshitmitra.vercel.app/icon-512.png">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <!-- Firebase SDK -->
@@ -104,8 +107,8 @@ function initFCM() {
     if (Notification.permission === 'granted') {
       new Notification(title, {
         body: body,
-        icon: 'https://shikshitmitra.vercel.app/icons/icon-192.png',
-        badge: 'https://shikshitmitra.vercel.app/icons/icon-96.png'
+        icon: 'https://shikshitmitra.vercel.app/icon-192.png',
+        badge: 'https://shikshitmitra.vercel.app/icon-96.png'
       });
     }
   });
@@ -883,8 +886,8 @@ nav{
   "@type": "WebApplication",
   "name": "Shikshit Mitra",
   "url": "https://shikshitmitra.vercel.app/",
-  "logo": "https://shikshitmitra.vercel.app/icons/icon-512.png",
-  "image": "https://shikshitmitra.vercel.app/icons/icon-512.png",
+  "logo": "https://shikshitmitra.vercel.app/icon-512.png",
+  "image": "https://shikshitmitra.vercel.app/icon-512.png",
   "description": "सफलताको साथी - सिक्षित मित्र for Lok Sewa Preparation — Live Classes, Notes, Model Tests, Syllabus",
   "applicationCategory": "EducationApplication",
   "operatingSystem": "Android, iOS, Web",
@@ -898,7 +901,7 @@ nav{
     "name": "Shikshit Mitra",
     "logo": {
       "@type": "ImageObject",
-      "url": "https://shikshitmitra.vercel.app/icons/icon-512.png",
+      "url": "https://shikshitmitra.vercel.app/icon-512.png",
       "width": 512,
       "height": 512
     }
