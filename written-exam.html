@@ -37,6 +37,8 @@ html,body{height:100%;width:100%;background:var(--bg);color:var(--text);font-fam
 .topbar-title{flex:1;font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:'Noto Serif Devanagari',serif}
 .topbar-page{font-size:13px;color:var(--muted);white-space:nowrap}
 .topbar-page__sep{margin:0 2px}
+.app-logo{width:26px;height:26px;border-radius:6px;object-fit:contain;flex-shrink:0;display:none}
+.app-logo.is-visible{display:block}
 
 /* ── Stage ── */
 .stage{
@@ -120,15 +122,53 @@ html,body{height:100%;width:100%;background:var(--bg);color:var(--text);font-fam
 
 /* Page content */
 .page-inner{
-  padding:32px 28px 24px calc(var(--margin-w) + 14px);
+  padding:18px 0 14px;
   height:100%;display:flex;flex-direction:column;
   position:relative;z-index:2;
 }
 
-/* Ruled lines */
-.page-inner::before{
-  content:'';position:absolute;
-  top:72px;left:0;right:0;bottom:24px;
+/* One horizontal strip of the page: a margin cell (carries the red rule)
+   plus a content cell. Question rows, the head row, and (optionally) the
+   section banner all share this grid so the red line reads as one
+   continuous rule down the page. */
+.page-row{display:flex;align-items:stretch}
+
+.margin-cell{
+  width:var(--margin-w);flex-shrink:0;
+  border-right:1px solid rgba(220,80,80,0.32);
+  display:flex;justify-content:center;
+  padding-top:3px;
+}
+
+.content-cell{
+  flex:1;min-width:0;
+  padding:0 28px 0 14px;
+}
+
+/* ── Head row (running book title) ── */
+.head-row{margin-bottom:8px}
+.page-head-text{
+  font-family:'Noto Serif Devanagari',serif;
+  font-size:13px;font-weight:600;
+  color:var(--page-head);
+  text-transform:uppercase;letter-spacing:.06em;
+  padding:8px 0 8px;
+  border-bottom:1.5px solid var(--accent);
+  opacity:.7;
+}
+
+/* ── Question rows ── */
+.page-blocks{flex:1;overflow:hidden}
+
+.q-num{
+  font-family:'Noto Serif Devanagari',serif;
+  font-size:10px;font-weight:700;line-height:1.25;
+  color:var(--page-head);
+  text-align:center;
+}
+
+.q-text-wrap{
+  position:relative;overflow:hidden;
   background-image:repeating-linear-gradient(
     to bottom,
     transparent 0px,
@@ -136,49 +176,31 @@ html,body{height:100%;width:100%;background:var(--bg);color:var(--text);font-fam
     var(--page-line) 23px,
     var(--page-line) 24px
   );
-  pointer-events:none;
 }
 
-/* Red margin line on left */
-.page--right .page-inner::after{
-  content:'';position:absolute;
-  top:0;left:var(--margin-w);width:1px;height:100%;
-  background:rgba(220,80,80,0.2);
-  pointer-events:none;
-}
-
-.page-head{
+.q-text{
   font-family:'Noto Serif Devanagari',serif;
-  font-size:13px;font-weight:600;
-  color:var(--page-head);
-  text-transform:uppercase;letter-spacing:.06em;
-  margin-bottom:16px;padding-bottom:8px;
-  border-bottom:1.5px solid var(--accent);
-  opacity:.7;
-  position:relative;z-index:3;
-}
-
-.page-title{
-  font-family:'Noto Serif Devanagari',serif;
-  font-size:18px;font-weight:700;
-  color:var(--page-head);
-  margin-bottom:16px;line-height:1.4;
-  position:relative;z-index:3;
-}
-
-.page-body{
-  font-family:'Noto Serif Devanagari',serif;
-  font-size:14px;line-height:28px;
+  font-size:14px;line-height:24px;
   color:var(--page-text);
-  flex:1;overflow:hidden;
-  position:relative;z-index:3;
   white-space:pre-wrap;word-break:break-word;
 }
 
+/* ── Section banner ── */
+.banner-row{margin:5px 0 7px;padding:0 28px 0 14px}
+.section-banner{
+  background:linear-gradient(135deg, var(--accent), #6b4fb3);
+  color:#fff;
+  font-family:'Noto Serif Devanagari',serif;
+  font-size:12px;font-weight:700;letter-spacing:.04em;
+  text-align:center;
+  padding:6px 10px;border-radius:4px;
+}
+
+/* ── Page number footer ── */
+.num-row{justify-content:center;padding-top:6px}
 .page-num{
   font-size:11px;color:var(--muted);
-  text-align:center;margin-top:8px;
-  position:relative;z-index:3;letter-spacing:.05em;
+  letter-spacing:.05em;
 }
 
 /* ── Flip animation ── */
@@ -267,6 +289,7 @@ html,body{height:100%;width:100%;background:var(--bg);color:var(--text);font-fam
     <button class="tbtn" id="backBtn" aria-label="back">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
     </button>
+    <img class="app-logo" id="appLogo" alt="">
     <div class="topbar-title" id="bookTitle">शिक्षित मित्र</div>
     <div class="topbar-page">
       <span id="pageCurrent">–</span><span class="topbar-page__sep">/</span><span id="pageTotal">–</span>
@@ -282,21 +305,11 @@ html,body{height:100%;width:100%;background:var(--bg);color:var(--text);font-fam
     <div class="book-wrap" id="bookWrap">
       <div class="book" id="book">
         <div class="page page--left" id="pageLeft">
-          <div class="page-inner">
-            <div class="page-head" id="leftHead"></div>
-            <div class="page-title" id="leftTitle"></div>
-            <div class="page-body" id="leftBody"></div>
-            <div class="page-num" id="leftNum"></div>
-          </div>
+          <div class="page-inner" id="leftInner"></div>
         </div>
         <div class="spine"></div>
         <div class="page page--right" id="pageRight">
-          <div class="page-inner">
-            <div class="page-head" id="rightHead"></div>
-            <div class="page-title" id="rightTitle"></div>
-            <div class="page-body" id="rightBody"></div>
-            <div class="page-num" id="rightNum"></div>
-          </div>
+          <div class="page-inner" id="rightInner"></div>
         </div>
 
         <!-- Flip leaf (injected during animation) -->
@@ -349,12 +362,25 @@ var params      = new URLSearchParams(window.location.search);
 var BOOK_FILTER = (params.get("book") || "second").toLowerCase().trim();
 var FLIP_MS     = 550;
 
+/* Update this to your actual logo filename once uploaded — the img just
+   hides itself (via onerror) if the file isn't found, so it's safe to
+   leave pointing at a placeholder name for now. */
+var LOGO_SRC = "logo.png";
+
+var LINE_H               = 24;   // px per ruled line — must match the CSS gradient + .q-text line-height
+var DEFAULT_LINES        = 3;    // fallback when a row has no 'lines' value
+var SECTION_BANNER_LINES = 2;    // line-budget "cost" of showing a section banner
+var PAGE_OVERHEAD        = 110;  // approx px used by head-row + num-row + page-inner padding
+
 var state = {
-  title:   params.get("title") || "शिक्षित मित्र",
-  pages:   [],   // [{title,content,pageLabel}]
-  cur:     1,    // 1-based, always the RIGHT page index
-  single:  false,
-  flipping:false
+  title:    params.get("title") || "शिक्षित मित्र",
+  pages:    [],   // [{num, blocks:[{type:'banner',text} | {type:'question',title,content,lines}]}]
+  rawItems: [],   // flat list fetched from the sheet, before pagination
+  cur:      1,    // 1-based, always the RIGHT page index
+  single:   false,
+  flipping: false,
+  ph:       0,
+  pw:       0
 };
 
 /* ── Refs ── */
@@ -363,12 +389,11 @@ var el = {
   bookTitle:$("bookTitle"), pageCurrent:$("pageCurrent"), pageTotal:$("pageTotal"),
   stage:$("stage"), bookWrap:$("bookWrap"), book:$("book"),
   pageLeft:$("pageLeft"), pageRight:$("pageRight"),
-  leftHead:$("leftHead"), leftTitle:$("leftTitle"), leftBody:$("leftBody"), leftNum:$("leftNum"),
-  rightHead:$("rightHead"), rightTitle:$("rightTitle"), rightBody:$("rightBody"), rightNum:$("rightNum"),
+  leftInner:$("leftInner"), rightInner:$("rightInner"),
   flipLeaf:$("flipLeaf"), flipFront:$("flipFront"), flipBack:$("flipBack"),
   overlayLoad:$("overlayLoad"), overlayErr:$("overlayErr"), errMsg:$("errMsg"),
   prevBtn:$("prevBtn"), nextBtn:$("nextBtn"), retryBtn:$("retryBtn"),
-  backBtn:$("backBtn"), fullBtn:$("fullBtn"), toast:$("toast")
+  backBtn:$("backBtn"), fullBtn:$("fullBtn"), toast:$("toast"), appLogo:$("appLogo")
 };
 
 /* ── Toast ── */
@@ -378,6 +403,11 @@ function toast(msg){
   el.toast.classList.add("show");
   clearTimeout(_tt);
   _tt = setTimeout(function(){ el.toast.classList.remove("show"); }, 1800);
+}
+
+/* ── HTML escape (content is now assembled via innerHTML) ── */
+function esc(s){
+  return String(s==null ? "" : s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
 }
 
 /* ── CSV parser ── */
@@ -409,6 +439,8 @@ function fetchPages(){
       var cTitle   = h.indexOf("title");
       var cContent = h.indexOf("content");
       var cOrder   = h.indexOf("order");
+      var cSection = h.indexOf("section");
+      var cLines   = h.indexOf("lines");
       if(cBook<0) throw new Error("no book column");
 
       var out=[];
@@ -416,15 +448,17 @@ function fetchPages(){
         var row=rows[r];
         if(!row[cBook]) continue;
         if(row[cBook].toLowerCase().trim() !== BOOK_FILTER) continue;
+        var lines = cLines>=0 ? Math.ceil(parseFloat(row[cLines])) : NaN;
+        if(!lines || lines<1) lines = DEFAULT_LINES;
         out.push({
           title:   cTitle>=0   ? row[cTitle]||""   : "",
           content: cContent>=0 ? row[cContent]||"" : "",
+          section: cSection>=0 ? row[cSection]||"" : "",
+          lines:   lines,
           order:   cOrder>=0   ? parseInt(row[cOrder],10)||9999 : 9999
         });
       }
       out.sort(function(a,b){return a.order-b.order;});
-      // Add page numbers
-      out.forEach(function(p,i){ p.pageNum = i+1; });
       return out;
     });
 }
@@ -433,40 +467,95 @@ function fetchPages(){
 function layout(){
   var sw = el.stage.clientWidth  - 96;
   var sh = el.stage.clientHeight - 16;
-  var A4 = 210/297;
   state.single = sw < 520;
 
-  var ph, pw;
-  if(state.single){
-    ph = Math.min(sh, sw / A4);
-    pw = Math.min(sw, ph * A4);
-    ph = pw / A4;
-  } else {
-    ph = Math.min(sh, (sw/2) / A4);
-    pw = Math.min(sw, ph * A4 * 2);
-    ph = (pw/2) / A4;
-  }
-  pw = Math.floor(state.single ? pw : pw/2);
+  var ph = sh;
+  var pw = state.single ? sw : sw/2;
+
+  pw = Math.floor(pw);
   ph = Math.floor(ph);
+  state.ph = ph;
+  state.pw = pw;
 
   el.book.style.setProperty("--pw", pw+"px");
   el.book.style.setProperty("--ph", ph+"px");
   el.book.classList.toggle("single", state.single);
 }
 
-/* ── Fill a page element ── */
-function fillPage(headEl, titleEl, bodyEl, numEl, pageData, sectionTitle){
-  if(!pageData){
-    headEl.textContent = "";
-    titleEl.textContent = "";
-    bodyEl.textContent = "";
-    numEl.textContent = "";
-    return;
+function computeLinesPerPage(){
+  return Math.max(6, Math.floor((state.ph - PAGE_OVERHEAD) / LINE_H));
+}
+
+/* ── Pack the flat question list into pages, inserting section banners ── */
+function buildPages(items, linesPerPage){
+  var pages = [];
+  var current, used, lastSection;
+
+  function startPage(){
+    current = { blocks: [] };
+    pages.push(current);
+    used = 0;
   }
-  headEl.textContent  = sectionTitle || state.title;
-  titleEl.textContent = pageData.title || "";
-  bodyEl.textContent  = pageData.content || "";
-  numEl.textContent   = pageData.pageNum;
+  startPage();
+
+  items.forEach(function(item){
+    var isFirstOnPage = current.blocks.length === 0;
+    var needBanner = !!item.section && (isFirstOnPage || item.section !== lastSection);
+    var cost = (needBanner ? SECTION_BANNER_LINES : 0) + item.lines;
+
+    if(used > 0 && used + cost > linesPerPage){
+      startPage();
+      needBanner = !!item.section;
+      cost = (needBanner ? SECTION_BANNER_LINES : 0) + item.lines;
+    }
+
+    if(needBanner){
+      current.blocks.push({ type:"banner", text:item.section });
+      used += SECTION_BANNER_LINES;
+      lastSection = item.section;
+    }
+    current.blocks.push({ type:"question", title:item.title, content:item.content, lines:item.lines });
+    used += item.lines;
+    if(item.section) lastSection = item.section;
+  });
+
+  if(pages.length && pages[pages.length-1].blocks.length === 0) pages.pop();
+  if(!pages.length) pages.push({ blocks: [] });
+  pages.forEach(function(p,i){ p.num = i+1; });
+  return pages;
+}
+
+function repaginate(){
+  var lpp = computeLinesPerPage();
+  state.pages = buildPages(state.rawItems, lpp);
+  TOTAL_PAGES = state.pages.length;
+  if(state.cur > TOTAL_PAGES) state.cur = TOTAL_PAGES;
+  if(state.cur < 1) state.cur = 1;
+}
+
+/* ── Build the inner HTML for one page ── */
+function buildPageInnerHTML(pageObj){
+  if(!pageObj) return "";
+  var html = '<div class="page-row head-row"><div class="margin-cell"></div>'
+           + '<div class="content-cell"><div class="page-head-text">'+esc(state.title)+'</div></div></div>'
+           + '<div class="page-blocks">';
+
+  pageObj.blocks.forEach(function(b){
+    if(b.type === "banner"){
+      html += '<div class="page-row banner-row"><div class="section-banner">'+esc(b.text)+'</div></div>';
+    } else {
+      html += '<div class="page-row">'
+            +   '<div class="margin-cell"><div class="q-num">'+esc(b.title)+'</div></div>'
+            +   '<div class="content-cell"><div class="q-text-wrap" style="height:'+(b.lines*LINE_H)+'px">'
+            +     '<div class="q-text">'+esc(b.content)+'</div>'
+            +   '</div></div>'
+            + '</div>';
+    }
+  });
+
+  html += '</div>'
+        + '<div class="page-row num-row"><div class="page-num">'+esc(pageObj.num||"")+'</div></div>';
+  return html;
 }
 
 /* ── Render spread (no animation) ── */
@@ -476,8 +565,8 @@ function renderSpread(rightIdx){
   var rightPage = state.pages[rightIdx - 1] || null;
   var leftPage  = (!state.single && leftIdx >= 1) ? state.pages[leftIdx - 1] : null;
 
-  fillPage(el.rightHead, el.rightTitle, el.rightBody, el.rightNum, rightPage, state.title);
-  fillPage(el.leftHead,  el.leftTitle,  el.leftBody,  el.leftNum,  leftPage,  state.title);
+  el.rightInner.innerHTML = buildPageInnerHTML(rightPage);
+  el.leftInner.innerHTML  = buildPageInnerHTML(leftPage);
 
   el.pageCurrent.textContent = rightIdx;
   el.pageTotal.textContent   = TOTAL_PAGES;
@@ -492,11 +581,7 @@ function clonePageHTML(pageData, isRight){
   div.style.cssText = "width:100%;height:100%;position:absolute;inset:0;";
   var inner = document.createElement("div");
   inner.className = "page-inner";
-  var h = document.createElement("div"); h.className="page-head"; h.textContent = state.title;
-  var t = document.createElement("div"); t.className="page-title"; t.textContent = pageData ? pageData.title : "";
-  var b = document.createElement("div"); b.className="page-body";  b.textContent = pageData ? pageData.content : "";
-  var n = document.createElement("div"); n.className="page-num";   n.textContent = pageData ? pageData.pageNum : "";
-  inner.appendChild(h); inner.appendChild(t); inner.appendChild(b); inner.appendChild(n);
+  inner.innerHTML = buildPageInnerHTML(pageData);
   div.appendChild(inner);
   return div.outerHTML;
 }
@@ -611,7 +696,7 @@ el.retryBtn.addEventListener("click", load);
 var _rt;
 window.addEventListener("resize", function(){
   clearTimeout(_rt);
-  _rt = setTimeout(function(){ layout(); renderSpread(state.cur); }, 200);
+  _rt = setTimeout(function(){ layout(); repaginate(); renderSpread(state.cur); }, 200);
 });
 
 /* ── Overlays ── */
@@ -620,48 +705,33 @@ function showErr(msg){ el.overlayLoad.classList.add("is-hidden"); el.overlayErr.
 function hideOverlays(){ el.overlayLoad.classList.add("is-hidden"); el.overlayErr.classList.add("is-hidden"); }
 
 /* ── Load ── */
-var TOTAL_PAGES = 10;
+var TOTAL_PAGES = 1;
 
 function load(){
   showLoad();
-  state.pages = [];
-  state.cur   = 1;
+  state.rawItems = [];
+  state.cur      = 1;
   el.bookTitle.textContent = state.title;
 
-  fetchPages().then(function(sheetPages){
-    // Build a map of order → page data from sheet
-    var dataMap = {};
-    sheetPages.forEach(function(p){
-      if(p.order >= 1 && p.order <= TOTAL_PAGES) dataMap[p.order] = p;
-    });
+  if(LOGO_SRC){
+    el.appLogo.onload  = function(){ el.appLogo.classList.add("is-visible"); };
+    el.appLogo.onerror = function(){ el.appLogo.classList.remove("is-visible"); };
+    el.appLogo.src = LOGO_SRC;
+  }
 
-    // Always create exactly TOTAL_PAGES pages; fill blanks where no sheet data
-    var pages = [];
-    for(var i = 1; i <= TOTAL_PAGES; i++){
-      if(dataMap[i]){
-        pages.push(dataMap[i]);
-      } else {
-        pages.push({ title: "", content: "", order: i, pageNum: i });
-      }
-    }
-    // Ensure pageNum is set correctly
-    pages.forEach(function(p, idx){ p.pageNum = idx + 1; });
+  layout();
 
-    state.pages = pages;
-    layout();
+  fetchPages().then(function(items){
+    state.rawItems = items;
+    repaginate();
     hideOverlays();
-    renderSpread(1);
+    renderSpread(state.cur);
   }).catch(function(err){
     console.error(err);
-    // Even on error, show blank 10-page book
-    var pages = [];
-    for(var i = 1; i <= TOTAL_PAGES; i++){
-      pages.push({ title: "", content: "", order: i, pageNum: i });
-    }
-    state.pages = pages;
-    layout();
+    state.rawItems = [];
+    repaginate();
     hideOverlays();
-    renderSpread(1);
+    renderSpread(state.cur);
   });
 }
 
