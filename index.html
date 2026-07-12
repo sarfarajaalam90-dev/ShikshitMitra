@@ -375,6 +375,8 @@ html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;overflow:hidden
 
 /* SEC HEAD */
 .sec-head{display:flex;align-items:center;justify-content:space-between;padding:12px 14px 6px}
+.chapter-header{margin:10px 14px 6px;padding:7px 12px;background:var(--primary-light);border-left:3px solid var(--primary);border-radius:8px;font-size:12px;font-weight:800;color:var(--primary)}
+.chapter-header.general{background:var(--bg);border-left-color:var(--text3);color:var(--text2)}
 .sec-head h3{font-size:14px;font-weight:800;color:var(--text)}
 .view-all{font-size:12px;color:var(--primary);font-weight:600;cursor:pointer;background:none;border:none}
 
@@ -2111,7 +2113,7 @@ function fetchWithTimeout(url,ms){
 
 /* FETCH */
 function processRows(json){
-  return json.map(function(r){return{Title:String(r.Title||'').trim(),Link:String(r.Link||'').trim(),Type:String(r.Type||'').trim(),Info:String(r.Info||'').trim(),Pic:String(r.Pic||r.Image||r.Photo||'').trim(),Date:String(r.Date||r.RecDate||'').trim()};}).filter(function(r){return r.Title.length>0;});
+  return json.map(function(r){return{Title:String(r.Title||'').trim(),Link:String(r.Link||'').trim(),Type:String(r.Type||'').trim(),Info:String(r.Info||'').trim(),Pic:String(r.Pic||r.Image||r.Photo||'').trim(),Date:String(r.Date||r.RecDate||'').trim(),Chapter:String(r.Chapter||'').trim()};}).filter(function(r){return r.Title.length>0;});
 }
 const S1_URL='https://docs.google.com/spreadsheets/d/e/2PACX-1vT32hr6I6ic59VQhyzmdT58qBgmgIP7zw9zTR2twaKsjl5GO_XTu7mMFnPkGxJID8EKfnFBo3eeBj3S/pub?output=csv';
 const CSV_URL=S1_URL; // S1 — Main content (Materials, Exams, Live, Notice, etc.)
@@ -2434,6 +2436,74 @@ var SUB_KW={
 };
 var PAPER_KW={'1':['1st'],'2':['2nd'],'3':['3rd']};
 
+/* Hardcoded chapter lists — 2nd & 3rd Paper, Sec A/B/C.
+   Sheet "Chapter" column value must match c.n exactly (e.g. 1.1, 2.3, 4.2) to auto-place a file. */
+var CHAPTERS={
+  '2-a':[
+    {n:'1.1',name:'कार्यालय र कर्मचारी'},
+    {n:'1.2',name:'कार्यालय कार्यविधि'},
+    {n:'1.3',name:'अभिलेख व्यवस्थापन'},
+    {n:'1.4',name:'बैठक व्यवस्थापन तथा निर्णय अभिलेख'},
+    {n:'1.5',name:'जनसम्पर्क र सेवाग्राही गुनासो व्यवस्थापन'}
+  ],
+  '2-b':[
+    {n:'2.1',name:'नेपालको संविधान'},
+    {n:'2.2',name:'देहायका संगठनको परिचय तथा कार्यहरू'},
+    {n:'2.3',name:'नागरिक सचेतना'}
+  ],
+  '2-c':[
+    {n:'3.1',name:'गणितका आधारभूत क्रियाहरू तथा एकाइ नियम'},
+    {n:'3.2',name:'भिन्न, दशमलव, प्रतिशत र अनुपात'},
+    {n:'3.3',name:'नाफा, नोक्सान र छुट'},
+    {n:'3.4',name:'कर, कमिसन र हासकट्टी'},
+    {n:'3.5',name:'साधारण ब्याज र मिश्रित ब्याज'},
+    {n:'3.6',name:'औसत'},
+    {n:'3.7',name:'घरायसी अङ्कगणित'},
+    {n:'3.8',name:'क्षेत्रमिति'}
+  ],
+  '3-a':[
+    {n:'1.1',name:'निजामती सेवा ऐन'},
+    {n:'1.2',name:'सार्वजनिक सेवा प्रवाहको अर्थ र महत्व'},
+    {n:'1.3',name:'सार्वजनिक बडापत्र'},
+    {n:'1.4',name:'सुशासन ऐन, २०६४'},
+    {n:'1.5',name:'सूचनाको हक सम्बन्धी ऐन, २०६४'},
+    {n:'1.6',name:'भ्रष्टाचार निवारण ऐन, २०५९'},
+    {n:'1.7',name:'संघ, प्रदेश र स्थानीय तह ऐन, २०७७'},
+    {n:'1.8',name:'खाद्य अधिकार तथा खाद्य सम्प्रभुता ऐन, २०७५'},
+    {n:'1.9',name:'व्यक्तिगत घटना दर्ता'},
+    {n:'1.10',name:'राष्ट्रिय परिचय-पत्र'},
+    {n:'1.11',name:'विद्युतीय शासन प्रणाली'},
+    {n:'1.12',name:'सूचना तथा सञ्चार प्रविधि'}
+  ],
+  '3-b':[
+    {n:'2.1',name:'लेखा र लेखा प्रणाली'},
+    {n:'2.2',name:'बजेट अनुमान र LMBIS'},
+    {n:'2.3',name:'खाता सूची, TSA, RMIS, CGAS'},
+    {n:'2.4',name:'गोश्वारा भौचर, बैंक हिसाब, आर्थिक विवरण'},
+    {n:'3.1',name:'सार्वजनिक खरिद व्यवस्थापन'},
+    {n:'3.2',name:'जिन्सी व्यवस्थापन'},
+    {n:'3.3',name:'सरकारी सम्पत्ती व्यवस्थापन प्रणाली (PAMS)'},
+    {n:'4.1',name:'लेखापरीक्षणको परिचय, उद्देश्य र प्रकार'},
+    {n:'4.2',name:'बेरुजु, बेरुजु फछ्यौट र सम्परीक्षण'},
+    {n:'4.3',name:'मूल्य अभिवृद्धि कर (VAT)'},
+    {n:'4.4',name:'आर्थिक कार्यविधि तथा वित्तीय उत्तरदायित्व ऐन, २०७६'},
+    {n:'4.5',name:'आयकर ऐन, २०५८'},
+    {n:'4.6',name:'लेखापरीक्षण ऐन, २०७५'}
+  ],
+  '3-c':[
+    {n:'5.1',name:'कानूनको अर्थ, महत्व र स्रोतहरू'},
+    {n:'5.2',name:'ऐन, नियम, विनियम, गठन आदेश र राजपत्र'},
+    {n:'5.3',name:'अदालतका तह, संरचना र क्षेत्राधिकार'},
+    {n:'5.4',name:'हकदैया, हदम्याद, म्याद र तारिखको परिचय'},
+    {n:'5.5',name:'लिखतमा पुर्‍याउनु पर्ने रीत, दर्ता र दरपीठ'},
+    {n:'5.6',name:'म्याद तामेली'},
+    {n:'5.7',name:'जाहेरी दरखास्त, पक्राउ पूर्जी, बरामदी मुचुल्का'},
+    {n:'5.8',name:'निःशुल्क कानूनी सहायता'},
+    {n:'5.9',name:'मुलुकी देवानी संहिता र देवानी कार्यविधि संहिता'},
+    {n:'5.10',name:'मुलुकी अपराध संहिता र मुलुकी फौजदारी कार्यविधि संहिता'}
+  ]
+};
+
 function renderSubPanel(paper,sub){
   var term=matSearchTerm.toLowerCase();
   var kws=SUB_KW[paper+'-'+sub]||[];
@@ -2451,7 +2521,29 @@ function renderSubPanel(paper,sub){
   var el=document.getElementById('mat-list-'+paper+'-'+sub);
   if(!el)return;
   if(!rows.length){el.innerHTML='<div class="empty-box">No materials yet.<br><small>In sheet set Info = "'+paper+'st/2nd/3rd Paper '+sub.toUpperCase()+'" or Sec '+sub.toUpperCase()+'</small></div>';return;}
-  el.innerHTML=rows.map(function(r,i){return matCardHTML(r,i);}).join('');
+
+  var chapters=CHAPTERS[paper+'-'+sub];
+  if(!chapters){ el.innerHTML=rows.map(function(r,i){return matCardHTML(r,i);}).join(''); return; }
+
+  var byChapter={}, noChapter=[];
+  rows.forEach(function(r){
+    var ch=(r.Chapter||'').toString().trim();
+    if(ch){ (byChapter[ch]=byChapter[ch]||[]).push(r); }
+    else{ noChapter.push(r); }
+  });
+
+  var html='';
+  chapters.forEach(function(c){
+    var items=byChapter[c.n];
+    if(!items||!items.length)return;
+    html+='<div class="chapter-header">'+c.n+' — '+c.name+'</div>';
+    html+=items.map(function(r,i){return matCardHTML(r,i);}).join('');
+  });
+  if(noChapter.length){
+    html+='<div class="chapter-header general">General</div>';
+    html+=noChapter.map(function(r,i){return matCardHTML(r,i);}).join('');
+  }
+  el.innerHTML=html||'<div class="empty-box">No materials yet.<br><small>In sheet set Chapter column (e.g. 1.1, 2.3, 4.2) to place a file in its chapter.</small></div>';
 }
 
 function renderMaterials(paperNum){
