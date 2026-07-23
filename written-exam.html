@@ -148,9 +148,8 @@ html,body{height:100%;width:100%;background:var(--bg);color:var(--text);font-fam
 
 .margin-cell{
   width:var(--margin-w);flex-shrink:0;
-  border-right:1px solid rgba(210,60,60,0.28);
   display:flex;justify-content:center;
-  padding-top:3px;
+  padding-top:4px;
 }
 
 .content-cell{flex:1;min-width:0;padding:0 20px 0 10px}
@@ -162,21 +161,15 @@ html,body{height:100%;width:100%;background:var(--bg);color:var(--text);font-fam
   color:var(--accent);text-align:center;
 }
 
-/* ── Ruled question block ── */
-.q-text-wrap{
-  overflow:hidden;
-  background-image:repeating-linear-gradient(
-    to bottom,
-    transparent 0px,transparent 23px,
-    var(--page-line) 23px,var(--page-line) 24px
-  );
-}
+/* ── Question block — clean PDF style, no ruled lines ── */
+.q-text-wrap{overflow:hidden}
 .q-text{
   font-family:'Noto Serif Devanagari',serif;
   font-size:calc(13px * var(--fs,1));
-  line-height:24px;
+  line-height:1.7;
   color:var(--page-text);
   white-space:pre-wrap;word-break:break-word;
+  padding-bottom:8px;
 }
 
 /* ── Section banner ── */
