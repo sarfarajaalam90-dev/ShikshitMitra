@@ -48,20 +48,17 @@ html,body{height:100%;width:100%;background:var(--bg);color:var(--text);font-fam
   background:radial-gradient(ellipse at center,#1e1f2e 0%,#0f1018 100%);
 }
 
-/* ── Nav arrows ── */
-.nav{
-  position:absolute;top:50%;transform:translateY(-50%);
-  width:40px;height:40px;
+/* ── Nav arrows (now live inline in the bottom toolbar) ── */
+.navbtn{
+  width:36px;height:36px;flex-shrink:0;
   background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);
   border-radius:50%;color:var(--text);cursor:pointer;
   display:flex;align-items:center;justify-content:center;
-  z-index:5;transition:background .15s;flex-shrink:0;
+  transition:background .15s;
 }
-.nav:hover{background:rgba(255,255,255,0.14)}
-.nav:disabled{opacity:.2;cursor:default;pointer-events:none}
-.nav svg{width:20px;height:20px}
-.nav--left{left:12px}
-.nav--right{right:12px}
+.navbtn:hover{background:rgba(255,255,255,0.14)}
+.navbtn:disabled{opacity:.2;cursor:default;pointer-events:none}
+.navbtn svg{width:18px;height:18px}
 
 /* ── Book wrapper ── */
 .book-wrap{perspective:2000px;display:flex;align-items:center;justify-content:center;position:relative}
@@ -148,8 +145,9 @@ html,body{height:100%;width:100%;background:var(--bg);color:var(--text);font-fam
 
 .margin-cell{
   width:var(--margin-w);flex-shrink:0;
+  border-right:1px solid rgba(210,60,60,0.28);
   display:flex;justify-content:center;
-  padding-top:4px;
+  padding-top:3px;
 }
 
 .content-cell{flex:1;min-width:0;padding:0 20px 0 10px}
@@ -161,15 +159,21 @@ html,body{height:100%;width:100%;background:var(--bg);color:var(--text);font-fam
   color:var(--accent);text-align:center;
 }
 
-/* ── Question block — clean PDF style, no ruled lines ── */
-.q-text-wrap{overflow:hidden}
+/* ── Ruled question block ── */
+.q-text-wrap{
+  overflow:hidden;
+  background-image:repeating-linear-gradient(
+    to bottom,
+    transparent 0px,transparent 23px,
+    var(--page-line) 23px,var(--page-line) 24px
+  );
+}
 .q-text{
   font-family:'Noto Serif Devanagari',serif;
   font-size:calc(13px * var(--fs,1));
-  line-height:1.7;
+  line-height:24px;
   color:var(--page-text);
   white-space:pre-wrap;word-break:break-word;
-  padding-bottom:8px;
 }
 
 /* ── Section banner ── */
