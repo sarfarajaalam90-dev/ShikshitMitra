@@ -43,6 +43,7 @@ class BookEditorApp {
       toolbar: document.getElementById("toolbar"),
       emptyState: document.getElementById("emptyState"),
       saveBtn: document.getElementById("saveBookBtn"),
+      exportBtn: document.getElementById("exportBookBtn"),
       previewBtn: document.getElementById("previewBookBtn"),
       footerStatus: document.getElementById("footerStatus"),
       toast: document.getElementById("toast"),
@@ -131,6 +132,7 @@ class BookEditorApp {
     this.el.pageTitleInput.addEventListener("blur", () => this._persistCurrentPageFields());
 
     this.el.saveBtn.addEventListener("click", () => this.saveBook());
+    this.el.exportBtn.addEventListener("click", () => this.exportForReader());
     this.el.previewBtn.addEventListener("click", () => this.previewBook());
 
     // Warn before leaving with unsaved changes.
@@ -402,6 +404,41 @@ class BookEditorApp {
     this._renderBookPicker(books);
     this._setFooterStatus("saved");
     this._showToast("Book saved");
+  }
+
+  /**
+   * Exports the current book as a JSON file matching the reader's
+   * `format: "richPage"` schema (see written-exam.html) and downloads it.
+   * The admin uploads this file to /books/<id>.json in the repo; the reader
+   * is then opened via written-exam.html?data=books/<id>.json
+   */
+  exportForReader() {
+    if (!this.currentBook) return;
+    this._syncCurrentPageFromEditor();
+
+    const payload = {
+      id: this.currentBook.id,
+      format: "richPage",
+      title: this.currentBook.title,
+      category: this.currentBook.category,
+      pages: this.currentBook.pages.map((p) => ({
+        id: p.id,
+        title: p.title,
+        content: p.content,
+      })),
+    };
+
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${this.currentBook.id}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+
+    this._showToast(`Exported ${this.currentBook.id}.json — upload it to /books/ in your repo`);
   }
 
   previewBook() {
