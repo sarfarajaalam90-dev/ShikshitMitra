@@ -1,0 +1,778 @@
+/**
+ * book-editor.css
+ * ---------------------------------------------------------------------------
+ * Shikshit Mitra — Book Editor (Phase 1)
+ *
+ * Token system lives at the top of this file. Every color/spacing/radius
+ * decision elsewhere in the sheet should reference a token, not a raw value,
+ * so the whole editor can be re-themed or extended from one place as later
+ * phases add tables, images, MCQs, templates, etc.
+ * ---------------------------------------------------------------------------
+ */
+
+/* ==========================================================================
+   1. Tokens
+   ========================================================================== */
+
+:root {
+  /* Brand — deep editorial green, echoing the printed-book reader */
+  --brand-900: #0f3d24;
+  --brand-800: #154a2d;
+  --brand-700: #1c5c3a;
+  --brand-500: #2f7d52;
+  --brand-100: #e3ede6;
+
+  /* Accent — warm gold, reserved for primary actions & active states */
+  --gold-500: #c99c3d;
+  --gold-600: #b3872d;
+  --gold-100: #f6ecd6;
+
+  /* Surfaces & text */
+  --bg: #f2f5f2;
+  --surface: #ffffff;
+  --surface-sunken: #eef1ee;
+  --ink: #1a1f1c;
+  --muted: #6b7670;
+  --border: #dde3df;
+  --danger: #b3413a;
+  --danger-100: #f8e9e7;
+
+  /* Type */
+  --font-display: "Poppins", "Noto Sans Devanagari", sans-serif;
+  --font-body: "Inter", "Noto Sans Devanagari", sans-serif;
+  --font-content: Georgia, "Noto Serif Devanagari", serif;
+
+  /* Geometry */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+
+  /* Elevation */
+  --shadow-sm: 0 1px 2px rgba(15, 61, 36, 0.07);
+  --shadow-md: 0 6px 20px rgba(15, 61, 36, 0.10);
+  --shadow-lg: 0 16px 40px rgba(15, 61, 36, 0.18);
+
+  /* Layout */
+  --header-h: 60px;
+  --footer-h: 56px;
+  --sidebar-left-w: 268px;
+  --sidebar-right-w: 296px;
+}
+
+/* ==========================================================================
+   2. Reset & base
+   ========================================================================== */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+button, input, select, textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+  background: none;
+  border: none;
+}
+
+button:disabled { cursor: not-allowed; opacity: 0.5; }
+
+:focus-visible {
+  outline: 2px solid var(--gold-500);
+  outline-offset: 2px;
+}
+
+h1, h2, h3, h4 { font-family: var(--font-display); margin: 0; }
+
+/* ==========================================================================
+   3. App shell — header / three-column body / footer
+   ========================================================================== */
+
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+/* -- Header --------------------------------------------------------------- */
+
+.app-header {
+  height: var(--header-h);
+  flex: 0 0 auto;
+  background: linear-gradient(180deg, var(--brand-800), var(--brand-900));
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 0 20px;
+  box-shadow: var(--shadow-md);
+  z-index: 10;
+}
+
+.app-header__brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  white-space: nowrap;
+}
+
+.app-header__mark {
+  width: 26px;
+  height: 26px;
+  flex: 0 0 auto;
+  color: var(--gold-500);
+}
+
+.app-header__title {
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
+
+.app-header__subtitle {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 400;
+  margin-left: 6px;
+}
+
+.app-header__spacer { flex: 1; }
+
+.app-header__book-picker {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.select {
+  appearance: none;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  color: #fff;
+  padding: 8px 32px 8px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  min-width: 190px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23ffffff'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+}
+
+.select option { color: var(--ink); }
+
+/* Light variant, used for the select inside the (white) New Book modal */
+.select--light {
+  background: var(--surface);
+  border-color: var(--border);
+  color: var(--ink);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236b7670'/%3E%3C/svg%3E");
+}
+
+/* ==========================================================================
+   4. Buttons (shared)
+   ========================================================================== */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 9px 16px;
+  border-radius: var(--radius-sm);
+  transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+}
+
+.btn:active:not(:disabled) { transform: translateY(1px); }
+
+.btn--primary {
+  background: var(--gold-500);
+  color: var(--brand-900);
+}
+.btn--primary:hover:not(:disabled) { background: var(--gold-600); }
+
+.btn--ghost {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--ink);
+}
+.btn--ghost:hover:not(:disabled) { border-color: var(--brand-500); color: var(--brand-800); }
+
+.btn--on-dark {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+}
+.btn--on-dark:hover:not(:disabled) { background: rgba(255, 255, 255, 0.2); }
+
+.btn--icon-text svg { width: 14px; height: 14px; }
+
+/* ==========================================================================
+   5. Body: three-column layout
+   ========================================================================== */
+
+.app-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: var(--sidebar-left-w) 1fr var(--sidebar-right-w);
+}
+
+.sidebar {
+  background: var(--surface);
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.sidebar--pages {
+  border-right: 1px solid var(--border);
+}
+
+.sidebar--props {
+  border-left: 1px solid var(--border);
+}
+
+/* -- Left sidebar: pages --------------------------------------------------- */
+
+.sidebar__head {
+  flex: 0 0 auto;
+  padding: 16px 16px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+}
+
+.sidebar__head h2 {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--muted);
+}
+
+.add-page-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--brand-100);
+  color: var(--brand-800);
+  font-size: 18px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.add-page-btn:hover:not(:disabled) { background: var(--brand-500); color: #fff; }
+
+.page-list {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Individual page card — mirrors markup produced by pageSidebar.js */
+.page-card {
+  position: relative;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  padding: 10px 10px 8px;
+  cursor: pointer;
+  transition: border-color 0.12s ease, box-shadow 0.12s ease;
+}
+
+.page-card:hover { border-color: var(--brand-500); box-shadow: var(--shadow-sm); }
+
+.page-card.is-active {
+  border-color: var(--brand-700);
+  box-shadow: 0 0 0 1px var(--brand-700);
+}
+
+/* Gold tab denotes the open page — the sidebar's one accent moment */
+.page-card.is-active::before {
+  content: "";
+  position: absolute;
+  left: -1px;
+  top: 14px;
+  bottom: 14px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--gold-500);
+}
+
+.page-card__thumb {
+  background: var(--surface-sunken);
+  border-radius: var(--radius-sm);
+  padding: 10px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 8px;
+}
+
+.page-card__thumb-line {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--border);
+}
+.page-card__thumb-line.w-40 { width: 40%; }
+.page-card__thumb-line.w-60 { width: 60%; }
+.page-card__thumb-line.w-90 { width: 90%; }
+
+.page-card__row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.page-card__title {
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.page-card__index {
+  font-size: 11px;
+  color: var(--muted);
+  flex: 0 0 auto;
+}
+
+.page-card__actions {
+  display: flex;
+  gap: 4px;
+  margin-top: 8px;
+  opacity: 0;
+  transition: opacity 0.12s ease;
+}
+
+.page-card:hover .page-card__actions,
+.page-card.is-active .page-card__actions { opacity: 1; }
+
+.page-card__actions button {
+  flex: 1;
+  font-size: 12px;
+  padding: 5px 0;
+  border-radius: 5px;
+  color: var(--muted);
+}
+.page-card__actions button:hover { background: var(--brand-100); color: var(--brand-800); }
+.page-card__actions button.danger:hover { background: var(--danger-100); color: var(--danger); }
+
+/* -- Right sidebar: properties --------------------------------------------- */
+
+.sidebar--props {
+  padding: 18px 16px;
+  overflow-y: auto;
+  gap: 22px;
+}
+
+.sidebar--props h2 {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--muted);
+  margin-bottom: 14px;
+}
+
+.prop-block {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  margin-bottom: 16px;
+}
+
+.prop-block__cover {
+  aspect-ratio: 3 / 4;
+  border-radius: var(--radius-sm);
+  background: var(--surface-sunken);
+  color: var(--muted);
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  overflow: hidden;
+  margin-bottom: 14px;
+}
+.prop-block__cover img { width: 100%; height: 100%; object-fit: cover; }
+
+.prop-list {
+  margin: 0;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 8px 12px;
+}
+.prop-list dt { font-size: 12px; color: var(--muted); }
+.prop-list dd {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+.prop-block--future h3 {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.roadmap-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.roadmap-list li {
+  font-size: 12px;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-sunken);
+}
+
+.roadmap-list li::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--gold-500);
+  flex: 0 0 auto;
+}
+
+/* ==========================================================================
+   6. Center canvas — the "page sheet"
+   ========================================================================== */
+
+.canvas {
+  min-height: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(15, 61, 36, 0.04), transparent 60%),
+    var(--bg);
+}
+
+.canvas__scroll {
+  height: 100%;
+  overflow-y: auto;
+  padding: 40px 32px 80px;
+  display: flex;
+  justify-content: center;
+}
+
+/* Empty state — invites the first action rather than just being blank */
+.empty-state {
+  align-self: center;
+  text-align: center;
+  max-width: 360px;
+  color: var(--muted);
+}
+
+.empty-state__icon {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 18px;
+  color: var(--brand-500);
+}
+
+.empty-state h3 {
+  font-size: 17px;
+  color: var(--ink);
+  margin-bottom: 6px;
+}
+
+.empty-state p { font-size: 13px; line-height: 1.6; }
+
+/* The page sheet itself — signature element: a printed page floating on the
+   canvas, with a soft folded corner in the brand gold to nod at the reader
+   product this content is destined for. */
+.page-sheet {
+  width: 100%;
+  max-width: 760px;
+  background: var(--surface);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  position: relative;
+  overflow: hidden;
+}
+
+.page-sheet::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 34px;
+  height: 34px;
+  background: linear-gradient(135deg, transparent 50%, var(--gold-100) 50%);
+}
+
+.page-sheet__title-input {
+  display: block;
+  width: 100%;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  padding: 28px 48px 16px;
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--ink);
+  background: transparent;
+}
+.page-sheet__title-input:focus { outline: none; border-bottom-color: var(--brand-500); }
+.page-sheet__title-input::placeholder { color: var(--muted); font-weight: 400; }
+
+/* -- Toolbar ---------------------------------------------------------------- */
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 10px 48px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-sunken);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.toolbar__group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding-right: 14px;
+  border-right: 1px solid var(--border);
+}
+.toolbar__group:last-child { border-right: none; padding-right: 0; }
+
+.toolbar__btn {
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  color: var(--ink);
+}
+.toolbar__btn:hover:not(:disabled) { background: var(--brand-100); }
+.toolbar__btn.is-active { background: var(--brand-500); color: #fff; }
+
+.toolbar__select {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: var(--radius-sm);
+  padding: 6px 10px;
+  font-size: 12.5px;
+}
+
+/* -- Editing surface ---------------------------------------------------------- */
+
+.rte-surface {
+  min-height: 480px;
+  padding: 28px 48px 60px;
+  font-family: var(--font-content);
+  font-size: 16px;
+  line-height: 1.75;
+  color: var(--ink);
+}
+.rte-surface:focus { outline: none; }
+.rte-surface h2 { color: var(--brand-900); font-family: var(--font-display); margin: 1.2em 0 0.5em; }
+.rte-surface p { margin: 0 0 1em; }
+.rte-surface[contenteditable="false"] { color: var(--muted); }
+
+/* ==========================================================================
+   7. Footer
+   ========================================================================== */
+
+.app-footer {
+  flex: 0 0 auto;
+  height: var(--footer-h);
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+}
+
+.footer-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+
+.footer-status .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--muted);
+}
+.footer-status.is-saved .dot { background: var(--brand-500); }
+.footer-status.is-dirty .dot { background: var(--gold-500); }
+
+.footer-actions {
+  display: flex;
+  gap: 10px;
+}
+
+/* ==========================================================================
+   8. New Book modal
+   ========================================================================== */
+
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 20, 17, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 20px;
+}
+
+.modal__panel {
+  width: 100%;
+  max-width: 420px;
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+}
+
+.modal__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 22px;
+  background: var(--brand-900);
+  color: #fff;
+}
+.modal__head h2 { font-size: 16px; }
+.modal__head button {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 20px;
+  line-height: 1;
+}
+.modal__head button:hover { color: #fff; }
+
+.modal form { padding: 22px; display: flex; flex-direction: column; gap: 16px; }
+
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field label { font-size: 12.5px; font-weight: 600; color: var(--muted); }
+
+.field input[type="text"],
+.field select {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  font-size: 13.5px;
+  background: var(--surface);
+}
+.field input[type="text"]:focus,
+.field select:focus { outline: none; border-color: var(--brand-500); }
+
+.field input[type="file"] { font-size: 12.5px; }
+
+.cover-preview {
+  margin-top: 8px;
+  height: 110px;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  font-size: 12px;
+  overflow: hidden;
+}
+.cover-preview img { width: 100%; height: 100%; object-fit: cover; }
+
+.modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+/* ==========================================================================
+   9. Toast
+   ========================================================================== */
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 28px;
+  transform: translate(-50%, 12px);
+  background: var(--brand-900);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 10px 18px;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-lg);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+  z-index: 200;
+}
+.toast.is-visible {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+/* ==========================================================================
+   10. Responsive
+   ========================================================================== */
+
+@media (max-width: 1180px) {
+  :root { --sidebar-right-w: 260px; }
+}
+
+@media (max-width: 980px) {
+  .app-body { grid-template-columns: 220px 1fr; }
+  .sidebar--props { display: none; } /* properties panel collapses first on tablet */
+}
+
+@media (max-width: 720px) {
+  .app-body { grid-template-columns: 1fr; grid-template-rows: 180px 1fr; }
+  .sidebar--pages { border-right: none; border-bottom: 1px solid var(--border); }
+  .page-list { flex-direction: row; overflow-x: auto; overflow-y: hidden; }
+  .page-card { min-width: 150px; }
+  .app-header__book-picker .select { min-width: 130px; }
+  .rte-surface, .toolbar, .page-sheet__title-input { padding-left: 20px; padding-right: 20px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; }
+}
