@@ -278,6 +278,23 @@ h1, h2, h3, h4 { font-family: var(--font-display); margin: 0; }
   justify-content: center;
 }
 .add-page-btn:hover:not(:disabled) { background: var(--brand-500); color: #fff; }
+.add-page-btn:disabled { opacity: 0.5; cursor: default; }
+
+.sidebar__foot {
+  flex: 0 0 auto;
+  padding: 10px 14px 14px;
+  border-top: 1px solid var(--border);
+}
+
+.add-page-btn--bottom {
+  width: 100%;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+.add-page-btn--bottom svg { width: 14px; height: 14px; flex: 0 0 auto; }
 
 .page-list {
   flex: 1 1 auto;
@@ -294,9 +311,9 @@ h1, h2, h3, h4 { font-family: var(--font-display); margin: 0; }
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   background: var(--surface);
-  padding: 10px 10px 8px;
+  padding: 10px 10px 8px 24px;
   cursor: pointer;
-  transition: border-color 0.12s ease, box-shadow 0.12s ease;
+  transition: border-color 0.12s ease, box-shadow 0.12s ease, opacity 0.12s ease;
 }
 
 .page-card:hover { border-color: var(--brand-500); box-shadow: var(--shadow-sm); }
@@ -305,6 +322,31 @@ h1, h2, h3, h4 { font-family: var(--font-display); margin: 0; }
   border-color: var(--brand-700);
   box-shadow: 0 0 0 1px var(--brand-700);
 }
+
+.page-card.is-dragging { opacity: 0.45; }
+
+.page-card.drag-over-top { box-shadow: inset 0 2px 0 var(--gold-500); }
+.page-card.drag-over-bottom { box-shadow: inset 0 -2px 0 var(--gold-500); }
+
+.page-card__handle {
+  position: absolute;
+  left: 4px;
+  top: 10px;
+  bottom: 10px;
+  width: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  font-size: 12px;
+  letter-spacing: -2px;
+  cursor: grab;
+  opacity: 0;
+  transition: opacity 0.12s ease;
+}
+.page-card:hover .page-card__handle,
+.page-card.is-active .page-card__handle { opacity: 1; }
+.page-card__handle:active { cursor: grabbing; }
 
 /* Gold tab denotes the open page — the sidebar's one accent moment */
 .page-card.is-active::before {
@@ -337,11 +379,21 @@ h1, h2, h3, h4 { font-family: var(--font-display); margin: 0; }
 .page-card__thumb-line.w-60 { width: 60%; }
 .page-card__thumb-line.w-90 { width: 90%; }
 
+.page-card__thumb-text {
+  font-size: 10.5px;
+  line-height: 1.45;
+  color: var(--muted);
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
 .page-card__row {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: 6px;
 }
 
 .page-card__title {
@@ -358,26 +410,52 @@ h1, h2, h3, h4 { font-family: var(--font-display); margin: 0; }
   flex: 0 0 auto;
 }
 
-.page-card__actions {
+.page-card__menu {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.page-card__menu-btn {
+  width: 22px;
+  height: 22px;
   display: flex;
-  gap: 4px;
-  margin-top: 8px;
-  opacity: 0;
-  transition: opacity 0.12s ease;
-}
-
-.page-card:hover .page-card__actions,
-.page-card.is-active .page-card__actions { opacity: 1; }
-
-.page-card__actions button {
-  flex: 1;
-  font-size: 12px;
-  padding: 5px 0;
-  border-radius: 5px;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
   color: var(--muted);
+  font-size: 14px;
+  line-height: 1;
 }
-.page-card__actions button:hover { background: var(--brand-100); color: var(--brand-800); }
-.page-card__actions button.danger:hover { background: var(--danger-100); color: var(--danger); }
+.page-card__menu-btn:hover,
+.page-card__menu-btn[aria-expanded="true"] { background: var(--brand-100); color: var(--brand-800); }
+
+.page-card__menu-dropdown {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 4px);
+  z-index: 20;
+  min-width: 140px;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  padding: 4px;
+}
+
+.page-card__menu-dropdown button {
+  text-align: left;
+  font-size: 12.5px;
+  font-family: var(--font-body);
+  padding: 7px 10px;
+  border-radius: 5px;
+  color: var(--ink);
+}
+.page-card__menu-dropdown button:hover { background: var(--brand-100); color: var(--brand-800); }
+.page-card__menu-dropdown button.danger { color: var(--danger); }
+.page-card__menu-dropdown button.danger:hover { background: var(--danger-100); color: var(--danger); }
 
 /* -- Right sidebar: properties --------------------------------------------- */
 
