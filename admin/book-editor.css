@@ -828,6 +828,10 @@ h1, h2, h3, h4 { font-family: var(--font-display); margin: 0; }
   padding: 20px;
 }
 
+.modal[hidden] {
+  display: none;
+}
+
 .modal__panel {
   width: 100%;
   max-width: 420px;
