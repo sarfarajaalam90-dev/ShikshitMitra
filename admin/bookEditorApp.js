@@ -132,6 +132,17 @@ class BookEditorApp {
         e.returnValue = "";
       }
     });
+
+    // Ctrl/Cmd+S saves the book. Bound at the document level (rather than
+    // inside RichTextEditor) so it works whether focus is in the editor
+    // surface, the page title field, or anywhere else on the page.
+    document.addEventListener("keydown", (e) => {
+      const mod = e.ctrlKey || e.metaKey;
+      if (mod && e.key.toLowerCase() === "s") {
+        e.preventDefault();
+        this.saveBook();
+      }
+    });
   }
 
   _populateCategorySelect(selectEl) {
