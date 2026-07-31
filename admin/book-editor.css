@@ -561,7 +561,7 @@ h1, h2, h3, h4 { font-family: var(--font-display); margin: 0; }
   background: var(--surface-sunken);
   position: sticky;
   top: 0;
-  z-index: 1;
+  z-index: 2;
 }
 
 .toolbar__group {
@@ -570,8 +570,10 @@ h1, h2, h3, h4 { font-family: var(--font-display); margin: 0; }
   gap: 4px;
   padding-right: 14px;
   border-right: 1px solid var(--border);
+  position: relative; /* anchors this group's popover, e.g. the table picker */
 }
 .toolbar__group:last-child { border-right: none; padding-right: 0; }
+.toolbar__group--relative { position: relative; }
 
 .toolbar__btn {
   width: 30px;
@@ -586,12 +588,97 @@ h1, h2, h3, h4 { font-family: var(--font-display); margin: 0; }
 .toolbar__btn:hover:not(:disabled) { background: var(--brand-100); }
 .toolbar__btn.is-active { background: var(--brand-500); color: #fff; }
 
+.toolbar__btn:disabled,
+.toolbar__select:disabled,
+.toolbar__color input:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 .toolbar__select {
   border: 1px solid var(--border);
   background: var(--surface);
   border-radius: var(--radius-sm);
   padding: 6px 10px;
   font-size: 12.5px;
+}
+
+/* -- Color swatches (text color / highlight) -------------------------------- */
+
+.toolbar__color {
+  position: relative;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  cursor: pointer;
+  background: var(--surface);
+}
+
+.toolbar__color-icon {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--brand-800);
+  pointer-events: none;
+}
+
+.toolbar__color input[type="color"] {
+  position: absolute;
+  inset: -6px;
+  width: calc(100% + 12px);
+  height: calc(100% + 12px);
+  padding: 0;
+  border: none;
+  cursor: pointer;
+  opacity: 0; /* the swatch icon is the visible control; the native picker still opens on click */
+}
+
+.toolbar__file-input { display: none; }
+
+/* -- Table grid picker -------------------------------------------------------- */
+
+.toolbar__popover {
+  display: none;
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  padding: 12px;
+  z-index: 5;
+}
+.toolbar__popover.is-open { display: block; }
+
+.table-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 16px);
+  grid-auto-rows: 16px;
+  gap: 3px;
+}
+
+.table-grid__cell {
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: var(--surface-sunken);
+}
+.table-grid__cell.is-active {
+  background: var(--brand-500);
+  border-color: var(--brand-700);
+}
+
+.table-grid__label {
+  margin-top: 8px;
+  font-size: 11px;
+  color: var(--muted);
+  text-align: center;
 }
 
 /* -- Editing surface ---------------------------------------------------------- */
@@ -605,9 +692,89 @@ h1, h2, h3, h4 { font-family: var(--font-display); margin: 0; }
   color: var(--ink);
 }
 .rte-surface:focus { outline: none; }
-.rte-surface h2 { color: var(--brand-900); font-family: var(--font-display); margin: 1.2em 0 0.5em; }
 .rte-surface p { margin: 0 0 1em; }
 .rte-surface[contenteditable="false"] { color: var(--muted); }
+
+/* -- Headings ---------------------------------------------------------------- */
+.rte-surface h1 { font-size: 28px; color: var(--brand-900); font-family: var(--font-display); margin: 1.1em 0 0.5em; }
+.rte-surface h2 { font-size: 22px; color: var(--brand-900); font-family: var(--font-display); margin: 1.2em 0 0.5em; }
+.rte-surface h3 { font-size: 18px; color: var(--brand-800); font-family: var(--font-display); margin: 1em 0 0.4em; }
+
+/* -- Quote box ----------------------------------------------------------------- */
+.rte-surface blockquote {
+  margin: 1.2em 0;
+  padding: 12px 18px;
+  border-left: 3px solid var(--gold-500);
+  background: var(--surface-sunken);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  font-style: italic;
+  color: var(--muted);
+}
+
+/* -- Code block ------------------------------------------------------------- */
+.rte-surface pre {
+  margin: 1.2em 0;
+  padding: 14px 16px;
+  background: var(--brand-900);
+  color: #eafbf0;
+  border-radius: var(--radius-sm);
+  font-family: "SFMono-Regular", Consolas, Menlo, monospace;
+  font-size: 13px;
+  line-height: 1.55;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* -- Lists --------------------------------------------------------------------- */
+.rte-surface ul,
+.rte-surface ol { margin: 0 0 1em; padding-left: 1.4em; }
+.rte-surface li { margin-bottom: 0.35em; }
+
+/* -- Horizontal rule ------------------------------------------------------------- */
+.rte-surface hr { border: none; border-top: 1px solid var(--border); margin: 2em 0; }
+
+/* -- Table ----------------------------------------------------------------------- */
+.rte-surface table.rte-table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1.2em 0;
+}
+.rte-surface table.rte-table td,
+.rte-surface table.rte-table th {
+  border: 1px solid var(--border);
+  padding: 8px 10px;
+  min-width: 60px;
+  vertical-align: top;
+}
+
+/* -- Images (upload, native-drag reposition, corner-handle resize) ----------------- */
+.rte-image {
+  display: inline-block;
+  position: relative;
+  max-width: 100%;
+  line-height: 0;
+  margin: 0.4em 0;
+  cursor: grab;
+}
+.rte-image img { max-width: 100%; display: block; border-radius: 4px; }
+.rte-image.is-selected img { outline: 2px solid var(--brand-500); outline-offset: 2px; }
+.rte-image__handle {
+  position: absolute;
+  right: -5px;
+  bottom: -5px;
+  width: 14px;
+  height: 14px;
+  background: var(--gold-500);
+  border: 2px solid #fff;
+  border-radius: 50%;
+  cursor: nwse-resize;
+  opacity: 0;
+  box-shadow: var(--shadow-sm);
+  transition: opacity 0.12s ease;
+}
+.rte-image:hover .rte-image__handle,
+.rte-image.is-selected .rte-image__handle { opacity: 1; }
 
 /* ==========================================================================
    7. Footer
