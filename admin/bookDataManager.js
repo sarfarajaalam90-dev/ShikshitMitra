@@ -192,6 +192,29 @@ export class BookDataManager {
     return updated;
   }
 
+  /**
+   * Moves a page to an arbitrary position in the pages array — used by
+   * drag-and-drop reordering in the Pages panel (Phase 3).
+   * @param {number} newIndex  target index, expressed in terms of the array
+   *                           BEFORE the page is removed from its old slot
+   */
+  async reorderPage(book, pageId, newIndex) {
+    const index = book.pages.findIndex((page) => page.id === pageId);
+    if (index === -1) return book;
+
+    const pages = [...book.pages];
+    const [moved] = pages.splice(index, 1);
+
+    let target = newIndex;
+    if (index < newIndex) target -= 1; // account for the slot we just removed
+    target = Math.max(0, Math.min(target, pages.length));
+    pages.splice(target, 0, moved);
+
+    const updated = { ...book, pages, updatedAt: this._now() };
+    await this.storage.putBook(updated);
+    return updated;
+  }
+
   // ===========================================================================
   // Internal helpers
   // ===========================================================================
