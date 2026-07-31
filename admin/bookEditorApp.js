@@ -34,6 +34,7 @@ class BookEditorApp {
       bookPicker: document.getElementById("bookPicker"),
       newBookBtn: document.getElementById("newBookBtn"),
       addPageBtn: document.getElementById("addPageBtn"),
+      addPageBtnBottom: document.getElementById("addPageBtnBottom"),
       pageList: document.getElementById("pageList"),
       canvasScroll: document.getElementById("canvasScroll"),
       pageSheet: document.getElementById("pageSheet"),
@@ -73,10 +74,16 @@ class BookEditorApp {
       onDuplicate: (pageId) => this.duplicatePage(pageId),
       onMoveUp: (pageId) => this.movePage(pageId, -1),
       onMoveDown: (pageId) => this.movePage(pageId, 1),
+      onReorder: (pageId, newIndex) => this.reorderPages(pageId, newIndex),
     });
 
     this.richTextEditor = new RichTextEditor(this.el.richTextSurface, this.el.toolbar, {
-      onChange: () => this._markDirty(),
+      onChange: () => {
+        this._markDirty();
+        if (this.currentPageId) {
+          this.pageSidebar.updateThumbnail(this.currentPageId, this.richTextEditor.getHTML());
+        }
+      },
     });
 
     this._bindGlobalEvents();
@@ -114,6 +121,7 @@ class BookEditorApp {
     this.el.newBookCover.addEventListener("change", (e) => this._handleCoverFileChange(e));
 
     this.el.addPageBtn.addEventListener("click", () => this.addPage());
+    this.el.addPageBtnBottom.addEventListener("click", () => this.addPage());
 
     this.el.pageTitleInput.addEventListener("input", () => {
       this._markDirty();
@@ -298,11 +306,19 @@ class BookEditorApp {
     const newPage = this.currentBook.pages[this.currentBook.pages.length - 1];
     this.currentPageId = newPage.id;
     this.pageSidebar.render(this.currentBook.pages, this.currentPageId);
+    this.pageSidebar.scrollToPage(newPage.id);
     this._loadPageIntoEditor(this.currentPageId);
     this._renderProperties();
     this._refreshPageActionAvailability();
     this._setFooterStatus("saved");
     this.richTextEditor.focus();
+  }
+
+  async reorderPages(pageId, newIndex) {
+    await this._persistCurrentPageFields();
+    this.currentBook = await this.dataManager.reorderPage(this.currentBook, pageId, newIndex);
+    this.pageSidebar.render(this.currentBook.pages, this.currentPageId);
+    this._setFooterStatus("saved");
   }
 
   async renamePage(pageId) {
@@ -355,6 +371,7 @@ class BookEditorApp {
 
   _refreshPageActionAvailability() {
     this.el.addPageBtn.disabled = !this.currentBook;
+    this.el.addPageBtnBottom.disabled = !this.currentBook;
   }
 
   // ===========================================================================
