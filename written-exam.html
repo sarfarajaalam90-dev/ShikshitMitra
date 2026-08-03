@@ -1070,6 +1070,14 @@ function saveBook(){
       var newSearch = "?bookId=" + EFFECTIVE_BOOK_ID;
       if(params.get("title")) newSearch += "&title=" + encodeURIComponent(state.title);
       history.replaceState(null, "", window.location.pathname + newSearch);
+
+      /* Tell the parent webapp (if we're embedded in an iframe) so it can
+         remember this bookId and pass it back in next time it opens us.
+         Harmless no-op when opened standalone (parent === window). */
+      if(window.parent && window.parent !== window){
+        window.parent.postMessage({ type: "SM_WRITTEN_EXAM_SAVED", bookId: EFFECTIVE_BOOK_ID }, "*");
+      }
+
       toast("Saved ✓  URL updated — bookmark this page");
     }
   }).catch(function(err){
