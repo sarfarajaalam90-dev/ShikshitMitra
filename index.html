@@ -4608,9 +4608,29 @@ function openWrittenExamBook(){
   document.body.style.overflow = 'hidden';
   // Load only once
   if(!iframe.src || iframe.src === window.location.href){
-    iframe.src = 'written-exam.html';
+    /* Look up the Firestore bookId we saved last time (shared across every
+       account/device — stored in our own Realtime Database, not localStorage). */
+    fbDB.ref('writtenExamBook/bookId').once('value').then(function(snap){
+      var savedId = snap.val();
+      iframe.src = savedId ? ('written-exam.html?bookId=' + encodeURIComponent(savedId)) : 'written-exam.html';
+    }).catch(function(err){
+      console.error('Could not load written exam bookId', err);
+      iframe.src = 'written-exam.html';
+    });
   }
 }
+
+/* Listens for the book editor (running inside the iframe) telling us it just
+   generated a new bookId on its first save. We persist it here so every
+   future open — any account, any device — passes it back in and reopens
+   the same book instead of creating a new one each time. */
+window.addEventListener('message', function(e){
+  if(e.data && e.data.type === 'SM_WRITTEN_EXAM_SAVED' && e.data.bookId){
+    fbDB.ref('writtenExamBook/bookId').set(e.data.bookId).catch(function(err){
+      console.error('Could not persist written exam bookId', err);
+    });
+  }
+});
 function closeWrittenExamBook(){
   document.getElementById('written-exam-panel').style.display = 'none';
   // If the library grid is still open underneath, keep scroll locked and return to it
