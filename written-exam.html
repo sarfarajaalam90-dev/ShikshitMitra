@@ -224,6 +224,8 @@ html,body{height:100%;width:100%;background:var(--bg);color:var(--text);font-fam
 .book.single .page--left{display:none}
 .book.single .spine{display:none}
 .book.single .page--right{border-radius:6px}
+.book.single .margin-cell{width:26px}
+.book.single .content-cell{padding:0 10px 0 6px}
 
 /* ── Toast ── */
 .toast{
@@ -622,7 +624,16 @@ function layout(){
   el.book.style.setProperty("--ph", ph + "px");
   el.book.classList.toggle("single", state.single);
 
-  var fs = Math.max(0.78, Math.min(1.25, pw / 300));
+  var fs;
+  if(state.single){
+    /* Mobile's single page is narrower than desktop's half-page, so at
+       the same font scale, lines that fit on one line on desktop wrap
+       onto a second line here. Use a smaller scale so the same text
+       keeps the same line breaks as on desktop, without touching ph. */
+    fs = Math.max(0.6, Math.min(0.95, pw / 420));
+  } else {
+    fs = Math.max(0.78, Math.min(1.25, pw / 300));
+  }
   el.book.style.setProperty("--fs", fs.toFixed(3));
 }
 
