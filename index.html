@@ -1696,8 +1696,8 @@ nav{
             <!-- Free enrollment notice -->
             <div style="margin:0 14px 10px;padding:12px 14px;background:var(--green-light);border:1.5px solid #a7f3d0;border-radius:var(--radius)">
               <div style="font-size:11px;font-weight:700;color:var(--green);margin-bottom:2px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Currently Enrolled</div>
-              <div style="font-size:12px;color:var(--text)">Shikshit Mitra — <span style="color:var(--accent);font-weight:700">FREE</span></div>
-              <div style="font-size:10px;color:var(--text2);margin-top:2px">Full access to all free content</div>
+              <div style="font-size:12px;color:var(--text)">Kharidar <span style="color:var(--accent);font-weight:700">Full Course</span></div>
+              <div style="font-size:10px;color:var(--text2);margin-top:2px">Full access to all Kharidar course content</div>
             </div>
           </div>
           <!-- SETTINGS -->
@@ -4548,7 +4548,7 @@ function closeTypingGame(){
 .book-face{
   position:absolute;left:16%;right:7%;top:0;bottom:0;
   z-index:4;
-  display:flex;flex-direction:column;align-items:center;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
   padding:9px 4px 7px;text-align:center;
 }
 .book-icon{
@@ -4587,8 +4587,8 @@ function closeTypingGame(){
     <div class="book-shelf-wrap">
       <div class="book-shelf-grid">
 
-        <!-- Book 1: Kharidar Second Paper Exam Set — opens the real reader -->
-        <div class="book-item" onclick="openWrittenExamBook()">
+        <!-- Book 1: Kharidar Second Paper Question Set — sheet-driven PDF list -->
+        <div class="book-item" onclick="openLibraryQuestionSet('2')">
           <div class="book-cover" style="--c1:#D9629A;--c2:#8A2A5C;--c3:#5C1838;--spine1:#4A122F;--spine2:#8A2A5C;--icon1:#F5849C;--icon2:#D6416A">
             <div class="book-bg"></div>
             <div class="book-spine"><span class="book-spine-text">KHARIDAR SECOND PAPER</span></div>
@@ -4600,20 +4600,15 @@ function closeTypingGame(){
                 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
               </div>
               <div class="book-org">लोक सेवा आयोग</div>
-              <div class="book-title">Kharidar<br>Second Paper</div>
-              <div class="book-subtitle">खरिदार द्वितीय पत्र</div>
-              <div class="book-meta">
-                <span class="book-pages-badge">4 Pages</span>
-                <span class="book-lastread-badge">📖 p.3</span>
-              </div>
+              <div class="book-title">खरीदार द्वितीय पत्र<br>प्रश्न सेट</div>
             </div>
           </div>
           <div class="book-ground-shadow"></div>
           <div class="book-tap-label" style="color:#c9f2d6">Tap to open</div>
         </div>
 
-        <!-- Book 2: Kharidar Third Paper Exam Set — placeholder for now -->
-        <div class="book-item" onclick="showComingSoon()">
+        <!-- Book 2: Kharidar Third Paper Question Set — sheet-driven PDF list -->
+        <div class="book-item" onclick="openLibraryQuestionSet('3')">
           <div class="book-cover" style="--c1:#4FC176;--c2:#1B6B3C;--c3:#0F4023;--spine1:#0A2F1A;--spine2:#1B6B3C;--icon1:#A7EFB9;--icon2:#5FCB80">
             <div class="book-bg"></div>
             <div class="book-spine"><span class="book-spine-text">KHARIDAR THIRD PAPER</span></div>
@@ -4625,15 +4620,11 @@ function closeTypingGame(){
                 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#0F4023" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
               </div>
               <div class="book-org">लोक सेवा आयोग</div>
-              <div class="book-title">Kharidar<br>Third Paper</div>
-              <div class="book-subtitle">खरिदार तृतीय पत्र</div>
-              <div class="book-meta">
-                <span class="book-pages-badge">2 Pages</span>
-              </div>
+              <div class="book-title">खरीदार तृतीय पत्र<br>प्रश्न सेट</div>
             </div>
           </div>
           <div class="book-ground-shadow"></div>
-          <div class="book-tap-label" style="color:#9CA3AF">Coming Soon</div>
+          <div class="book-tap-label" style="color:#c9f2d6">Tap to open</div>
         </div>
 
         <!-- Book 3: Kharidar Officer Written Paper -->
@@ -4780,6 +4771,64 @@ function showComingSoon(){
   }, 1700);
 }
 </script>
+
+<!-- ═══ LIBRARY QUESTION SET PANEL — sheet-driven PDF list, same style as Materials/Exam ═══ -->
+<div id="library-set-panel" style="display:none;position:fixed;inset:0;z-index:8000;background:#F4F1EA;flex-direction:column">
+  <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:#fff;border-bottom:1px solid #E5E7EB;flex-shrink:0">
+    <button onclick="closeLibraryQuestionSet()" style="width:36px;height:36px;border-radius:50%;background:rgba(0,0,0,.05);border:1px solid rgba(0,0,0,.08);color:#1F2937;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <div>
+      <div id="library-set-title" style="font-size:14px;font-weight:800;color:#1F2937">Question Set</div>
+      <div style="font-size:10px;color:#9CA3AF;font-weight:600">Shikshit Mitra &mdash; प्रश्न सेट</div>
+    </div>
+  </div>
+  <div style="flex:1;overflow-y:auto;padding-top:10px" id="library-set-body">
+    <div class="skeleton-wrap"><div class="skeleton-card"><div class="sk-avatar"></div><div class="sk-lines"><div class="sk-line"></div><div class="sk-line"></div></div></div></div>
+  </div>
+</div>
+
+<script>
+var LIB_SET_URLS={
+  '2':'https://docs.google.com/spreadsheets/d/e/2PACX-1vRNw-aoqKLoPnOivL_O0KjYtuRwWCB7yIx-fuXVErEHA7eNPp32JdxcyvYJczd4qNZMxPTTvdPHL1NO/pub?output=csv',
+  '3':'https://docs.google.com/spreadsheets/d/e/2PACX-1vSfRky68DqzoUOIeegfDEBcnwpcg5TWU8A_1SnhpXAGqjafWV4mD0YyWuU3-8v1SHYJgPjLtsG5zjOv/pub?output=csv'
+};
+var LIB_SET_TITLES={
+  '2':'खरीदार द्वितीय पत्र प्रश्न सेट',
+  '3':'खरीदार तृतीय पत्र प्रश्न सेट'
+};
+function openLibraryQuestionSet(paperNum){
+  var panel=document.getElementById('library-set-panel');
+  var body=document.getElementById('library-set-body');
+  var titleEl=document.getElementById('library-set-title');
+  titleEl.textContent=LIB_SET_TITLES[paperNum]||'Question Set';
+  panel.style.display='flex';
+  document.body.style.overflow='hidden';
+  body.innerHTML='<div class="skeleton-wrap"><div class="skeleton-card"><div class="sk-avatar"></div><div class="sk-lines"><div class="sk-line"></div><div class="sk-line"></div></div></div></div>';
+  var url=LIB_SET_URLS[paperNum];
+  if(!url){ body.innerHTML='<div class="empty-box">No sheet configured for this paper.</div>'; return; }
+  fetch(url+'&t='+Date.now())
+    .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.text(); })
+    .then(function(csv){ renderLibraryQuestionSet(body, parseCSV(csv)); })
+    .catch(function(){
+      return fetch('https://api.allorigins.win/raw?url='+encodeURIComponent(url))
+        .then(function(r){ return r.text(); })
+        .then(function(csv){ renderLibraryQuestionSet(body, parseCSV(csv)); })
+        .catch(function(){ body.innerHTML='<div class="empty-box">Could not load. Check your internet connection.</div>'; });
+    });
+}
+function renderLibraryQuestionSet(body, rows){
+  var items=(rows||[]).map(function(r){ return {Title:String(r.Title||'').trim(), Link:String(r.Link||'').trim()}; }).filter(function(r){ return r.Title.length>0; });
+  if(!items.length){ body.innerHTML='<div class="empty-box">No PDFs added yet.<br><small>Add rows in the sheet with columns: Title, Link</small></div>'; return; }
+  body.innerHTML=items.map(function(r,i){ return examCardHTML(r,i); }).join('');
+}
+function closeLibraryQuestionSet(){
+  document.getElementById('library-set-panel').style.display='none';
+  var grid=document.getElementById('library-grid-panel');
+  if(!grid || grid.style.display!=='flex'){ document.body.style.overflow=''; }
+}
+</script>
+
 
 <!-- ═══ WRITTEN EXAM BOOK FULLSCREEN PANEL ═══ -->
 <div id="written-exam-panel" style="display:none;position:fixed;inset:0;z-index:8000;background:#F4F1EA;flex-direction:column">
