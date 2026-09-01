@@ -515,6 +515,14 @@ let wordErrorWords = new Set();
 let typedChars = [];
 let backspaceCount = 0;
 
+// Cumulative session totals (persist across multiple passages within one game session)
+let sessionCorrectWords = 0;
+let sessionWrongWords = 0;
+let sessionCorrectChars = 0;
+let sessionTotalChars = 0;
+let sessionErrors = 0;
+let sessionBackspaceCount = 0;
+
 const passages = { en: [], np: [] };
 
 async function fetchPassages() {
@@ -649,6 +657,17 @@ function init(){
 
 function loadPassage(){
   if(!passagesLoaded) return;
+  // Fold the just-finished passage's stats into the session totals before resetting,
+  // so multi-passage sessions (e.g. 5/10 min) keep an accurate running WPM/accuracy.
+  if(currentPassage && gameStarted){
+    const wordStats = getTypedWordStats();
+    sessionCorrectWords += wordStats.correct;
+    sessionWrongWords += wordStats.wrong;
+    sessionCorrectChars += correctTyped;
+    sessionTotalChars += totalTyped;
+    sessionErrors += errorCount;
+    sessionBackspaceCount += backspaceCount;
+  }
   const pool = passages[lang];
   let newIndex;
   do { newIndex = Math.floor(Math.random() * pool.length); }
@@ -788,6 +807,8 @@ function restartGame(){
   wordErrorWords=new Set();
   typedChars=[];
   backspaceCount=0;
+  sessionCorrectWords=0;sessionWrongWords=0;sessionCorrectChars=0;
+  sessionTotalChars=0;sessionErrors=0;sessionBackspaceCount=0;
   document.getElementById('typing-input').value='';
   document.getElementById('typing-input').disabled=true;
   document.getElementById('btn-start').disabled=false;
@@ -909,14 +930,34 @@ function onInput(e){
 /* ═══════════════════════════════════════
    STATS
 ═══════════════════════════════════════ */
+function getSessionWordStats(){
+  const current = getTypedWordStats();
+  return {
+    correct: sessionCorrectWords + current.correct,
+    wrong: sessionWrongWords + current.wrong
+  };
+}
+
+function getSessionCharStats(){
+  return {
+    correct: sessionCorrectChars + correctTyped,
+    total: sessionTotalChars + totalTyped,
+    errors: sessionErrors + errorCount,
+    backspace: sessionBackspaceCount + backspaceCount
+  };
+}
+
 function calcStats(){
   const elapsed=gameStarted?(Date.now()-startTime)/60000:(duration/60);
   const minutes=Math.max(elapsed,0.01);
-  const wpm=Math.round(correctTyped/5/minutes);
-  const errPerMin=errorCount/Math.max((Date.now()-(startTime||Date.now()))/60000,0.01);
+  const wordStats=getSessionWordStats();
+  const charStats=getSessionCharStats();
+  // WPM = correct words typed / minutes elapsed (e.g. 150 correct words in 5 min = 30 WPM)
+  const wpm=Math.round(wordStats.correct/minutes);
+  const errPerMin=charStats.errors/minutes;
   const netWpm=Math.max(0,Math.round(wpm-errPerMin));
-  const acc=totalTyped>0?Math.round((correctTyped/totalTyped)*100):100;
-  return{wpm,netWpm,acc,errors:errorCount,chars:totalTyped,correct:correctTyped};
+  const acc=charStats.total>0?Math.round((charStats.correct/charStats.total)*100):100;
+  return{wpm,netWpm,acc,errors:charStats.errors,chars:charStats.total,correct:charStats.correct,correctWords:wordStats.correct,wrongWords:wordStats.wrong};
 }
 
 function getTypedWordStats(){
@@ -966,15 +1007,14 @@ function showResult(){
   document.getElementById('result-grade').textContent=grade;
   document.getElementById('result-title').textContent=title;
   document.getElementById('result-sub').textContent=lang==='np'?'तपाईंको टाइपिङ परिणाम':'Your typing session results';
-  const wordStats = getTypedWordStats();
   document.getElementById('r-wpm').textContent=s.wpm;
   document.getElementById('r-net').textContent=s.netWpm;
   document.getElementById('r-acc').textContent=s.acc+'%';
-  document.getElementById('r-wrongwords').textContent=wordStats.wrong;
-  document.getElementById('r-correctwords').textContent=wordStats.correct;
+  document.getElementById('r-wrongwords').textContent=s.wrongWords;
+  document.getElementById('r-correctwords').textContent=s.correctWords;
   document.getElementById('r-time').textContent=timeUsed+'s';
   document.getElementById('r-best').textContent=best;
-  document.getElementById('r-backspace').textContent=backspaceCount;
+  document.getElementById('r-backspace').textContent=getSessionCharStats().backspace;
 
   setTimeout(()=>{
     const speedPct=Math.min(100,(s.wpm/80)*100);
