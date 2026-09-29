@@ -1232,11 +1232,13 @@ nav{
           </div>
           <div class="paper-panel" id="epanel-3">
             <div class="sub-tabs">
-              <button class="stab active" onclick="switchExamSubTab('3','a',this)">Sec A</button>
+              <button class="stab active" onclick="switchExamSubTab('3','full',this)">Full Set</button>
+              <button class="stab" onclick="switchExamSubTab('3','a',this)">Sec A</button>
               <button class="stab" onclick="switchExamSubTab('3','b',this)">Sec B</button>
               <button class="stab" onclick="switchExamSubTab('3','c',this)">Sec C</button>
             </div>
-            <div class="sub-panel active" id="espanel-3-a"><div id="exam-list-3-a"><div class="empty-box">Add 3rd Paper exams in your sheet with Info = "3rd Paper Sec A"</div></div></div>
+            <div class="sub-panel active" id="espanel-3-full"><div id="exam-list-3-full"><div class="skeleton-wrap"><div class="skeleton-card"><div class="sk-avatar"></div><div class="sk-lines"><div class="sk-line"></div><div class="sk-line"></div></div></div></div></div></div>
+            <div class="sub-panel" id="espanel-3-a"><div id="exam-list-3-a"><div class="empty-box">Add 3rd Paper exams in your sheet with Info = "3rd Paper Sec A"</div></div></div>
             <div class="sub-panel" id="espanel-3-b"><div id="exam-list-3-b"><div class="empty-box">Add 3rd Paper exams in your sheet with Info = "3rd Paper Sec B"</div></div></div>
             <div class="sub-panel" id="espanel-3-c"><div id="exam-list-3-c"><div class="empty-box">Add 3rd Paper exams in your sheet with Info = "3rd Paper Sec C"</div></div></div>
           </div>
@@ -2623,8 +2625,29 @@ function renderExams(paperNum){
   el.innerHTML=exams.map(function(r,i){return examCardHTML(r,i);}).join('');
 }
 
+/* EXAM 3rd Paper → Full Set — list of Kharidar Third Paper question sets (same sheet as Library) */
+function loadExamFullSet(paper){
+  var el=document.getElementById('exam-list-'+paper+'-full');if(!el)return;
+  var url=(typeof LIB_SET_URLS!=='undefined')&&LIB_SET_URLS[paper];
+  if(!url){ el.innerHTML='<div class="empty-box">No sheet configured for this paper.</div>'; return; }
+  el.innerHTML='<div class="skeleton-wrap"><div class="skeleton-card"><div class="sk-avatar"></div><div class="sk-lines"><div class="sk-line"></div><div class="sk-line"></div></div></div></div>';
+  function show(csv){
+    var items=(parseCSV(csv)||[]).map(function(r){return {Title:String(r.Title||'').trim(),Link:String(r.Link||'').trim()};}).filter(function(r){return r.Title.length>0;});
+    if(!items.length){ el.innerHTML='<div class="empty-box">No PDFs added yet.<br><small>Add rows in the sheet with columns: Title, Link</small></div>'; return; }
+    el.innerHTML=items.map(function(r,i){return examCardHTML(r,i);}).join('');
+  }
+  fetch(url+'&t='+Date.now())
+    .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.text(); })
+    .then(show)
+    .catch(function(){
+      return fetch('https://api.allorigins.win/raw?url='+encodeURIComponent(url))
+        .then(function(r){ return r.text(); })
+        .then(show)
+        .catch(function(){ el.innerHTML='<div class="empty-box">Could not load. Check your internet connection.</div>'; });
+    });
+}
 /* EXAM — Sec A/B/C for 2nd & 3rd Paper, grouped by same CHAPTERS map as Materials */
-var activeExamSubTab={'2':'a','3':'a'};
+var activeExamSubTab={'2':'a','3':'full'};
 function switchExamSubTab(paper,sub,btn){
   var panel=document.getElementById('epanel-'+paper);
   panel.querySelectorAll('.stab').forEach(function(b){b.classList.remove('active');});
@@ -2635,6 +2658,7 @@ function switchExamSubTab(paper,sub,btn){
   renderExamSubPanel(paper,sub);
 }
 function renderExamSubPanel(paper,sub){
+  if(sub==='full'){ loadExamFullSet(paper); return; }
   var kws=SUB_KW[paper+'-'+sub]||[];
   var pkws=PAPER_KW[paper]||[];
   var rows=allRows.filter(function(r){
