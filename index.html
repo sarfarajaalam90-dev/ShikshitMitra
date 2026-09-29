@@ -1223,6 +1223,7 @@ nav{
             <button class="ptab active" id="etab-1" onclick="switchExamTab('1',this)">1st Paper</button>
             <button class="ptab" id="etab-2" onclick="switchExamTab('2',this)">2nd Paper</button>
             <button class="ptab" id="etab-3" onclick="switchExamTab('3',this)">3rd Paper</button>
+            <button class="ptab" id="etab-math" onclick="switchExamTab('math',this)">Math</button>
           </div>
           <div class="paper-panel active" id="epanel-1">
             <div id="exam-list-1"><div class="skeleton-wrap"><div class="skeleton-card"><div class="sk-avatar"></div><div class="sk-lines"><div class="sk-line"></div><div class="sk-line"></div></div></div></div></div>
@@ -1241,6 +1242,9 @@ nav{
             <div class="sub-panel" id="espanel-3-a"><div id="exam-list-3-a"><div class="empty-box">Add 3rd Paper exams in your sheet with Info = "3rd Paper Sec A"</div></div></div>
             <div class="sub-panel" id="espanel-3-b"><div id="exam-list-3-b"><div class="empty-box">Add 3rd Paper exams in your sheet with Info = "3rd Paper Sec B"</div></div></div>
             <div class="sub-panel" id="espanel-3-c"><div id="exam-list-3-c"><div class="empty-box">Add 3rd Paper exams in your sheet with Info = "3rd Paper Sec C"</div></div></div>
+          </div>
+          <div class="paper-panel" id="epanel-math">
+            <div id="exam-list-2-c"><div class="empty-box">Add 2nd Paper exams in your sheet with Info = "2nd Paper Sec C"</div></div>
           </div>
         </div>
       </div>
@@ -2303,6 +2307,7 @@ function switchExamTab(num,btn){
   document.getElementById('epanel-'+num).classList.add('active');
   if(num==='1'){ renderExams('1'); }
   else if(num==='2'){ loadExamSecondPaperSets(); }
+  else if(num==='math'){ renderExamSubPanel('2','c'); }
   else{ renderExamSubPanel(num, activeExamSubTab[num]||'a'); }
 }
 /* EXAM 2nd Paper — list of Kharidar Second Paper question sets (same sheet as Library) */
@@ -2393,7 +2398,7 @@ function renderAll(){
   renderSubPanel('1','gk');renderSubPanel('1','iq');
   renderSubPanel('2','a');renderSubPanel('2','b');renderSubPanel('2','c');
   renderSubPanel('3','a');renderSubPanel('3','b');renderSubPanel('3','c');
-  renderExams('1');renderExamSubPanel('3','a');renderExamSubPanel('3','b');renderExamSubPanel('3','c');
+  renderExams('1');renderExamSubPanel('2','c');renderExamSubPanel('3','a');renderExamSubPanel('3','b');renderExamSubPanel('3','c');
   renderOther();renderNotices();renderContactFromSheet();renderSyllabusFromSheet();renderPYQFromSheet();
 }
 function renderLiveClasses(){
